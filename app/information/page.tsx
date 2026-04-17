@@ -1,18 +1,16 @@
+"use client";
+
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import PageBanner from "../components/PageBanner";
 import LanguageToggle from "../components/LanguageToggle";
-
-const persyaratan = [
-    "Softcopy KTP Orang Tua (Ayah & Ibu)",
-    "Softcopy Kartu Keluarga",
-    "Softcopy Akte Lahir",
-    "Softcopy Rapor 1 Set (wajib untuk jalur keajegan luar)",
-    "Softcopy Surat Baptis / Sidi (jika ada)",
-    "Photo 3x4 (wajib berseragam sekolah)",
-];
+import { useLanguage } from "../providers/LanguageProvider";
+import { t } from "../libs/i18n";
 
 export default function InformationPage() {
+    const { lang } = useLanguage();
+    const items    = t.info.items[lang];
+
     return (
         <>
             <Navbar />
@@ -22,20 +20,16 @@ export default function InformationPage() {
                 <LanguageToggle />
 
                 <section className="max-w-7xl mx-auto px-6 py-12">
-                    <h1 className="text-2xl text-gray-700">Informasi Pendaftaran</h1>
-                    <p className="mt-1 tracking-[0.3em] text-gray-500 text-xs">P E R S Y A R A T A N &nbsp; D O K U M E N</p>
+                    <h1 className="text-2xl text-gray-700">{t.info.title[lang]}</h1>
+                    <p className="mt-1 tracking-[0.3em] text-gray-500 text-xs">{t.info.sub[lang]}</p>
                     <div className="w-16 h-[3px] bg-red-600 mt-3" />
 
                     <div className="mt-10 space-y-6 text-gray-700 text-[15px] leading-relaxed">
-                        <p>
-                            Sistem Penerimaan Murid Baru (SPMB) Online, adalah sebuah sistem yang dirancang untuk melakukan otomasi seleksiSistem Penerimaan Murid Baru (SPMB), mulai dari proses pendaftaran hingga pengumuman hasil seleksi, yang dilakukan secara online dan berbasis web.
-                        </p>
-                        <p>
-                            Kelengkapan syarat pendaftaran SPMB Online BPK PENABUR BANDUNG, sebagai berikut:
-                        </p>
+                        <p>{t.info.intro[lang]}</p>
+                        <p>{t.info.lead[lang]}</p>
 
                         <ol className="space-y-4">
-                            {persyaratan.map((item, idx) => (
+                            {items.map((item, idx) => (
                                 <li key={idx} className="flex gap-2">
                                     <span className="flex-shrink-0">{idx + 1}.</span>
                                     <span>{item}</span>
@@ -50,10 +44,10 @@ export default function InformationPage() {
                                     <line x1="12" y1="16" x2="12" y2="12" strokeLinecap="round" />
                                     <circle cx="12" cy="8" r="0.5" fill="currentColor" />
                                 </svg>
-                                Info:
+                                {t.info.infoLabel[lang]}
                             </div>
                             <p>
-                                Semua berkas wajib dikirimkan dalam bentuk softcopy ke email admin sekolah masing-masing dengan subject: <strong>No Registrasi - Nama Siswa</strong>.
+                                {t.info.infoText[lang]} <strong>{t.info.infoSubject[lang]}</strong>.
                             </p>
                         </div>
                     </div>

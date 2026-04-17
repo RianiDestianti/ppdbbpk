@@ -1,23 +1,29 @@
+"use client";
+
 import Link from "next/link";
+import { useLanguage } from "../providers/LanguageProvider";
+import { t } from "../libs/i18n";
 
 export default function Footer() {
+    const { lang } = useLanguage();
+
     return (
         <footer className="mt-16 bg-[#1e3a5f] text-gray-200">
             <div className="max-w-7xl mx-auto px-6 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                     <div>
-                        <h3 className="text-white font-semibold mb-1">Pendaftaran</h3>
+                        <h3 className="text-white font-semibold mb-1">{t.footer.pendaftaran[lang]}</h3>
                         <div className="w-12 h-[2px] bg-red-500 mb-4" />
                         <ul className="space-y-2 text-sm">
-                            <li><Link href="/faq" className="hover:text-white">FAQ</Link></li>
-                            <li><Link href="/information" className="hover:text-white">Informasi</Link></li>
-                            <li><Link href="/konfirmasi" className="hover:text-white">Konfirmasi</Link></li>
-                            <li><Link href="/status" className="hover:text-white">Status Pendaftaran</Link></li>
+                            <li><Link href="/faq" className="hover:text-white">{t.footer.faq[lang]}</Link></li>
+                            <li><Link href="/information" className="hover:text-white">{t.footer.informasi[lang]}</Link></li>
+                            <li><Link href="/konfirmasi" className="hover:text-white">{t.footer.konfirmasi[lang]}</Link></li>
+                            <li><Link href="/status" className="hover:text-white">{t.footer.status[lang]}</Link></li>
                         </ul>
                     </div>
 
                     <div>
-                        <h3 className="text-white font-semibold mb-1">Formulir</h3>
+                        <h3 className="text-white font-semibold mb-1">{t.footer.formulir[lang]}</h3>
                         <div className="w-12 h-[2px] bg-red-500 mb-4" />
                         <ul className="space-y-2 text-sm">
                             <li><Link href="/form?jenjang=tk" className="hover:text-white">TK</Link></li>
@@ -28,7 +34,7 @@ export default function Footer() {
                     </div>
 
                     <div>
-                        <h3 className="text-white font-semibold mb-1">Yayasan BPK PENABUR Bandung</h3>
+                        <h3 className="text-white font-semibold mb-1">{t.footer.yayasan[lang]}</h3>
                         <div className="w-12 h-[2px] bg-red-500 mb-4" />
                         <ul className="space-y-2 text-sm">
                             <li className="flex items-start gap-2">
@@ -83,16 +89,16 @@ export default function Footer() {
                 </div>
 
                 <div className="mt-10">
-                    <h3 className="text-white font-semibold mb-1">Website Sekolah</h3>
+                    <h3 className="text-white font-semibold mb-1">{t.footer.website[lang]}</h3>
                     <div className="w-12 h-[2px] bg-red-500 mb-4" />
                     <select className="w-full md:w-96 bg-white/10 border border-white/20 rounded-md px-3 py-2 text-sm text-gray-100">
-                        <option>Pilih Sekolah</option>
+                        <option>{t.footer.pilihSekolah[lang]}</option>
                     </select>
                 </div>
             </div>
 
             <div className="bg-red-700 text-white text-center text-sm py-3">
-                ©2025, SPMB Online BPK PENABUR Bandung. All Rights Reserved
+                {t.footer.copyright[lang]}
             </div>
         </footer>
     );

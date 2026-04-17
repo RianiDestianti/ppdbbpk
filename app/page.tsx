@@ -1,20 +1,17 @@
+"use client";
+
 import Image from "next/image";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import PageBanner from "./components/PageBanner";
 import LanguageToggle from "./components/LanguageToggle";
-
-const langkahList = [
-    "Bacalah dengan cermat Informasi Pendaftaran",
-    "Isi formulir pendaftaran dengan benar",
-    <>Simpan Formulir Pendaftaran Anda dalam bentuk <em>softcopy</em></>,
-    "Mengirimkan berkas-berkas persyaratan pendaftaran (termasuk Formulir Pendaftaran dan surat pernyataan) ke email/Gform sekolah (tercantum dalam Formulir Pendaftaran)",
-    "Membayar Biaya Pendaftaran menggunakan No. Virtual Account (VA) BCA (No. VA Tercantum dalam Formulir Pendaftaran) dan melakukan Konfirmasi Pembayaran di web SPMB Online",
-    "Jika Semua Persyaratan telah terkirim dan pembayaran sudah divalidasi, Pendaftar akan mendapatkan email Bukti Pendaftaran dari Panitia SPMB Pusat",
-    "Untuk memastikan data Anda sudah divalidasi dalam sistem kami, silakan Cek Status Pendaftaran Anda",
-];
+import { useLanguage } from "./providers/LanguageProvider";
+import { t } from "./libs/i18n";
 
 export default function RootPage() {
+    const { lang } = useLanguage();
+    const steps    = t.home.steps[lang];
+
     return (
         <>
             <Navbar />
@@ -25,7 +22,7 @@ export default function RootPage() {
 
                 <section className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-2 gap-10">
                     <div>
-                        <h2 className="text-2xl text-gray-700 mb-1">INFORMASI SPMB BPK PENABUR Bandung</h2>
+                        <h2 className="text-2xl text-gray-700 mb-1">{t.home.infoTitle[lang]}</h2>
                         <div className="w-16 h-[3px] bg-red-600 mb-8" />
 
                         <a
@@ -35,8 +32,8 @@ export default function RootPage() {
                             <span className="w-10 h-10 rounded-full bg-white text-purple-700 flex items-center justify-center font-serif italic text-xl font-bold">
                                 i
                             </span>
-                            <span className="font-semibold tracking-wide text-sm leading-tight">
-                                ASK FOR<br />INFORMATION
+                            <span className="font-semibold tracking-wide text-sm leading-tight whitespace-pre-line">
+                                {t.home.askFor[lang]}
                             </span>
                         </a>
 
@@ -52,11 +49,11 @@ export default function RootPage() {
                     </div>
 
                     <div>
-                        <h2 className="text-2xl text-gray-700 mb-1">Berikut Ini Adalah Langkah-Langkah Untuk Mengikuti Sistem SPMB Online</h2>
+                        <h2 className="text-2xl text-gray-700 mb-1">{t.home.stepsTitle[lang]}</h2>
                         <div className="w-16 h-[3px] bg-red-600 mb-6" />
 
                         <ol className="space-y-4 text-gray-700 text-[15px] leading-relaxed">
-                            {langkahList.map((item, idx) => (
+                            {steps.map((item, idx) => (
                                 <li key={idx} className="flex gap-2">
                                     <span className="flex-shrink-0">{idx + 1}.</span>
                                     <span>{item}</span>
@@ -67,11 +64,11 @@ export default function RootPage() {
                 </section>
 
                 <section className="max-w-5xl mx-auto px-6 py-16 border-t border-gray-200">
-                    <h2 className="text-2xl text-center text-gray-700 mb-8">Berikut ini adalah Gambar Alur Pendaftaran Online</h2>
+                    <h2 className="text-2xl text-center text-gray-700 mb-8">{t.home.flowTitle[lang]}</h2>
                     <div className="w-full rounded-lg overflow-hidden">
                         <Image
                             src="/assets/tatacaraspmb.png"
-                            alt="Alur Pendaftaran Online"
+                            alt={t.home.flowTitle[lang]}
                             width={1200}
                             height={1200}
                             className="w-full h-auto"

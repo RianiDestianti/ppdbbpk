@@ -3,8 +3,11 @@
 import { useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { useLanguage } from "../providers/LanguageProvider";
+import { t } from "../libs/i18n";
 
 export default function SignInPage() {
+    const { lang }                = useLanguage();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
@@ -16,8 +19,8 @@ export default function SignInPage() {
                 <div className="max-w-6xl mx-auto px-6 py-20">
                     <div className="bg-white rounded-2xl shadow-2xl px-8 md:px-16 py-14">
                         <div className="text-center mb-12">
-                            <h1 className="text-4xl md:text-5xl font-semibold text-gray-800 mb-2">SPMB Online</h1>
-                            <h2 className="text-2xl md:text-3xl text-gray-600 font-light">BPK PENABUR Bandung</h2>
+                            <h1 className="text-4xl md:text-5xl font-semibold text-gray-800 mb-2">{t.signin.title[lang]}</h1>
+                            <h2 className="text-2xl md:text-3xl text-gray-600 font-light">{t.signin.subtitle[lang]}</h2>
                             <div className="w-20 h-[3px] bg-red-600 mx-auto mt-5" />
                         </div>
 
@@ -98,20 +101,20 @@ export default function SignInPage() {
                             <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        No. Registrasi / Username
+                                        {t.signin.username[lang]}
                                     </label>
                                     <input
                                         type="text"
                                         value={username}
                                         onChange={(e) => setUsername(e.target.value)}
-                                        placeholder="Masukkan nomor registrasi"
+                                        placeholder={t.signin.usernamePh[lang]}
                                         className="w-full px-4 py-3 rounded-lg bg-blue-50 border border-blue-100 focus:bg-white focus:border-[#1976d2] focus:ring-2 focus:ring-blue-200 outline-none text-sm transition"
                                     />
                                 </div>
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Password
+                                        {t.signin.password[lang]}
                                     </label>
                                     <input
                                         type="password"
@@ -127,7 +130,7 @@ export default function SignInPage() {
                                         type="submit"
                                         className="inline-flex items-center gap-2 bg-[#1976d2] hover:bg-[#1565c0] text-white font-medium px-8 py-3 rounded-lg shadow-md hover:shadow-lg transition"
                                     >
-                                        Sign In
+                                        {t.signin.button[lang]}
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                             <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
@@ -135,7 +138,7 @@ export default function SignInPage() {
                                 </div>
 
                                 <p className="text-xs text-gray-500 pt-2">
-                                    Lupa password? Hubungi admin sekolah masing-masing.
+                                    {t.signin.forgot[lang]}
                                 </p>
                             </form>
                         </div>

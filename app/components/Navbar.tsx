@@ -3,17 +3,20 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-
-const jenjangItems = [
-    { href: "/form?jenjang=tk", label: "TK 2026/2027" },
-    { href: "/form?jenjang=sd", label: "SD 2026/2027" },
-    { href: "/form?jenjang=smp", label: "SMP 2026/2027" },
-    { href: "/form?jenjang=sma", label: "SMA 2026/2027" },
-];
+import { useLanguage } from "../providers/LanguageProvider";
+import { t } from "../libs/i18n";
 
 export default function Navbar() {
+    const { lang }                          = useLanguage();
     const [showFormulir, setShowFormulir]   = useState(false);
     const [showTop, setShowTop]             = useState(false);
+
+    const jenjangItems = [
+        { href: "/form?jenjang=tk",  label: t.nav.tk[lang] },
+        { href: "/form?jenjang=sd",  label: t.nav.sd[lang] },
+        { href: "/form?jenjang=smp", label: t.nav.smp[lang] },
+        { href: "/form?jenjang=sma", label: t.nav.sma[lang] },
+    ];
 
     useEffect(() => {
         const onScroll = () => setShowTop(window.scrollY > 200);
@@ -41,13 +44,13 @@ export default function Navbar() {
 
                     <nav className="flex items-center gap-8 text-sm">
                         <Link href="/" className="text-gray-700 hover:text-red-600">
-                            Home
+                            {t.nav.home[lang]}
                         </Link>
                         <Link href="/faq" className="text-gray-700 hover:text-red-600">
-                            FAQ
+                            {t.nav.faq[lang]}
                         </Link>
                         <Link href="/information" className="text-gray-700 hover:text-red-600">
-                            Informasi
+                            {t.nav.info[lang]}
                         </Link>
 
                         <div
@@ -56,7 +59,7 @@ export default function Navbar() {
                             onMouseLeave={() => setShowFormulir(false)}
                         >
                             <button className="text-gray-700 hover:text-red-600 flex items-center gap-1">
-                                Formulir 26/27
+                                {t.nav.formulir[lang]}
                                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5">
                                     <path d="M1 3l4 4 4-4" />
                                 </svg>
@@ -77,7 +80,7 @@ export default function Navbar() {
                         </div>
 
                         <Link href="/sign-in" className="text-gray-700 hover:text-red-600">
-                            Sign In
+                            {t.nav.signin[lang]}
                         </Link>
                     </nav>
                 </div>

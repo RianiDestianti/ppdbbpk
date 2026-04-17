@@ -74,9 +74,9 @@ export default function FAQPage() {
                 </div>
 
                 <section className="max-w-7xl mx-auto px-6 py-12">
-                    <h1 className="text-5xl md:text-6xl text-gray-700 font-light">Frequently Asked Questions</h1>
-                    <p className="mt-2 tracking-[0.3em] text-gray-500 text-sm">( F A Q )</p>
-                    <div className="w-20 h-[3px] bg-red-600 mt-4" />
+                    <h1 className="text-2xl text-gray-700">Frequently Asked Questions</h1>
+                    <p className="mt-1 tracking-[0.3em] text-gray-500 text-xs">( F A Q )</p>
+                    <div className="w-16 h-[3px] bg-red-600 mt-3" />
 
                     <p className="mt-10 text-gray-700 text-[15px] flex flex-wrap items-center gap-3">
                         <span>Bila informasi di halaman ini tidak mencukupi kebutuhan anda, silakan hubungi kami di nomor telepon</span>

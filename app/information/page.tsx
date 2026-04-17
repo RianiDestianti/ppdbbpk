@@ -1,21 +1,14 @@
+import Image from "next/image";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
-const jadwal = [
-    { tahap: "Pembukaan Pendaftaran", tanggal: "Januari 2026" },
-    { tahap: "Tes Seleksi & Observasi", tanggal: "Februari 2026" },
-    { tahap: "Pengumuman Hasil", tanggal: "Maret 2026" },
-    { tahap: "Daftar Ulang", tanggal: "Maret - April 2026" },
-    { tahap: "Awal Tahun Ajaran Baru", tanggal: "Juli 2026" },
-];
-
 const persyaratan = [
-    "Akta Kelahiran Calon Peserta Didik",
-    "Kartu Keluarga (KK)",
-    "Pas Foto Terbaru (berwarna)",
-    "Rapor Terakhir (untuk jenjang SD, SMP, SMA)",
-    "Surat Keterangan Pindah (bila mutasi)",
-    "Kartu Tanda Penduduk Orang Tua/Wali",
+    "Softcopy KTP Orang Tua (Ayah & Ibu)",
+    "Softcopy Kartu Keluarga",
+    "Softcopy Akte Lahir",
+    "Softcopy Rapor 1 Set (wajib untuk jalur keajegan luar)",
+    "Softcopy Surat Baptis / Sidi (jika ada)",
+    "Photo 3x4 (wajib berseragam sekolah)",
 ];
 
 export default function InformationPage() {
@@ -23,53 +16,68 @@ export default function InformationPage() {
         <>
             <Navbar />
 
-            <main className="flex-1 bg-gray-50">
-                <div className="max-w-5xl mx-auto px-6 py-12">
-                    <div className="text-center mb-10">
-                        <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">
-                            Informasi Pendaftaran
-                        </h1>
-                        <p className="text-gray-600">Tahun Ajaran 2026/2027</p>
-                    </div>
+            <main className="flex-1 bg-white">
+                <section className="relative w-full">
+                    <Image
+                        src="/assets/bannerspmb.png"
+                        alt="SPMB BPK PENABUR Bandung"
+                        width={1600}
+                        height={500}
+                        priority
+                        className="w-full h-auto object-cover"
+                    />
+                </section>
 
-                    <div className="grid md:grid-cols-2 gap-6">
-                        <div className="bg-white rounded-md border border-gray-200 p-6">
-                            <h2 className="text-lg font-semibold text-gray-800 mb-4">Jadwal Pendaftaran</h2>
-                            <ul className="space-y-3 text-sm">
-                                {jadwal.map((j) => (
-                                    <li key={j.tahap} className="flex justify-between gap-4 pb-2 border-b border-gray-100 last:border-0">
-                                        <span className="text-gray-700">{j.tahap}</span>
-                                        <span className="text-gray-500 text-right flex-shrink-0">{j.tanggal}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-
-                        <div className="bg-white rounded-md border border-gray-200 p-6">
-                            <h2 className="text-lg font-semibold text-gray-800 mb-4">Persyaratan</h2>
-                            <ul className="list-disc pl-5 space-y-2 text-sm text-gray-700">
-                                {persyaratan.map((p) => (
-                                    <li key={p}>{p}</li>
-                                ))}
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div className="bg-white rounded-md border border-gray-200 p-6 mt-6">
-                        <h2 className="text-lg font-semibold text-gray-800 mb-3">Butuh Bantuan?</h2>
-                        <p className="text-sm text-gray-600 mb-4">
-                            Hubungi admin BPK PENABUR Bandung untuk informasi lebih lanjut.
-                        </p>
-                        <div className="flex flex-wrap gap-3 text-sm">
-                            <a href="tel:0224203808" className="px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 text-white font-medium">
-                                022-420 3808
-                            </a>
-                            <a href="https://wa.me/6281224122456" target="_blank" rel="noreferrer" className="px-4 py-2 rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium">
-                                WhatsApp Admin
-                            </a>
-                        </div>
-                    </div>
+                <div className="max-w-7xl mx-auto px-6 pt-10 flex justify-end gap-3 text-sm">
+                    <button className="flex items-center gap-2 border border-gray-300 rounded-md px-4 py-2 hover:bg-gray-50">
+                        <span className="font-medium">ID</span>
+                        <span className="inline-block w-5 h-3 bg-gradient-to-b from-red-600 from-50% to-white to-50% border border-gray-300" />
+                    </button>
+                    <button className="flex items-center gap-2 border border-gray-300 rounded-md px-4 py-2 hover:bg-gray-50">
+                        <span className="font-medium">EN</span>
+                        <span className="inline-block w-5 h-3 bg-blue-800 border border-gray-300 relative overflow-hidden">
+                            <span className="absolute inset-0 flex items-center justify-center text-[6px] text-white font-bold">UK</span>
+                        </span>
+                    </button>
                 </div>
+
+                <section className="max-w-7xl mx-auto px-6 py-12">
+                    <h1 className="text-2xl text-gray-700">Informasi Pendaftaran</h1>
+                    <p className="mt-1 tracking-[0.3em] text-gray-500 text-xs">P E R S Y A R A T A N &nbsp; D O K U M E N</p>
+                    <div className="w-16 h-[3px] bg-red-600 mt-3" />
+
+                    <div className="mt-10 space-y-6 text-gray-700 text-[15px] leading-relaxed">
+                        <p>
+                            Sistem Penerimaan Murid Baru (SPMB) Online, adalah sebuah sistem yang dirancang untuk melakukan otomasi seleksiSistem Penerimaan Murid Baru (SPMB), mulai dari proses pendaftaran hingga pengumuman hasil seleksi, yang dilakukan secara online dan berbasis web.
+                        </p>
+                        <p>
+                            Kelengkapan syarat pendaftaran SPMB Online BPK PENABUR BANDUNG, sebagai berikut:
+                        </p>
+
+                        <ol className="space-y-4">
+                            {persyaratan.map((item, idx) => (
+                                <li key={idx} className="flex gap-2">
+                                    <span className="flex-shrink-0">{idx + 1}.</span>
+                                    <span>{item}</span>
+                                </li>
+                            ))}
+                        </ol>
+
+                        <div className="mt-8 bg-sky-500 text-white rounded-md p-5">
+                            <div className="flex items-center gap-2 font-semibold mb-2">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <circle cx="12" cy="12" r="10" />
+                                    <line x1="12" y1="16" x2="12" y2="12" strokeLinecap="round" />
+                                    <circle cx="12" cy="8" r="0.5" fill="currentColor" />
+                                </svg>
+                                Info:
+                            </div>
+                            <p>
+                                Semua berkas wajib dikirimkan dalam bentuk softcopy ke email admin sekolah masing-masing dengan subject: <strong>No Registrasi - Nama Siswa</strong>.
+                            </p>
+                        </div>
+                    </div>
+                </section>
             </main>
 
             <Footer />

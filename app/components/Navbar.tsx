@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -27,14 +28,15 @@ export default function Navbar() {
         <>
             <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
                 <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-                    <Link href="/" className="flex items-center gap-2">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-red-600 to-orange-500 flex items-center justify-center text-white font-bold text-[10px]">
-                            BPK
-                        </div>
-                        <div className="leading-tight">
-                            <div className="text-[10px] font-semibold text-gray-500 tracking-wider">BPK</div>
-                            <div className="text-sm font-bold text-red-700 -mt-0.5">PENABUR</div>
-                        </div>
+                    <Link href="/" className="flex items-center">
+                        <Image
+                            src="/assets/bpkspmb.png"
+                            alt="BPK PENABUR"
+                            width={160}
+                            height={44}
+                            priority
+                            className="h-10 w-auto"
+                        />
                     </Link>
 
                     <nav className="flex items-center gap-8 text-sm">

@@ -2,11 +2,12 @@ import Link from "next/link";
 
 export default function Footer() {
     return (
-        <footer className="mt-16 bg-gray-800 text-gray-300">
+        <footer className="mt-16 bg-[#1e3a5f] text-gray-200">
             <div className="max-w-7xl mx-auto px-6 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                     <div>
-                        <h3 className="text-white font-semibold mb-4">Pendaftaran</h3>
+                        <h3 className="text-white font-semibold mb-1">Pendaftaran</h3>
+                        <div className="w-12 h-[2px] bg-red-500 mb-4" />
                         <ul className="space-y-2 text-sm">
                             <li><Link href="/faq" className="hover:text-white">FAQ</Link></li>
                             <li><Link href="/information" className="hover:text-white">Informasi</Link></li>
@@ -16,7 +17,8 @@ export default function Footer() {
                     </div>
 
                     <div>
-                        <h3 className="text-white font-semibold mb-4">Formulir</h3>
+                        <h3 className="text-white font-semibold mb-1">Formulir</h3>
+                        <div className="w-12 h-[2px] bg-red-500 mb-4" />
                         <ul className="space-y-2 text-sm">
                             <li><Link href="/form?jenjang=tk" className="hover:text-white">TK</Link></li>
                             <li><Link href="/form?jenjang=sd" className="hover:text-white">SD</Link></li>
@@ -26,7 +28,8 @@ export default function Footer() {
                     </div>
 
                     <div>
-                        <h3 className="text-white font-semibold mb-4">Yayasan BPK PENABUR Bandung</h3>
+                        <h3 className="text-white font-semibold mb-1">Yayasan BPK PENABUR Bandung</h3>
+                        <div className="w-12 h-[2px] bg-red-500 mb-4" />
                         <ul className="space-y-2 text-sm">
                             <li className="flex items-start gap-2">
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="mt-1 flex-shrink-0">
@@ -80,8 +83,9 @@ export default function Footer() {
                 </div>
 
                 <div className="mt-10">
-                    <h3 className="text-white font-semibold mb-3">Website Sekolah</h3>
-                    <select className="w-full md:w-72 bg-gray-700 border border-gray-600 rounded-md px-3 py-2 text-sm text-gray-200">
+                    <h3 className="text-white font-semibold mb-1">Website Sekolah</h3>
+                    <div className="w-12 h-[2px] bg-red-500 mb-4" />
+                    <select className="w-full md:w-96 bg-white/10 border border-white/20 rounded-md px-3 py-2 text-sm text-gray-100">
                         <option>Pilih Sekolah</option>
                     </select>
                 </div>

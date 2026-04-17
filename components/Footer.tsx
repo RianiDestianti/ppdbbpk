@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useLanguage } from "../providers/LanguageProvider";
+import { useLanguage } from "@/providers/LanguageProvider";
 import { t } from "@/libs/i18n";
 
 export default function Footer() {

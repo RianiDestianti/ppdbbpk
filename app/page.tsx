@@ -1,11 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
-import PageBanner from "./components/PageBanner";
-import LanguageToggle from "./components/LanguageToggle";
-import { useLanguage } from "./providers/LanguageProvider";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import PageBanner from "@/components/PageBanner";
+import LanguageToggle from "@/components/LanguageToggle";
+import { useLanguage } from "@/providers/LanguageProvider";
 import { t } from "@/libs/i18n";
 
 export default function RootPage() {

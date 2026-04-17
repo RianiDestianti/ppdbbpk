@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
 import { saveSiswa } from "@/store/controllers/siswaController";
 import { resetResponse } from "@/store/slices/siswaSlice";

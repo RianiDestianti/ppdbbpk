@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import Navbar from "../components/Navbar";
-import Footer from "../components/Footer";
-import { useLanguage } from "../providers/LanguageProvider";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import { useLanguage } from "@/providers/LanguageProvider";
 import { t } from "@/libs/i18n";
 
 export default function SignInPage() {

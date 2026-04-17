@@ -1,79 +1,121 @@
-"use client";
-
-import { useState } from "react";
+import Image from "next/image";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 
-const faqs = [
+type FAQItem = {
+    q: string;
+    a: React.ReactNode;
+};
+
+const faqs: FAQItem[] = [
     {
-        q: "Kapan pendaftaran SPMB BPK PENABUR Bandung dibuka?",
-        a: "Pendaftaran tahun ajaran 2026/2027 dibuka mulai tanggal yang akan diumumkan resmi melalui website dan media sosial BPK PENABUR Bandung.",
+        q: "Data yang saya masukkan ternyata ada kekeliruan.",
+        a: "Jika sudah terlanjur dikirim, silahkan mengubungi panitia SPMB Sekolah Pilihan ke 1 untuk mengedit data.",
     },
     {
-        q: "Bagaimana cara mendaftar di BPK PENABUR Bandung?",
-        a: "Anda dapat mendaftar secara online melalui sistem SPMB Online dengan membuat akun terlebih dahulu, lalu mengisi formulir sesuai jenjang yang dituju.",
+        q: "Data yang saya masukkan tidak muncul lengkap di halaman FORMULIR",
+        a: "Ada kemungkinan akses internet yang anda gunakan tidak memadai (terlalu lambat) atau anda menutup tab browser saat halaman pendaftaran sedang diproses. Silakan membatalkan pendaftaran dan mencoba lagi.",
     },
     {
-        q: "Dokumen apa saja yang diperlukan untuk pendaftaran?",
-        a: "Dokumen yang diperlukan antara lain: akta kelahiran, kartu keluarga, pas foto, rapor (untuk SD/SMP/SMA), serta dokumen pendukung lain sesuai jenjang.",
+        q: "Apa perbedaan Jalur Keajegan dalam, Keajegan Luar dan TES?",
+        a: (
+            <>
+                ada 3 pilihan jalur untuk SPMB BPK PENABUR Bandung
+                <div className="mt-4 space-y-2">
+                    <p>1. Jalur Keajegan Dalam adalah pendaftaran peserta didik baru yang asal sekolahnya dari BPK PENABUR Bandung dan melakukan pendaftaran diwaktu pendaftaran Keajegan Dalam</p>
+                    <p>2. Jalur Keajegan Luar adalah pendaftaran peserta didik baru yang asal sekolahnya dari Luar BPK PENABUR Bandung dan melakukan pendaftaran diwaktu pendaftaran Keajegan Luar</p>
+                    <p>3. Jalur Tes adalah pendaftaran peserta didik baru yang asal sekolahnya dari Dalam/Luar BPK PENABUR Bandung dan melakukan pendaftaran setelah batas waktu Keajegan</p>
+                </div>
+            </>
+        ),
     },
     {
-        q: "Apakah bisa mendaftar untuk lebih dari satu jenjang?",
-        a: "Satu akun hanya dapat digunakan untuk mendaftar satu calon peserta didik. Jika ingin mendaftarkan anak lain, silakan buat akun baru dengan email berbeda.",
+        q: 'Saya tidak dapat mengklik tombol "Daftar". Sepertinya tidak merespon.',
+        a: (
+            <>
+                Mungkin ada <em>form</em> yang belum anda isi atau formatnya salah. Silakan cek kembali. Jika masih tidak bisa, coba untuk merefresh halaman/mengklik lagi menu sesuai jenjang.
+            </>
+        ),
     },
     {
-        q: "Bagaimana jika lupa password akun SPMB?",
-        a: "Klik tombol 'Lupa Password' pada halaman Sign In, masukkan email terdaftar, dan ikuti instruksi reset password yang dikirimkan ke email Anda.",
-    },
-    {
-        q: "Siapa yang bisa saya hubungi jika mengalami kendala?",
-        a: "Anda dapat menghubungi admin kami via WhatsApp di 0812 2412 2456 atau telepon di 022-420 3808 pada jam kerja.",
+        q: "Situs ini sulit diakses / lambat.",
+        a: "Jika anda yakin hal ini bukan dikarenakan akses internet anda yang bermasalah/lambat, silakan dicoba lagi diwaktu dimana kemungkinan trafiknya kembali normal, misalnya pada malam hari.",
     },
 ];
 
 export default function FAQPage() {
-    const [openIdx, setOpenIdx] = useState<number | null>(0);
-
     return (
         <>
             <Navbar />
 
-            <main className="flex-1 bg-gray-50">
-                <div className="max-w-4xl mx-auto px-6 py-12">
-                    <div className="text-center mb-10">
-                        <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-3">FAQ</h1>
-                        <p className="text-gray-600">Pertanyaan yang sering diajukan seputar pendaftaran</p>
-                    </div>
+            <main className="flex-1 bg-white">
+                <section className="relative w-full">
+                    <Image
+                        src="/assets/bannerspmb.png"
+                        alt="SPMB BPK PENABUR Bandung"
+                        width={1600}
+                        height={500}
+                        priority
+                        className="w-full h-auto object-cover"
+                    />
+                </section>
 
-                    <div className="bg-white rounded-md border border-gray-200 divide-y divide-gray-200">
+                <div className="max-w-7xl mx-auto px-6 pt-10 flex justify-end gap-3 text-sm">
+                    <button className="flex items-center gap-2 border border-gray-300 rounded-md px-4 py-2 hover:bg-gray-50">
+                        <span className="font-medium">ID</span>
+                        <span className="inline-block w-5 h-3 bg-gradient-to-b from-red-600 from-50% to-white to-50% border border-gray-300" />
+                    </button>
+                    <button className="flex items-center gap-2 border border-gray-300 rounded-md px-4 py-2 hover:bg-gray-50">
+                        <span className="font-medium">EN</span>
+                        <span className="inline-block w-5 h-3 bg-blue-800 border border-gray-300 relative overflow-hidden">
+                            <span className="absolute inset-0 flex items-center justify-center text-[6px] text-white font-bold">UK</span>
+                        </span>
+                    </button>
+                </div>
+
+                <section className="max-w-7xl mx-auto px-6 py-12">
+                    <h1 className="text-5xl md:text-6xl text-gray-700 font-light">Frequently Asked Questions</h1>
+                    <p className="mt-2 tracking-[0.3em] text-gray-500 text-sm">( F A Q )</p>
+                    <div className="w-20 h-[3px] bg-red-600 mt-4" />
+
+                    <p className="mt-10 text-gray-700 text-[15px] flex flex-wrap items-center gap-3">
+                        <span>Bila informasi di halaman ini tidak mencukupi kebutuhan anda, silakan hubungi kami di nomor telepon</span>
+                        <a
+                            href="tel:0224203808"
+                            className="inline-flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white rounded-md px-4 py-1.5 text-sm"
+                        >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57a1 1 0 00-1.02.24l-2.2 2.2a15.07 15.07 0 01-6.58-6.58l2.2-2.21a1 1 0 00.24-1.01A11.36 11.36 0 018.5 4a1 1 0 00-1-1H4a1 1 0 00-1 1 17 17 0 0017 17 1 1 0 001-1v-3.5a1 1 0 00-1-1z" />
+                            </svg>
+                            022-420 3808
+                        </a>
+                        <span>atau</span>
+                        <a
+                            href="#contact"
+                            className="inline-flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white rounded-md px-4 py-1.5 text-sm"
+                        >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                <path d="M22 6l-10 7L2 6" />
+                            </svg>
+                            Contact Us
+                        </a>
+                    </p>
+
+                    <div className="mt-10 space-y-8">
                         {faqs.map((f, i) => (
                             <div key={i}>
-                                <button
-                                    onClick={() => setOpenIdx(openIdx === i ? null : i)}
-                                    className="w-full flex items-center justify-between gap-4 px-6 py-4 text-left hover:bg-gray-50"
-                                >
-                                    <span className="font-medium text-gray-800">{f.q}</span>
-                                    <svg
-                                        width="16"
-                                        height="16"
-                                        viewBox="0 0 20 20"
-                                        fill="none"
-                                        stroke="currentColor"
-                                        strokeWidth="2"
-                                        className={`flex-shrink-0 text-gray-500 transition-transform ${openIdx === i ? "rotate-180" : ""}`}
-                                    >
-                                        <path d="M5 8l5 5 5-5" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                </button>
-                                {openIdx === i && (
-                                    <div className="px-6 pb-5 text-sm text-gray-600 leading-relaxed">
-                                        {f.a}
-                                    </div>
-                                )}
+                                <p className="font-bold italic text-gray-800 text-[15px]">
+                                    Tanya : {f.q}
+                                </p>
+                                <div className="mt-2 text-gray-700 text-[15px] leading-relaxed">
+                                    <span>Jawab : </span>
+                                    {f.a}
+                                </div>
                             </div>
                         ))}
                     </div>
-                </div>
+                </section>
             </main>
 
             <Footer />

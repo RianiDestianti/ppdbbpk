@@ -6,7 +6,7 @@ import Footer from "./components/Footer";
 import PageBanner from "./components/PageBanner";
 import LanguageToggle from "./components/LanguageToggle";
 import { useLanguage } from "./providers/LanguageProvider";
-import { t } from "./libs/i18n";
+import { t } from "@/libs/i18n";
 
 export default function RootPage() {
     const { lang } = useLanguage();

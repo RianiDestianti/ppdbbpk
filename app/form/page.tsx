@@ -3,11 +3,11 @@
 import { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
-import { useAppDispatch, useAppSelector } from "../hooks/useStore";
+import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
 import { saveSiswa } from "@/store/controllers/siswaController";
 import { resetResponse } from "@/store/slices/siswaSlice";
 import { initialFormSiswa, SiswaFormData } from "@/store/types/SiswaTypes";
-import { handleChangeInput } from "../libs/general";
+import { handleChangeInput } from "@/libs/general";
 import Swal from "sweetalert2";
 
 const steps = [1, 2];

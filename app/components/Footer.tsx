@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useLanguage } from "../providers/LanguageProvider";
-import { t } from "../libs/i18n";
+import { t } from "@/libs/i18n";
 
 export default function Footer() {
     const { lang } = useLanguage();

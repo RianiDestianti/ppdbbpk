@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
-import "./globals.css";
+import "../public/globals.css";
 import { StoreProvider } from "./providers/StoreProvider";
 import { LanguageProvider } from "./providers/LanguageProvider";
 

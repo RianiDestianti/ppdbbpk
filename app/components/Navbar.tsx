@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useLanguage } from "../providers/LanguageProvider";
-import { t } from "../libs/i18n";
+import { t } from "@/libs/i18n";
 
 export default function Navbar() {
     const { lang }                            = useLanguage();

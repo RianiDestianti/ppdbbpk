@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import PageBanner from "./components/PageBanner";
 
 const langkahList = [
     "Bacalah dengan cermat Informasi Pendaftaran",
@@ -18,29 +19,7 @@ export default function RootPage() {
             <Navbar />
 
             <main className="flex-1 bg-white">
-                <section className="relative w-full">
-                    <Image
-                        src="/assets/bannerspmb.png"
-                        alt="SPMB BPK PENABUR Bandung"
-                        width={1600}
-                        height={500}
-                        priority
-                        className="w-full h-auto object-cover"
-                    />
-                </section>
-
-                <div className="max-w-7xl mx-auto px-6 pt-10 flex justify-end gap-3 text-sm">
-                    <button className="flex items-center gap-2 border border-gray-300 rounded-md px-4 py-2 hover:bg-gray-50">
-                        <span className="font-medium">ID</span>
-                        <span className="inline-block w-5 h-3 bg-gradient-to-b from-red-600 from-50% to-white to-50% border border-gray-300" />
-                    </button>
-                    <button className="flex items-center gap-2 border border-gray-300 rounded-md px-4 py-2 hover:bg-gray-50">
-                        <span className="font-medium">EN</span>
-                        <span className="inline-block w-5 h-3 bg-blue-800 border border-gray-300 relative overflow-hidden">
-                            <span className="absolute inset-0 flex items-center justify-center text-[6px] text-white font-bold">UK</span>
-                        </span>
-                    </button>
-                </div>
+                <PageBanner />
 
                 <section className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-2 gap-10">
                     <div>

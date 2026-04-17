@@ -9,6 +9,7 @@ export default function PageBanner() {
                 width={1600}
                 height={500}
                 priority
+                sizes="100vw"
                 className="w-full h-auto object-cover"
             />
         </section>

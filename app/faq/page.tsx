@@ -1,6 +1,7 @@
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import PageBanner from "../components/PageBanner";
+import LanguageToggle from "../components/LanguageToggle";
 
 type FAQItem = {
     q: string;
@@ -50,6 +51,7 @@ export default function FAQPage() {
 
             <main className="flex-1 bg-white">
                 <PageBanner />
+                <LanguageToggle />
 
                 <section className="max-w-7xl mx-auto px-6 py-12">
                     <h1 className="text-2xl text-gray-700">Frequently Asked Questions</h1>

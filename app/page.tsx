@@ -2,6 +2,7 @@ import Image from "next/image";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import PageBanner from "./components/PageBanner";
+import LanguageToggle from "./components/LanguageToggle";
 
 const langkahList = [
     "Bacalah dengan cermat Informasi Pendaftaran",
@@ -20,6 +21,7 @@ export default function RootPage() {
 
             <main className="flex-1 bg-white">
                 <PageBanner />
+                <LanguageToggle />
 
                 <section className="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-2 gap-10">
                     <div>

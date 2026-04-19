@@ -22,9 +22,37 @@ const jenjangConfig: Record<Jenjang, JenjangConfig> = {
             "Pendaftaran hanya boleh dilakukan 1 kali untuk 1 orang siswa.",
             "Durasi waktu pendaftaran adalah 10 menit, mohon mempersiapkan data no. SPB (untuk siswa BPK), NISN, NIK, Nama sesuai Akte Lahir, No. HP, Tempat/Tanggal Lahir, Alamat, Sekolah Asal, Nama Ayah Ibu dan Email sebelum melakukan pendaftaran",
         ],
-        asalSekolahOptions:    ["- Pilih -", "Luar BPK"],
-        pilihanSekolahOptions: ["- Pilih -", "TKK 1 BPK PENABUR", "TKK 2 BPK PENABUR", "TKK 3 BPK PENABUR", "Luar BPK"],
-        programPilihanOptions: ["- Pilih -", "Reguler"],
+        asalSekolahOptions: [
+            "- Pilih -",
+            "Luar BPK / Belum Sekolah",
+            "TKK BPK PENABUR 246",
+            "TKK BPK PENABUR 638",
+            "TK BPK PENABUR Holis",
+            "TKK BPK PENABUR Paskal",
+            "TKK BPK PENABUR Guntur",
+            "TKK BPK PENABUR Singgasana",
+            "TKK BPK PENABUR KBP",
+            "TKK BPK PENABUR Banda",
+        ],
+        programAsalOptions: ["Reguler", "Bilingual", "-"],
+        pilihanSekolahOptions: [
+            "- Pilih -",
+            "TKK BPK PENABUR 246",
+            "TKK BPK PENABUR 638",
+            "TK BPK PENABUR Holis",
+            "TKK BPK PENABUR Paskal",
+            "TKK BPK PENABUR Guntur",
+            "TKK BPK PENABUR Singgasana",
+            "TKK BPK PENABUR KBP",
+            "TKK BPK PENABUR Banda",
+            "Luar BPK",
+        ],
+        programPilihanOptions: [
+            "- Pilih -",
+            "Enriched Bilingual Programme (EBP)",
+            "Early Childhood Programme (ECP)",
+            "Luar BPK",
+        ],
     },
     sd: {
         label: "SD",
@@ -34,6 +62,7 @@ const jenjangConfig: Record<Jenjang, JenjangConfig> = {
             "Durasi waktu pendaftaran adalah 10 menit, mohon mempersiapkan data No. SPB (untuk siswa BPK), NISN, NIK, Nama sesuai Akte Lahir, No HP, Tempat/Tanggal Lahir, Alamat, Sekolah Asal, Nama Ayah Ibu dan Email sebelum melakukan pendaftaran",
         ],
         asalSekolahOptions:    ["- Pilih -", "TKK BPK PENABUR", "Luar BPK"],
+        programAsalOptions:    ["Reguler"],
         pilihanSekolahOptions: ["- Pilih -", "SDK 1 BPK PENABUR", "SDK 2 BPK PENABUR", "SDK 3 BPK PENABUR", "Luar BPK"],
         programPilihanOptions: ["- Pilih -", "Classical", "Reguler"],
     },
@@ -46,6 +75,7 @@ const jenjangConfig: Record<Jenjang, JenjangConfig> = {
             "Durasi waktu pendaftaran adalah 10 menit, mohon mempersiapkan data SPB(untuk siswa BPK), NISN, NIK, Nama sesuai Akte Lahir, No. HP, Tempat/Tanggal Lahir, Alamat, Sekolah Asal, Nama Ayah Ibu dan Email sebelum melakukan pendaftaran",
         ],
         asalSekolahOptions:    ["- Pilih -", "SDK BPK PENABUR", "Luar BPK"],
+        programAsalOptions:    ["Reguler"],
         pilihanSekolahOptions: ["- Pilih -", "SMPK 1 BPK PENABUR", "SMPK 2 BPK PENABUR", "SMPK 3 BPK PENABUR", "Luar BPK"],
         programPilihanOptions: ["- Pilih -", "Reguler", "Bilingual"],
     },
@@ -59,6 +89,7 @@ const jenjangConfig: Record<Jenjang, JenjangConfig> = {
             "Durasi waktu pendaftaran adalah 10 menit, mohon mempersiapkan data SPB(untuk siswa BPK), NISN, NIK, Nama sesuai Akte Lahir, No. HP, Tempat/Tanggal Lahir, Alamat, Sekolah Asal, Nama Ayah Ibu dan Email sebelum melakukan pendaftaran",
         ],
         asalSekolahOptions:    ["- Pilih -", "SMPK BPK PENABUR", "Luar BPK"],
+        programAsalOptions:    ["Reguler"],
         pilihanSekolahOptions: ["- Pilih -", "SMAK 1 BPK PENABUR", "SMAK 2 BPK PENABUR", "SMAK 3 BPK PENABUR", "Luar BPK"],
         programPilihanOptions: ["- Pilih -", "Reguler", "IPA", "Bilingual", "LSP", "DCP"],
     },
@@ -94,8 +125,14 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
     const [pilihan2,    setPilihan2]        = useState("- Pilih -");
     const [program2,    setProgram2]        = useState("- Pilih -");
 
+    const isSelected    = (v: string) => v !== "- Pilih -" && v !== "-" && v.trim() !== "";
+    const isStep1Valid  = isSelected(asalSekolah) && isSelected(programAsal) &&
+                          isSelected(pilihan1) && isSelected(program1) &&
+                          isSelected(pilihan2) && isSelected(program2);
+
     const goNext = (e: React.FormEvent) => {
         e.preventDefault();
+        if (!isStep1Valid) return;
         setCurrentStep(2);
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
@@ -174,7 +211,9 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
                                             ))}
                                         </SelectField>
                                         <SelectField label="Program" required value={programAsal} onChange={setProgramAsal}>
-                                            <option>Reguler</option>
+                                            {config.programAsalOptions.map((opt) => (
+                                                <option key={opt}>{opt}</option>
+                                            ))}
                                         </SelectField>
                                     </div>
                                 </section>
@@ -209,7 +248,8 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
 
                                 <button
                                     type="submit"
-                                    className="w-full bg-gray-900 hover:bg-black text-white font-medium py-4 rounded-md transition-colors flex items-center justify-center gap-2"
+                                    disabled={!isStep1Valid}
+                                    className="w-full bg-gray-900 hover:bg-black text-white font-medium py-4 rounded-md transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:hover:bg-gray-400 disabled:cursor-not-allowed"
                                 >
                                     Berikutnya
                                     <span>→</span>

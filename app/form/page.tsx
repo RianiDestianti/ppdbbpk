@@ -53,6 +53,28 @@ const jenjangConfig: Record<Jenjang, JenjangConfig> = {
             "Early Childhood Programme (ECP)",
             "Luar BPK",
         ],
+        sumbanganOptions: [
+            "Rp. 0",
+            "Rp. 100.000",
+            "Rp. 200.000",
+            "Rp. 300.000",
+            "Rp. 400.000",
+            "Rp. 500.000",
+            "Rp. 600.000",
+            "Rp. 700.000",
+            "Rp. 800.000",
+            "Rp. 900.000",
+            "Rp. 1.000.000",
+            "Rp. 1.500.000",
+            "Rp. 2.000.000",
+            "Rp. 2.500.000",
+            "Rp. 3.000.000",
+            "Rp. 3.500.000",
+            "Rp. 4.000.000",
+            "Rp. 4.500.000",
+            "Rp. 5.000.000",
+            "Lainnya",
+        ],
     },
     sd: {
         label: "SD",
@@ -65,6 +87,7 @@ const jenjangConfig: Record<Jenjang, JenjangConfig> = {
         programAsalOptions:    ["Reguler"],
         pilihanSekolahOptions: ["- Pilih -", "SDK 1 BPK PENABUR", "SDK 2 BPK PENABUR", "SDK 3 BPK PENABUR", "Luar BPK"],
         programPilihanOptions: ["- Pilih -", "Classical", "Reguler"],
+        sumbanganOptions:      ["Rp. 0", "Rp. 1.000.000", "Rp. 5.000.000", "Rp. 10.000.000", "Rp. 25.000.000", "Rp. 50.000.000", "Lainnya"],
     },
     smp: {
         label: "SMP",
@@ -78,6 +101,7 @@ const jenjangConfig: Record<Jenjang, JenjangConfig> = {
         programAsalOptions:    ["Reguler"],
         pilihanSekolahOptions: ["- Pilih -", "SMPK 1 BPK PENABUR", "SMPK 2 BPK PENABUR", "SMPK 3 BPK PENABUR", "Luar BPK"],
         programPilihanOptions: ["- Pilih -", "Reguler", "Bilingual"],
+        sumbanganOptions:      ["Rp. 0", "Rp. 1.000.000", "Rp. 5.000.000", "Rp. 10.000.000", "Rp. 25.000.000", "Rp. 50.000.000", "Lainnya"],
     },
     sma: {
         label: "SMA",
@@ -92,6 +116,7 @@ const jenjangConfig: Record<Jenjang, JenjangConfig> = {
         programAsalOptions:    ["Reguler"],
         pilihanSekolahOptions: ["- Pilih -", "SMAK 1 BPK PENABUR", "SMAK 2 BPK PENABUR", "SMAK 3 BPK PENABUR", "Luar BPK"],
         programPilihanOptions: ["- Pilih -", "Reguler", "IPA", "Bilingual", "LSP", "DCP"],
+        sumbanganOptions:      ["Rp. 0", "Rp. 1.000.000", "Rp. 5.000.000", "Rp. 10.000.000", "Rp. 25.000.000", "Rp. 50.000.000", "Lainnya"],
     },
 };
 
@@ -266,6 +291,7 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
                             program1={program1}
                             pilihan2={pilihan2}
                             program2={program2}
+                            sumbanganOptions={config.sumbanganOptions}
                             onBack={goBack}
                         />
                     )}
@@ -284,6 +310,7 @@ function FormStep2({
     program1,
     pilihan2,
     program2,
+    sumbanganOptions,
     onBack,
 }: {
     asalSekolah: string;
@@ -292,6 +319,7 @@ function FormStep2({
     program1: string;
     pilihan2: string;
     program2: string;
+    sumbanganOptions: string[];
     onBack: () => void;
 }) {
     const dispatch                                  = useAppDispatch();
@@ -495,13 +523,9 @@ function FormStep2({
                                 onChange={(e) => setSumbangan(e.target.value)}
                                 className="w-full border border-gray-300 rounded-md px-3 py-2.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                             >
-                                <option>Rp. 0</option>
-                                <option>Rp. 1.000.000</option>
-                                <option>Rp. 5.000.000</option>
-                                <option>Rp. 10.000.000</option>
-                                <option>Rp. 25.000.000</option>
-                                <option>Rp. 50.000.000</option>
-                                <option>Lainnya</option>
+                                {sumbanganOptions.map((opt) => (
+                                    <option key={opt}>{opt}</option>
+                                ))}
                             </select>
                         </div>
                         <div>

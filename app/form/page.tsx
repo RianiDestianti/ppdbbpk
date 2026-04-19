@@ -1,25 +1,98 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
 import { saveSiswa } from "@/store/controllers/siswaController";
 import { resetResponse } from "@/store/slices/siswaSlice";
 import { initialFormSiswa, SiswaFormData } from "@/store/types/SiswaTypes";
+import { Jenjang, JenjangConfig } from "@/store/types/JenjangTypes";
 import { handleChangeInput } from "@/libs/general";
 import Swal from "sweetalert2";
 
 const steps = [1, 2];
 
+const jenjangConfig: Record<Jenjang, JenjangConfig> = {
+    tk: {
+        label: "TK",
+        peringatan: [
+            "Data yang di input dalam form pendaftaran ini akan digunakan sebagai database siswa untuk sekolah dan dinas pendidikan (DAPODIKMEN), Kesalahan penginputan data di form ini menjadi tanggung jawab peserta didik",
+            "Pendaftaran hanya boleh dilakukan 1 kali untuk 1 orang siswa.",
+            "Durasi waktu pendaftaran adalah 10 menit, mohon mempersiapkan data no. SPB (untuk siswa BPK), NISN, NIK, Nama sesuai Akte Lahir, No. HP, Tempat/Tanggal Lahir, Alamat, Sekolah Asal, Nama Ayah Ibu dan Email sebelum melakukan pendaftaran",
+        ],
+        asalSekolahOptions:    ["- Pilih -", "Luar BPK"],
+        pilihanSekolahOptions: ["- Pilih -", "TKK 1 BPK PENABUR", "TKK 2 BPK PENABUR", "TKK 3 BPK PENABUR", "Luar BPK"],
+        programPilihanOptions: ["- Pilih -", "Reguler"],
+    },
+    sd: {
+        label: "SD",
+        peringatan: [
+            "Data yang di input dalam form pendaftaran ini akan digunakan sebagai database siswa untuk sekolah dan dinas pendidikan (DAPODIKMEN), Kesalahan penginputan data di form ini menjadi tanggung jawab peserta didik",
+            "Pendaftaran hanya boleh dilakukan 1 kali untuk 1 orang siswa.",
+            "Durasi waktu pendaftaran adalah 10 menit, mohon mempersiapkan data No. SPB (untuk siswa BPK), NISN, NIK, Nama sesuai Akte Lahir, No HP, Tempat/Tanggal Lahir, Alamat, Sekolah Asal, Nama Ayah Ibu dan Email sebelum melakukan pendaftaran",
+        ],
+        asalSekolahOptions:    ["- Pilih -", "TKK BPK PENABUR", "Luar BPK"],
+        pilihanSekolahOptions: ["- Pilih -", "SDK 1 BPK PENABUR", "SDK 2 BPK PENABUR", "SDK 3 BPK PENABUR", "Luar BPK"],
+        programPilihanOptions: ["- Pilih -", "Classical", "Reguler"],
+    },
+    smp: {
+        label: "SMP",
+        peringatan: [
+            "Data yang di input dalam form pendaftaran ini akan digunakan sebagai database siswa untuk sekolah dan dinas pendidikan (DAPODIKMEN), Kesalahan penginputan data di form ini menjadi tanggung jawab peserta didik",
+            "Pendaftaran hanya boleh dilakukan 1 kali untuk 1 orang siswa.",
+            "Pilihan program studi tertentu (Bilingual) akan ditentukan oleh hasil Psikotes/Tes Masuk Khusus",
+            "Durasi waktu pendaftaran adalah 10 menit, mohon mempersiapkan data SPB(untuk siswa BPK), NISN, NIK, Nama sesuai Akte Lahir, No. HP, Tempat/Tanggal Lahir, Alamat, Sekolah Asal, Nama Ayah Ibu dan Email sebelum melakukan pendaftaran",
+        ],
+        asalSekolahOptions:    ["- Pilih -", "SDK BPK PENABUR", "Luar BPK"],
+        pilihanSekolahOptions: ["- Pilih -", "SMPK 1 BPK PENABUR", "SMPK 2 BPK PENABUR", "SMPK 3 BPK PENABUR", "Luar BPK"],
+        programPilihanOptions: ["- Pilih -", "Reguler", "Bilingual"],
+    },
+    sma: {
+        label: "SMA",
+        peringatan: [
+            "Data yang di input dalam form pendaftaran ini akan digunakan sebagai database siswa untuk sekolah dan dinas pendidikan (DAPODIKMEN), Kesalahan penginputan data di form ini menjadi tanggung jawab peserta didik",
+            "Pendaftaran hanya boleh dilakukan 1 kali untuk 1 orang siswa.",
+            "Untuk program DCP SMAK 1 BPK PENABUR hanya untuk siswa DCP dari SMPK 1 BPK PENABUR",
+            "Pilihan program studi tertentu (IPA/Bilingual/LSP) akan ditentukan oleh hasil Psikotes/Tes Masuk Khusus",
+            "Durasi waktu pendaftaran adalah 10 menit, mohon mempersiapkan data SPB(untuk siswa BPK), NISN, NIK, Nama sesuai Akte Lahir, No. HP, Tempat/Tanggal Lahir, Alamat, Sekolah Asal, Nama Ayah Ibu dan Email sebelum melakukan pendaftaran",
+        ],
+        asalSekolahOptions:    ["- Pilih -", "SMPK BPK PENABUR", "Luar BPK"],
+        pilihanSekolahOptions: ["- Pilih -", "SMAK 1 BPK PENABUR", "SMAK 2 BPK PENABUR", "SMAK 3 BPK PENABUR", "Luar BPK"],
+        programPilihanOptions: ["- Pilih -", "Reguler", "IPA", "Bilingual", "LSP", "DCP"],
+    },
+};
+
+function parseJenjang(value: string | null): Jenjang {
+    const v = (value ?? "").toLowerCase();
+    return v === "tk" || v === "sd" || v === "smp" || v === "sma" ? v : "sd";
+}
+
 export default function FormPage() {
+    return (
+        <Suspense fallback={null}>
+            <FormPageRouter />
+        </Suspense>
+    );
+}
+
+function FormPageRouter() {
+    const searchParams         = useSearchParams();
+    const jenjang              = parseJenjang(searchParams.get("jenjang"));
+    return <FormPageContent key={jenjang} jenjang={jenjang} />;
+}
+
+function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
+    const config                            = jenjangConfig[jenjang];
+
     const [currentStep, setCurrentStep]     = useState(1);
     const [asalSekolah, setAsalSekolah]     = useState("- Pilih -");
     const [programAsal, setProgramAsal]     = useState("Reguler");
-    const [pilihan1,    setPilihan1]        = useState("SDK 1 BPK PENABUR");
-    const [program1,    setProgram1]        = useState("Classical");
-    const [pilihan2,    setPilihan2]        = useState("Luar BPK");
-    const [program2,    setProgram2]        = useState("Luar BPK");
+    const [pilihan1,    setPilihan1]        = useState("- Pilih -");
+    const [program1,    setProgram1]        = useState("- Pilih -");
+    const [pilihan2,    setPilihan2]        = useState("- Pilih -");
+    const [program2,    setProgram2]        = useState("- Pilih -");
 
     const goNext = (e: React.FormEvent) => {
         e.preventDefault();
@@ -39,7 +112,7 @@ export default function FormPage() {
             <main className="flex-1 bg-gray-50">
                 <div className="max-w-5xl mx-auto px-6 py-10">
                     <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-8 text-center">
-                        Formulir Pendaftaran Online Jenjang SD
+                        Formulir Pendaftaran Online Jenjang {config.label}
                         <br />
                         SPMB BPK PENABUR BANDUNG 2026/2027
                     </h1>
@@ -83,13 +156,9 @@ export default function FormPage() {
                                     Peringatan
                                 </h2>
                                 <ol className="list-decimal list-inside space-y-1.5 text-sm leading-relaxed">
-                                    <li>
-                                        Data yang di input dalam form pendaftaran ini akan digunakan sebagai database siswa untuk sekolah dan dinas pendidikan (DAPODIKMEN). Kesalahan penginputan data di luar ini menjadi tanggung jawab peserta didik.
-                                    </li>
-                                    <li>Pendaftaran hanya boleh dilakukan 1 kali untuk 1 orang siswa.</li>
-                                    <li>
-                                        Durasi waktu pendaftaran adalah 10 menit, mohon mempersiapkan data No. SPB (untuk siswa BPK), NISN, NIK, Nama sesuai Akte Lahir, No HP, Tempat/Tanggal Lahir, Alamat, Sekolah Asal, Nama Ayah Ibu dan Email sebelum melakukan pendaftaran.
-                                    </li>
+                                    {config.peringatan.map((text, i) => (
+                                        <li key={i}>{text}</li>
+                                    ))}
                                 </ol>
                             </div>
 
@@ -100,9 +169,9 @@ export default function FormPage() {
                                     </h2>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <SelectField label="Asal Sekolah" required value={asalSekolah} onChange={setAsalSekolah}>
-                                            <option>- Pilih -</option>
-                                            <option>Luar BPK</option>
-                                            <option>TKK BPK PENABUR</option>
+                                            {config.asalSekolahOptions.map((opt) => (
+                                                <option key={opt}>{opt}</option>
+                                            ))}
                                         </SelectField>
                                         <SelectField label="Program" required value={programAsal} onChange={setProgramAsal}>
                                             <option>Reguler</option>
@@ -116,27 +185,24 @@ export default function FormPage() {
                                     </h2>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <SelectField label="Pilihan 1" required value={pilihan1} onChange={setPilihan1}>
-                                            <option>- Pilih -</option>
-                                            <option>SDK 1 BPK PENABUR</option>
-                                            <option>SDK 2 BPK PENABUR</option>
-                                            <option>SDK 3 BPK PENABUR</option>
+                                            {config.pilihanSekolahOptions.map((opt) => (
+                                                <option key={opt}>{opt}</option>
+                                            ))}
                                         </SelectField>
                                         <SelectField label="Program" required value={program1} onChange={setProgram1}>
-                                            <option>- Pilih -</option>
-                                            <option>Classical</option>
-                                            <option>Reguler</option>
+                                            {config.programPilihanOptions.map((opt) => (
+                                                <option key={opt}>{opt}</option>
+                                            ))}
                                         </SelectField>
                                         <SelectField label="Pilihan 2" required value={pilihan2} onChange={setPilihan2}>
-                                            <option>- Pilih -</option>
-                                            <option>Luar BPK</option>
-                                            <option>SDK 1 BPK PENABUR</option>
-                                            <option>SDK 2 BPK PENABUR</option>
+                                            {config.pilihanSekolahOptions.map((opt) => (
+                                                <option key={opt}>{opt}</option>
+                                            ))}
                                         </SelectField>
                                         <SelectField label="Program" required value={program2} onChange={setProgram2}>
-                                            <option>- Pilih -</option>
-                                            <option>Luar BPK</option>
-                                            <option>Classical</option>
-                                            <option>Reguler</option>
+                                            {config.programPilihanOptions.map((opt) => (
+                                                <option key={opt}>{opt}</option>
+                                            ))}
                                         </SelectField>
                                     </div>
                                 </section>

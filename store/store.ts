@@ -1,9 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit"
 import siswaSlice from "./slices/siswaSlice"
+import authSlice from "./slices/authSlice"
 
 export const store = configureStore({
     reducer: {
         siswa : siswaSlice,
+        auth  : authSlice,
     }
 })
 

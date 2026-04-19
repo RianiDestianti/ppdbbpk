@@ -1,15 +1,60 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { t } from "@/libs/i18n";
+import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
+import { handleActionLogin } from "@/store/controllers/authController";
+import { handleCleanResponse } from "@/store/slices/authSlice";
+import Swal from "sweetalert2";
 
 export default function SignInPage() {
     const { lang }                = useLanguage();
+    const dispatch                = useAppDispatch();
+    const stateLogin              = useAppSelector((state) => state.auth);
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
+
+    const handleLogin = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!username.trim() || !password.trim()) return;
+        dispatch(handleActionLogin({ username, password }));
+    };
+
+    useEffect(() => {
+        if (stateLogin.responseLogin) {
+            localStorage.setItem("auth-key", stateLogin.responseLogin.key);
+            localStorage.setItem("auth-username", stateLogin.responseLogin.username);
+            localStorage.setItem("auth-nama", stateLogin.responseLogin.nama);
+
+            Swal.fire({
+                icon              : "success",
+                title             : "Login Berhasil",
+                text              : `Selamat datang, ${stateLogin.responseLogin.nama}`,
+                confirmButtonColor: "#dc2626",
+                timer             : 1500,
+                showConfirmButton : false,
+            }).then(() => {
+                dispatch(handleCleanResponse());
+                window.location.href = "/";
+            });
+        }
+    }, [stateLogin.responseLogin, dispatch]);
+
+    useEffect(() => {
+        if (stateLogin.error) {
+            Swal.fire({
+                icon              : "error",
+                title             : "Login Gagal",
+                text              : stateLogin.error,
+                confirmButtonColor: "#dc2626",
+            }).then(() => {
+                dispatch(handleCleanResponse());
+            });
+        }
+    }, [stateLogin.error, dispatch]);
 
     return (
         <>
@@ -98,7 +143,7 @@ export default function SignInPage() {
                                 </svg>
                             </div>
 
-                            <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+                            <form className="space-y-5" onSubmit={handleLogin}>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-2">
                                         {t.signin.username[lang]}
@@ -108,7 +153,8 @@ export default function SignInPage() {
                                         value={username}
                                         onChange={(e) => setUsername(e.target.value)}
                                         placeholder={t.signin.usernamePh[lang]}
-                                        className="w-full px-4 py-3 rounded-lg bg-blue-50 border border-blue-100 focus:bg-white focus:border-[#1976d2] focus:ring-2 focus:ring-blue-200 outline-none text-sm transition"
+                                        disabled={stateLogin.loading}
+                                        className="w-full px-4 py-3 rounded-lg bg-blue-50 border border-blue-100 focus:bg-white focus:border-[#1976d2] focus:ring-2 focus:ring-blue-200 outline-none text-sm transition disabled:opacity-60"
                                     />
                                 </div>
 
@@ -121,19 +167,23 @@ export default function SignInPage() {
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         placeholder="••••••••"
-                                        className="w-full px-4 py-3 rounded-lg bg-blue-50 border border-blue-100 focus:bg-white focus:border-[#1976d2] focus:ring-2 focus:ring-blue-200 outline-none text-sm transition"
+                                        disabled={stateLogin.loading}
+                                        className="w-full px-4 py-3 rounded-lg bg-blue-50 border border-blue-100 focus:bg-white focus:border-[#1976d2] focus:ring-2 focus:ring-blue-200 outline-none text-sm transition disabled:opacity-60"
                                     />
                                 </div>
 
                                 <div className="pt-2">
                                     <button
                                         type="submit"
-                                        className="inline-flex items-center gap-2 bg-[#1976d2] hover:bg-[#1565c0] text-white font-medium px-8 py-3 rounded-lg shadow-md hover:shadow-lg transition"
+                                        disabled={stateLogin.loading}
+                                        className="inline-flex items-center gap-2 bg-[#1976d2] hover:bg-[#1565c0] text-white font-medium px-8 py-3 rounded-lg shadow-md hover:shadow-lg transition disabled:opacity-60 disabled:cursor-not-allowed"
                                     >
-                                        {t.signin.button[lang]}
-                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                            <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
+                                        {stateLogin.loading ? "Memproses..." : t.signin.button[lang]}
+                                        {!stateLogin.loading && (
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                        )}
                                     </button>
                                 </div>
 

@@ -53,6 +53,7 @@ const jenjangConfig: Record<Jenjang, JenjangConfig> = {
             "Early Childhood Programme (ECP)",
             "Luar BPK",
         ],
+        sekolahAsalStep2Options: ["- Pilih -", "Lainnya"],
         sumbanganOptions: [
             "Rp. 0",
             "Rp. 100.000",
@@ -86,8 +87,9 @@ const jenjangConfig: Record<Jenjang, JenjangConfig> = {
         asalSekolahOptions:    ["- Pilih -", "TKK BPK PENABUR", "Luar BPK"],
         programAsalOptions:    ["Reguler"],
         pilihanSekolahOptions: ["- Pilih -", "SDK 1 BPK PENABUR", "SDK 2 BPK PENABUR", "SDK 3 BPK PENABUR", "Luar BPK"],
-        programPilihanOptions: ["- Pilih -", "Classical", "Reguler"],
-        sumbanganOptions:      ["Rp. 0", "Rp. 1.000.000", "Rp. 5.000.000", "Rp. 10.000.000", "Rp. 25.000.000", "Rp. 50.000.000", "Lainnya"],
+        programPilihanOptions:   ["- Pilih -", "Classical", "Reguler"],
+        sekolahAsalStep2Options: ["- Pilih -", "TKK BPK PENABUR", "Luar BPK"],
+        sumbanganOptions:        ["Rp. 0", "Rp. 1.000.000", "Rp. 5.000.000", "Rp. 10.000.000", "Rp. 25.000.000", "Rp. 50.000.000", "Lainnya"],
     },
     smp: {
         label: "SMP",
@@ -100,8 +102,9 @@ const jenjangConfig: Record<Jenjang, JenjangConfig> = {
         asalSekolahOptions:    ["- Pilih -", "SDK BPK PENABUR", "Luar BPK"],
         programAsalOptions:    ["Reguler"],
         pilihanSekolahOptions: ["- Pilih -", "SMPK 1 BPK PENABUR", "SMPK 2 BPK PENABUR", "SMPK 3 BPK PENABUR", "Luar BPK"],
-        programPilihanOptions: ["- Pilih -", "Reguler", "Bilingual"],
-        sumbanganOptions:      ["Rp. 0", "Rp. 1.000.000", "Rp. 5.000.000", "Rp. 10.000.000", "Rp. 25.000.000", "Rp. 50.000.000", "Lainnya"],
+        programPilihanOptions:   ["- Pilih -", "Reguler", "Bilingual"],
+        sekolahAsalStep2Options: ["- Pilih -", "SDK BPK PENABUR", "Luar BPK"],
+        sumbanganOptions:        ["Rp. 0", "Rp. 1.000.000", "Rp. 5.000.000", "Rp. 10.000.000", "Rp. 25.000.000", "Rp. 50.000.000", "Lainnya"],
     },
     sma: {
         label: "SMA",
@@ -115,8 +118,9 @@ const jenjangConfig: Record<Jenjang, JenjangConfig> = {
         asalSekolahOptions:    ["- Pilih -", "SMPK BPK PENABUR", "Luar BPK"],
         programAsalOptions:    ["Reguler"],
         pilihanSekolahOptions: ["- Pilih -", "SMAK 1 BPK PENABUR", "SMAK 2 BPK PENABUR", "SMAK 3 BPK PENABUR", "Luar BPK"],
-        programPilihanOptions: ["- Pilih -", "Reguler", "IPA", "Bilingual", "LSP", "DCP"],
-        sumbanganOptions:      ["Rp. 0", "Rp. 1.000.000", "Rp. 5.000.000", "Rp. 10.000.000", "Rp. 25.000.000", "Rp. 50.000.000", "Lainnya"],
+        programPilihanOptions:   ["- Pilih -", "Reguler", "IPA", "Bilingual", "LSP", "DCP"],
+        sekolahAsalStep2Options: ["- Pilih -", "SMPK BPK PENABUR", "Luar BPK"],
+        sumbanganOptions:        ["Rp. 0", "Rp. 1.000.000", "Rp. 5.000.000", "Rp. 10.000.000", "Rp. 25.000.000", "Rp. 50.000.000", "Lainnya"],
     },
 };
 
@@ -291,6 +295,7 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
                             program1={program1}
                             pilihan2={pilihan2}
                             program2={program2}
+                            sekolahAsalStep2Options={config.sekolahAsalStep2Options}
                             sumbanganOptions={config.sumbanganOptions}
                             onBack={goBack}
                         />
@@ -310,6 +315,7 @@ function FormStep2({
     program1,
     pilihan2,
     program2,
+    sekolahAsalStep2Options,
     sumbanganOptions,
     onBack,
 }: {
@@ -319,6 +325,7 @@ function FormStep2({
     program1: string;
     pilihan2: string;
     program2: string;
+    sekolahAsalStep2Options: string[];
     sumbanganOptions: string[];
     onBack: () => void;
 }) {
@@ -333,9 +340,16 @@ function FormStep2({
     useEffect(() => {
         if (response?.status === 200) {
             Swal.fire({
-                icon  : 'success',
-                title : 'Pendaftaran Berhasil',
-                text  : `No. Registrasi: ${response.data.noreg}`,
+                icon              : 'success',
+                title             : 'Pendaftaran Berhasil',
+                html              : `
+                    <p style="margin:0 0 8px 0;">No. Registrasi: <b>${response.data.noreg}</b></p>
+                    <p style="margin:0;color:#555;font-size:14px;">
+                        Silahkan cek email Anda untuk melihat informasi pendaftaran lebih lanjut
+                        (No. VA, Username, Password, dll).
+                    </p>
+                `,
+                confirmButtonColor: '#dc2626',
             });
             dispatch(resetResponse());
         } else if (response?.status === 422) {
@@ -465,9 +479,9 @@ function FormStep2({
                                     onChange={(e) => setSekolahAsalSelect(e.target.value)}
                                     className="w-full border border-gray-300 rounded-md px-3 py-2.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                                 >
-                                    <option>- Pilih -</option>
-                                    <option>TKK BPK PENABUR</option>
-                                    <option>Luar BPK</option>
+                                    {sekolahAsalStep2Options.map((opt) => (
+                                        <option key={opt}>{opt}</option>
+                                    ))}
                                 </select>
                                 <input
                                     type="text"

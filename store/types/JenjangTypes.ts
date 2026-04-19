@@ -7,5 +7,6 @@ export type JenjangConfig = {
     programAsalOptions      : string[];
     pilihanSekolahOptions   : string[];
     programPilihanOptions   : string[];
+    sekolahAsalStep2Options : string[];
     sumbanganOptions        : string[];
 };

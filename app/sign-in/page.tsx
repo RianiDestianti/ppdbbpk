@@ -38,7 +38,7 @@ export default function SignInPage() {
                 showConfirmButton : false,
             }).then(() => {
                 dispatch(handleCleanResponse());
-                window.location.href = "/";
+                window.location.href = "/dashboard";
             });
         }
     }, [stateLogin.responseLogin, dispatch]);

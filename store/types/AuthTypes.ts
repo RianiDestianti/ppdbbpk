@@ -17,3 +17,15 @@ export interface DataAuthType {
     pilihan1    : string;
     pilihan2    : string;
 }
+
+export interface ChangePasswordRequest {
+    password_lama        : string;
+    password_baru        : string;
+    konfirmasi_password  : string;
+}
+
+export interface ChangePasswordResponse {
+    status  : number;
+    message : string;
+    data?   : Record<string, string[]>;
+}

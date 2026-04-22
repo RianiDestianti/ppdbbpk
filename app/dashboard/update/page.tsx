@@ -111,6 +111,16 @@ export default function UpdatePendaftarPage() {
             sdr4: encodeSdr(sdrRows[3]),
             sdr5: encodeSdr(sdrRows[4]),
         };
+
+        (["ayah", "ibu", "wali"] as const).forEach((prefix) => {
+            const agamaKey = `agama_${prefix}` as keyof SiswaDetail;
+            const alamatGerejaKey = `alamat_grj_${prefix}` as keyof SiswaDetail;
+
+            if (payload[agamaKey] === "Islam") {
+                payload[alamatGerejaKey] = "";
+            }
+        });
+
         dispatch(updateSiswa(payload));
     };
 
@@ -388,9 +398,22 @@ function OrangTuaBlock({
 }) {
     const f = (name: string) => `${name}_${prefix}` as keyof SiswaDetail;
     const nameKey = (prefix === "wali" ? "nama_wali" : `nama_${prefix}`) as keyof SiswaDetail;
+    const agamaKey = f("agama");
+    const alamatGerejaKey = f("alamat_grj");
+    const selectedAgama = (form[agamaKey] as string) ?? "";
+    const showAlamatGereja = selectedAgama !== "Islam";
 
     const hpKey: keyof SiswaDetail | null =
         prefix === "ayah" ? "no_hp2" : prefix === "ibu" ? "no_hp3" : null;
+
+    const handleAgamaChange = (value: string) => {
+        const agama = value === "- Pilih -" ? "" : value;
+        setField(agamaKey, agama);
+
+        if (agama === "Islam") {
+            setField(alamatGerejaKey, "");
+        }
+    };
 
     return (
         <div>
@@ -403,9 +426,11 @@ function OrangTuaBlock({
                 <Input label="Tempat Lahir" value={(form[f("tempat_lahir")] as string) ?? ""} onChange={(v) => setField(f("tempat_lahir"), v as any)} />
                 <Input label="Tanggal Lahir" type="date" value={(form[f("tgl_lahir")] as string) ?? ""} onChange={(v) => setField(f("tgl_lahir"), v as any)} />
                 <Select label="Kewarganegaraan" options={kewarganegaraanOpts} value={(form[f("kewarganegaraan")] as string) || "- Pilih -"} onChange={(v) => setField(f("kewarganegaraan"), (v === "- Pilih -" ? "" : v) as any)} />
-                <Select label="Agama" options={agamaOptions} value={(form[f("agama")] as string) || "- Pilih -"} onChange={(v) => setField(f("agama"), (v === "- Pilih -" ? "" : v) as any)} />
+                <Select label="Agama" options={agamaOptions} value={selectedAgama || "- Pilih -"} onChange={handleAgamaChange} />
                 <Input label="Gereja" value={(form[f("gereja")] as string) ?? ""} onChange={(v) => setField(f("gereja"), v as any)} />
-                <Input label="Alamat Gereja" value={(form[f("alamat_grj")] as string) ?? ""} onChange={(v) => setField(f("alamat_grj"), v as any)} />
+                {showAlamatGereja && (
+                    <Input label="Alamat Gereja" value={(form[alamatGerejaKey] as string) ?? ""} onChange={(v) => setField(alamatGerejaKey, v)} />
+                )}
                 <Select label="Pendidikan" options={pendidikanOptions} value={(form[f("pendidikan")] as string) || "- Pilih -"} onChange={(v) => setField(f("pendidikan"), (v === "- Pilih -" ? "" : v) as any)} />
                 <Select label="Pekerjaan" options={pekerjaanOptions} value={(form[f("pekerjaan")] as string) || "- Pilih -"} onChange={(v) => setField(f("pekerjaan"), (v === "- Pilih -" ? "" : v) as any)} />
                 <Select label="Penghasilan" options={penghasilanOptions} value={(form[f("penghasilan")] as string) || "- Pilih -"} onChange={(v) => setField(f("penghasilan"), (v === "- Pilih -" ? "" : v) as any)} />

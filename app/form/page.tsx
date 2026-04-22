@@ -13,6 +13,14 @@ import { handleChangeInput } from "@/libs/general";
 import Swal from "sweetalert2";
 
 const steps = [1, 2];
+const tkProgramPilihan2Options = [
+    "- Pilih -",
+    "TODDLER",
+    "Kelompok Bermain",
+    "TK-A",
+    "TK-B",
+    "Luar BPK",
+];
 const tkProgramPilihanBySekolah: Record<string, string[]> = {
     "TKK BPK PENABUR Singgasana": [
         "- Pilih -",
@@ -184,7 +192,7 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
     };
 
     const program1Options = getProgramPilihanOptions(pilihan1);
-    const program2Options = getProgramPilihanOptions(pilihan2);
+    const program2Options = jenjang === "tk" ? tkProgramPilihan2Options : getProgramPilihanOptions(pilihan2);
     const pilihan1Options = jenjang === "tk"
         ? config.pilihanSekolahOptions.filter((opt) => opt !== "Luar BPK")
         : config.pilihanSekolahOptions;

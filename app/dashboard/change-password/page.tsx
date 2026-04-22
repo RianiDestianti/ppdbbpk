@@ -15,11 +15,9 @@ export default function ChangePasswordPage() {
     const router                                      = useRouter();
     const dispatch                                    = useAppDispatch();
     const { changePwLoading, changePwResp }           = useAppSelector((state) => state.auth);
-
     const [passwordLama,       setPasswordLama]       = useState("");
     const [passwordBaru,       setPasswordBaru]       = useState("");
     const [konfirmasiPassword, setKonfirmasiPassword] = useState("");
-
     const [showLama,       setShowLama]               = useState(false);
     const [showBaru,       setShowBaru]               = useState(false);
     const [showKonfirmasi, setShowKonfirmasi]         = useState(false);

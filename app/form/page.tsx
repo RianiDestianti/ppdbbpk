@@ -13,6 +13,26 @@ import { handleChangeInput } from "@/libs/general";
 import Swal from "sweetalert2";
 
 const steps = [1, 2];
+const tkProgramPilihanBySekolah: Record<string, string[]> = {
+    "TKK BPK PENABUR Singgasana": [
+        "- Pilih -",
+        "Enriched Bilingual Programme (EBP)",
+        "Early Childhood Programme (ECP)",
+    ],
+    "TKK BPK PENABUR KBP": [
+        "- Pilih -",
+        "Kelompok Bermain",
+        "TK-A",
+        "TK-B",
+    ],
+    "TKK BPK PENABUR Banda": [
+        "- Pilih -",
+        "Early Years Programme",
+        "Kelompok Bermain",
+        "TK-A",
+        "TK-B",
+    ],
+};
 
 const jenjangConfig: Record<Jenjang, JenjangConfig> = {
     tk: {
@@ -49,9 +69,10 @@ const jenjangConfig: Record<Jenjang, JenjangConfig> = {
         ],
         programPilihanOptions: [
             "- Pilih -",
-            "Enriched Bilingual Programme (EBP)",
-            "Early Childhood Programme (ECP)",
-            "Luar BPK",
+            "TODDLER",
+            "Kelompok Bermain",
+            "TK-A",
+            "TK-B",
         ],
         sekolahAsalStep2Options: ["- Pilih -", "Lainnya"],
         sumbanganOptions: [
@@ -154,10 +175,35 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
     const [pilihan2,    setPilihan2]        = useState("- Pilih -");
     const [program2,    setProgram2]        = useState("- Pilih -");
 
-    const isSelected    = (v: string) => v !== "- Pilih -" && v !== "-" && v.trim() !== "";
+    const getProgramPilihanOptions = (pilihanSekolah: string) => {
+        if (jenjang === "tk") {
+            return tkProgramPilihanBySekolah[pilihanSekolah] ?? config.programPilihanOptions;
+        }
+
+        return config.programPilihanOptions;
+    };
+
+    const program1Options = getProgramPilihanOptions(pilihan1);
+    const program2Options = getProgramPilihanOptions(pilihan2);
+    const pilihan1Options = jenjang === "tk"
+        ? config.pilihanSekolahOptions.filter((opt) => opt !== "Luar BPK")
+        : config.pilihanSekolahOptions;
+    const isSelected      = (v: string) => v !== "- Pilih -" && v !== "-" && v.trim() !== "";
+    const isPilihanValid  = (pilihan: string, options: string[]) => isSelected(pilihan) && options.includes(pilihan);
+    const isProgramValid  = (program: string, options: string[]) => isSelected(program) && options.includes(program);
     const isStep1Valid  = isSelected(asalSekolah) && isSelected(programAsal) &&
-                          isSelected(pilihan1) && isSelected(program1) &&
-                          isSelected(pilihan2) && isSelected(program2);
+                          isPilihanValid(pilihan1, pilihan1Options) && isProgramValid(program1, program1Options) &&
+                          isPilihanValid(pilihan2, config.pilihanSekolahOptions) && isProgramValid(program2, program2Options);
+
+    const handlePilihan1Change = (value: string) => {
+        setPilihan1(value);
+        setProgram1("- Pilih -");
+    };
+
+    const handlePilihan2Change = (value: string) => {
+        setPilihan2(value);
+        setProgram2("- Pilih -");
+    };
 
     const goNext = (e: React.FormEvent) => {
         e.preventDefault();
@@ -252,23 +298,23 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
                                         Pilihan Sekolah
                                     </h2>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <SelectField label="Pilihan 1" required value={pilihan1} onChange={setPilihan1}>
-                                            {config.pilihanSekolahOptions.map((opt) => (
+                                        <SelectField label="Pilihan 1" required value={pilihan1} onChange={handlePilihan1Change}>
+                                            {pilihan1Options.map((opt) => (
                                                 <option key={opt}>{opt}</option>
                                             ))}
                                         </SelectField>
                                         <SelectField label="Program" required value={program1} onChange={setProgram1}>
-                                            {config.programPilihanOptions.map((opt) => (
+                                            {program1Options.map((opt) => (
                                                 <option key={opt}>{opt}</option>
                                             ))}
                                         </SelectField>
-                                        <SelectField label="Pilihan 2" required value={pilihan2} onChange={setPilihan2}>
+                                        <SelectField label="Pilihan 2" required value={pilihan2} onChange={handlePilihan2Change}>
                                             {config.pilihanSekolahOptions.map((opt) => (
                                                 <option key={opt}>{opt}</option>
                                             ))}
                                         </SelectField>
                                         <SelectField label="Program" required value={program2} onChange={setProgram2}>
-                                            {config.programPilihanOptions.map((opt) => (
+                                            {program2Options.map((opt) => (
                                                 <option key={opt}>{opt}</option>
                                             ))}
                                         </SelectField>

@@ -6,11 +6,28 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
 import { saveSiswa } from "@/store/controllers/siswaController";
+import { checkTunggakan } from "@/store/controllers/tunggakanController";
 import { resetResponse } from "@/store/slices/siswaSlice";
+import { resetTunggakan } from "@/store/slices/tunggakanSlice";
 import { initialFormSiswa, SiswaFormData } from "@/store/types/SiswaTypes";
 import { Jenjang, JenjangConfig } from "@/store/types/JenjangTypes";
 import { handleChangeInput } from "@/libs/general";
 import Swal from "sweetalert2";
+
+const TAHUN_AJARAN_MULAI = new Date("2026-07-01");
+const MIN_USIA_TK        = 4;
+
+const hitungUsiaTahun = (tanggalLahir: string, pada: Date) => {
+    const td = new Date(tanggalLahir);
+    if (isNaN(td.getTime())) return -1;
+    let usia = pada.getFullYear() - td.getFullYear();
+    const m  = pada.getMonth() - td.getMonth();
+    if (m < 0 || (m === 0 && pada.getDate() < td.getDate())) usia--;
+    return usia;
+};
+
+const formatTanggalId = (d: Date) =>
+    d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
 
 const steps = [1, 2];
 const tkProgramPilihan2Options = [
@@ -113,8 +130,19 @@ const jenjangConfig: Record<Jenjang, JenjangConfig> = {
             "Pendaftaran hanya boleh dilakukan 1 kali untuk 1 orang siswa.",
             "Durasi waktu pendaftaran adalah 10 menit, mohon mempersiapkan data No. SPB (untuk siswa BPK), NISN, NIK, Nama sesuai Akte Lahir, No HP, Tempat/Tanggal Lahir, Alamat, Sekolah Asal, Nama Ayah Ibu dan Email sebelum melakukan pendaftaran",
         ],
-        asalSekolahOptions:    ["- Pilih -", "TKK BPK PENABUR", "Luar BPK"],
-        programAsalOptions:    ["Reguler"],
+        asalSekolahOptions: [
+            "- Pilih -",
+            "TKK BPK PENABUR 246",
+            "TKK BPK PENABUR 638",
+            "TK BPK PENABUR Holis",
+            "TKK BPK PENABUR Paskal",
+            "TKK BPK PENABUR Guntur",
+            "TKK BPK PENABUR Singgasana",
+            "TKK BPK PENABUR KBP",
+            "TKK BPK PENABUR Banda",
+            "Luar BPK",
+        ],
+        programAsalOptions:    ["Reguler", "bilingual"],
         pilihanSekolahOptions: ["- Pilih -", "SDK 1 BPK PENABUR", "SDK 2 BPK PENABUR", "SDK 3 BPK PENABUR", "Luar BPK"],
         programPilihanOptions:   ["- Pilih -", "Classical", "Reguler"],
         sekolahAsalStep2Options: ["- Pilih -", "TKK BPK PENABUR", "Luar BPK"],
@@ -173,15 +201,22 @@ function FormPageRouter() {
 }
 
 function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
-    const config                            = jenjangConfig[jenjang];
+    const config                                    = jenjangConfig[jenjang];
+    const dispatch                                  = useAppDispatch();
+    const { loading: tunggakanLoading }             = useAppSelector((state) => state.tunggakan);
 
-    const [currentStep, setCurrentStep]     = useState(1);
-    const [asalSekolah, setAsalSekolah]     = useState("- Pilih -");
-    const [programAsal, setProgramAsal]     = useState("Reguler");
-    const [pilihan1,    setPilihan1]        = useState("- Pilih -");
-    const [program1,    setProgram1]        = useState("- Pilih -");
-    const [pilihan2,    setPilihan2]        = useState("- Pilih -");
-    const [program2,    setProgram2]        = useState("- Pilih -");
+    const [currentStep, setCurrentStep]             = useState(1);
+    const [asalSekolah, setAsalSekolah]             = useState("- Pilih -");
+    const [programAsal, setProgramAsal]             = useState("Reguler");
+    const [pilihan1,    setPilihan1]                = useState("- Pilih -");
+    const [program1,    setProgram1]                = useState("- Pilih -");
+    const [pilihan2,    setPilihan2]                = useState("- Pilih -");
+    const [program2,    setProgram2]                = useState("- Pilih -");
+    const [noSpb,       setNoSpb]                   = useState("");
+    const [tanggalLahirAwal, setTanggalLahirAwal]   = useState("");
+
+    const isDariBpk  = asalSekolah.includes("BPK PENABUR");
+    const isTargetTk = jenjang === "tk";
 
     const getProgramPilihanOptions = (pilihanSekolah: string) => {
         if (jenjang === "tk") {
@@ -213,9 +248,99 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
         setProgram2("- Pilih -");
     };
 
-    const goNext = (e: React.FormEvent) => {
+    const goNext = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!isStep1Valid) return;
+
+        if (isTargetTk) {
+            if (!tanggalLahirAwal) {
+                Swal.fire({
+                    icon               : "warning",
+                    title              : "Tanggal Lahir Diperlukan",
+                    text               : "Mohon isi tanggal lahir calon siswa untuk validasi usia minimum TK.",
+                    confirmButtonColor : "#dc2626",
+                });
+                return;
+            }
+            const usia = hitungUsiaTahun(tanggalLahirAwal, TAHUN_AJARAN_MULAI);
+            if (usia < MIN_USIA_TK) {
+                Swal.fire({
+                    icon               : "error",
+                    title              : "Usia Belum Mencukupi",
+                    html               : `
+                        Usia minimum untuk jenjang TK adalah <b>${MIN_USIA_TK} tahun</b> pada saat tahun ajaran dimulai
+                        (<b>${formatTanggalId(TAHUN_AJARAN_MULAI)}</b>).
+                        <br/>Usia calon siswa pada tanggal tersebut: <b>${usia < 0 ? 0 : usia} tahun</b>.
+                    `,
+                    confirmButtonColor : "#dc2626",
+                });
+                return;
+            }
+        }
+
+        if (isDariBpk) {
+            if (!noSpb.trim()) {
+                Swal.fire({
+                    icon               : "warning",
+                    title              : "Nomor SPB Diperlukan",
+                    text               : "Pendaftar dari BPK PENABUR wajib mengisi Nomor SPB.",
+                    confirmButtonColor : "#dc2626",
+                });
+                return;
+            }
+
+            try {
+                const result = await dispatch(checkTunggakan({ noSpb: noSpb.trim() })).unwrap();
+
+                if (result.status === 404 || !result.data) {
+                    Swal.fire({
+                        icon               : "error",
+                        title              : "Nomor SPB Tidak Ditemukan",
+                        text               : "Nomor SPB tidak dikenali sistem. Mohon periksa kembali Nomor SPB Anda.",
+                        confirmButtonColor : "#dc2626",
+                    });
+                    dispatch(resetTunggakan());
+                    return;
+                }
+
+                const adaTunggakan = result.data.tunggakan &&
+                                     result.data.tunggakan !== "0" &&
+                                     result.data.tunggakan.toLowerCase() !== "lunas";
+
+                if (adaTunggakan) {
+                    const d = result.data;
+                    await Swal.fire({
+                        icon               : "warning",
+                        title              : "Masih Ada Tunggakan",
+                        html               : `
+                            <div style="text-align:left;font-size:14px">
+                                <p style="margin:4px 0"><b>Nama:</b> ${d.nama}</p>
+                                <p style="margin:4px 0"><b>Nomor SPB:</b> ${d.nospb}</p>
+                                <p style="margin:4px 0"><b>Tunggakan:</b> ${d.tunggakan}</p>
+                                ${d.keterangan ? `<p style="margin:4px 0"><b>Keterangan:</b> ${d.keterangan}</p>` : ""}
+                                <hr style="margin:12px 0"/>
+                                <p>Silakan hubungi admin sekolah untuk melunasi tunggakan terlebih dahulu sebelum melanjutkan pendaftaran.</p>
+                            </div>
+                        `,
+                        confirmButtonText  : "Tutup",
+                        confirmButtonColor : "#dc2626",
+                    });
+                    dispatch(resetTunggakan());
+                    return;
+                }
+
+                dispatch(resetTunggakan());
+            } catch {
+                Swal.fire({
+                    icon               : "error",
+                    title              : "Gagal Memeriksa Tunggakan",
+                    text               : "Terjadi kesalahan saat menghubungi server. Silakan coba lagi.",
+                    confirmButtonColor : "#dc2626",
+                });
+                return;
+            }
+        }
+
         setCurrentStep(2);
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
@@ -298,6 +423,40 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
                                                 <option key={opt}>{opt}</option>
                                             ))}
                                         </SelectField>
+                                        {isDariBpk && (
+                                            <div className="md:col-span-2">
+                                                <label className="block text-sm text-gray-700 mb-2">
+                                                    Nomor SPB
+                                                    <span className="text-red-500 ml-1">*</span>
+                                                </label>
+                                                <p className="text-xs italic text-gray-500 -mt-1 mb-1.5">
+                                                    Wajib diisi untuk pendaftar dari BPK PENABUR (untuk pengecekan tunggakan)
+                                                </p>
+                                                <input
+                                                    type="text"
+                                                    value={noSpb}
+                                                    onChange={(e) => setNoSpb(e.target.value)}
+                                                    className="w-full border border-gray-300 rounded-md px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                                />
+                                            </div>
+                                        )}
+                                        {isTargetTk && (
+                                            <div className="md:col-span-2">
+                                                <label className="block text-sm text-gray-700 mb-2">
+                                                    Tanggal Lahir Calon Siswa
+                                                    <span className="text-red-500 ml-1">*</span>
+                                                </label>
+                                                <p className="text-xs italic text-gray-500 -mt-1 mb-1.5">
+                                                    Minimum usia {MIN_USIA_TK} tahun pada {formatTanggalId(TAHUN_AJARAN_MULAI)} (awal tahun ajaran)
+                                                </p>
+                                                <input
+                                                    type="date"
+                                                    value={tanggalLahirAwal}
+                                                    onChange={(e) => setTanggalLahirAwal(e.target.value)}
+                                                    className="w-full border border-gray-300 rounded-md px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                 </section>
 
@@ -331,11 +490,11 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
 
                                 <button
                                     type="submit"
-                                    disabled={!isStep1Valid}
+                                    disabled={!isStep1Valid || tunggakanLoading}
                                     className="w-full bg-gray-900 hover:bg-black text-white font-medium py-4 rounded-md transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:hover:bg-gray-400 disabled:cursor-not-allowed"
                                 >
-                                    Berikutnya
-                                    <span>→</span>
+                                    {tunggakanLoading ? "Memeriksa Tunggakan..." : "Berikutnya"}
+                                    {!tunggakanLoading && <span>→</span>}
                                 </button>
                             </form>
                         </>
@@ -349,6 +508,8 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
                             program1={program1}
                             pilihan2={pilihan2}
                             program2={program2}
+                            noSpb={noSpb}
+                            tanggalLahirAwal={tanggalLahirAwal}
                             sekolahAsalStep2Options={config.sekolahAsalStep2Options}
                             sumbanganOptions={config.sumbanganOptions}
                             onBack={goBack}
@@ -369,6 +530,8 @@ function FormStep2({
     program1,
     pilihan2,
     program2,
+    noSpb,
+    tanggalLahirAwal,
     sekolahAsalStep2Options,
     sumbanganOptions,
     onBack,
@@ -379,13 +542,18 @@ function FormStep2({
     program1: string;
     pilihan2: string;
     program2: string;
+    noSpb: string;
+    tanggalLahirAwal: string;
     sekolahAsalStep2Options: string[];
     sumbanganOptions: string[];
     onBack: () => void;
 }) {
     const dispatch                                  = useAppDispatch();
     const { loading, response }                     = useAppSelector((state) => state.siswa);
-    const [formData, setFormData]                   = useState<SiswaFormData>({ ...initialFormSiswa });
+    const [formData, setFormData]                   = useState<SiswaFormData>({
+        ...initialFormSiswa,
+        tanggalLahir: tanggalLahirAwal || initialFormSiswa.tanggalLahir,
+    });
     const [jenisKelamin, setJenisKelamin]           = useState("");
     const [sekolahAsalSelect, setSekolahAsalSelect] = useState("- Pilih -");
     const [sumbangan, setSumbangan]                 = useState("Rp. 0");
@@ -437,6 +605,7 @@ function FormStep2({
             program1,
             pilihan2,
             program2,
+            noSpb,
         }));
     };
 

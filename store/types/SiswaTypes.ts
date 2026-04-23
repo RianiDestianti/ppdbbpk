@@ -22,6 +22,7 @@ export interface SiswaPayload {
     program1        : string
     pilihan2        : string
     program2        : string
+    noSpb          ?: string
 }
 
 export interface SiswaState {

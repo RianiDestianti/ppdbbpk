@@ -29,9 +29,9 @@ export default function RootPage() {
 
                         <a
                             href="/information"
-                            className="inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-700 px-4 py-3 text-white shadow-md transition hover:shadow-lg sm:w-auto sm:justify-start sm:rounded-full sm:pl-2 sm:pr-6 sm:py-2"
+                            className="inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-gradient-to-br from-[#1976d2] to-[#0d47a1] px-4 py-3 text-white shadow-md transition hover:shadow-lg sm:w-auto sm:justify-start sm:rounded-full sm:pl-2 sm:pr-6 sm:py-2"
                         >
-                            <span className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white text-purple-700 flex items-center justify-center font-serif italic text-xl font-bold">
+                            <span className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white text-[#1976d2] flex items-center justify-center font-serif italic text-xl font-bold">
                                 i
                             </span>
                             <span className="font-semibold tracking-wide text-xs leading-tight whitespace-pre-line sm:text-sm">

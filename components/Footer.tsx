@@ -8,7 +8,7 @@ export default function Footer() {
     const { lang } = useLanguage();
 
     return (
-        <footer className="mt-16 bg-[#1e3a5f] text-gray-200">
+        <footer className="mt-16 bg-[#0d47a1] text-gray-200">
             <div className="max-w-7xl mx-auto px-6 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
                     <div>

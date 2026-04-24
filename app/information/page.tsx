@@ -37,7 +37,7 @@ export default function InformationPage() {
                             ))}
                         </ol>
 
-                        <div className="mt-8 bg-sky-500 text-white rounded-md p-5">
+                        <div className="mt-8 bg-[#1976d2] text-white rounded-md p-5">
                             <div className="flex items-center gap-2 font-semibold mb-2">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <circle cx="12" cy="12" r="10" />

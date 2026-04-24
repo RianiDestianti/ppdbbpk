@@ -68,13 +68,13 @@ export default function Navbar() {
                     </Link>
 
                     <nav className="hidden lg:flex items-center gap-6 text-sm xl:gap-8">
-                        <Link href="/" className="text-gray-700 hover:text-red-600">
+                        <Link href="/" className="text-gray-700 hover:text-[#1976d2]">
                             {t.nav.home[lang]}
                         </Link>
-                        <Link href="/faq" className="text-gray-700 hover:text-red-600">
+                        <Link href="/faq" className="text-gray-700 hover:text-[#1976d2]">
                             {t.nav.faq[lang]}
                         </Link>
-                        <Link href="/information" className="text-gray-700 hover:text-red-600">
+                        <Link href="/information" className="text-gray-700 hover:text-[#1976d2]">
                             {t.nav.info[lang]}
                         </Link>
 
@@ -83,7 +83,7 @@ export default function Navbar() {
                             onMouseEnter={() => setShowFormulir(true)}
                             onMouseLeave={() => setShowFormulir(false)}
                         >
-                            <button className="text-gray-700 hover:text-red-600 flex items-center gap-1">
+                            <button className="text-gray-700 hover:text-[#1976d2] flex items-center gap-1">
                                 {t.nav.formulir[lang]}
                                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" strokeWidth="1.5">
                                     <path d="M1 3l4 4 4-4" />
@@ -104,7 +104,7 @@ export default function Navbar() {
                             )}
                         </div>
 
-                        <Link href={authHref} className="text-gray-700 hover:text-red-600">
+                        <Link href={authHref} className="text-gray-700 hover:text-[#1976d2]">
                             {authLabel}
                         </Link>
                     </nav>
@@ -130,19 +130,19 @@ export default function Navbar() {
                 {mobileOpen && (
                     <div className="border-t border-gray-200 bg-white shadow-sm lg:hidden">
                         <nav className="flex flex-col gap-1 px-4 py-3 text-sm">
-                            <Link href="/" onClick={closeMobile} className="rounded-md px-1 py-2.5 text-gray-700 hover:bg-gray-50 hover:text-red-600">
+                            <Link href="/" onClick={closeMobile} className="rounded-md px-1 py-2.5 text-gray-700 hover:bg-gray-50 hover:text-[#1976d2]">
                                 {t.nav.home[lang]}
                             </Link>
-                            <Link href="/faq" onClick={closeMobile} className="rounded-md px-1 py-2.5 text-gray-700 hover:bg-gray-50 hover:text-red-600">
+                            <Link href="/faq" onClick={closeMobile} className="rounded-md px-1 py-2.5 text-gray-700 hover:bg-gray-50 hover:text-[#1976d2]">
                                 {t.nav.faq[lang]}
                             </Link>
-                            <Link href="/information" onClick={closeMobile} className="rounded-md px-1 py-2.5 text-gray-700 hover:bg-gray-50 hover:text-red-600">
+                            <Link href="/information" onClick={closeMobile} className="rounded-md px-1 py-2.5 text-gray-700 hover:bg-gray-50 hover:text-[#1976d2]">
                                 {t.nav.info[lang]}
                             </Link>
 
                             <button
                                 onClick={() => setMobileFormulir((v) => !v)}
-                                className="flex items-center justify-between rounded-md px-1 py-2.5 text-gray-700 hover:bg-gray-50 hover:text-red-600"
+                                className="flex items-center justify-between rounded-md px-1 py-2.5 text-gray-700 hover:bg-gray-50 hover:text-[#1976d2]"
                                 aria-expanded={mobileFormulir}
                             >
                                 <span>{t.nav.formulir[lang]}</span>
@@ -157,7 +157,7 @@ export default function Navbar() {
                                             key={item.href}
                                             href={item.href}
                                             onClick={closeMobile}
-                                            className="rounded-md px-1 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-red-600"
+                                            className="rounded-md px-1 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-[#1976d2]"
                                         >
                                             {item.label}
                                         </Link>
@@ -165,7 +165,7 @@ export default function Navbar() {
                                 </div>
                             )}
 
-                            <Link href={authHref} onClick={closeMobile} className="rounded-md px-1 py-2.5 text-gray-700 hover:bg-gray-50 hover:text-red-600">
+                            <Link href={authHref} onClick={closeMobile} className="rounded-md px-1 py-2.5 text-gray-700 hover:bg-gray-50 hover:text-[#1976d2]">
                                 {authLabel}
                             </Link>
                         </nav>
@@ -188,7 +188,7 @@ export default function Navbar() {
             {showTop && (
                 <button
                     onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                    className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-30 flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-md bg-red-600 text-white shadow-lg hover:bg-red-700"
+                    className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-30 flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-md bg-[#1976d2] text-white shadow-lg hover:bg-[#0d47a1]"
                     aria-label="Scroll to top"
                 >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">

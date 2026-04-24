@@ -12,7 +12,7 @@ export default function LanguageToggle() {
                     onClick={() => setLang("id")}
                     className={`inline-flex min-w-[88px] items-center justify-center gap-2 border rounded-md px-3 sm:px-4 py-2 transition ${
                         lang === "id"
-                            ? "border-red-600 bg-red-50 text-red-700"
+                            ? "border-[#1976d2] bg-blue-50 text-[#1976d2]"
                             : "border-gray-300 hover:bg-gray-50"
                     }`}
                 >
@@ -23,7 +23,7 @@ export default function LanguageToggle() {
                     onClick={() => setLang("en")}
                     className={`inline-flex min-w-[88px] items-center justify-center gap-2 border rounded-md px-3 sm:px-4 py-2 transition ${
                         lang === "en"
-                            ? "border-red-600 bg-red-50 text-red-700"
+                            ? "border-[#1976d2] bg-blue-50 text-[#1976d2]"
                             : "border-gray-300 hover:bg-gray-50"
                     }`}
                 >

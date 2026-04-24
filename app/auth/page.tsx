@@ -59,7 +59,7 @@ function GoogleCallback() {
                 showConfirmButton : false,
             }).then(() => {
                 dispatch(handleCleanResponse());
-                window.location.href = "/form";
+                window.location.href = "/dashboard";
             });
         }
     }, [stateLogin.responseLogin, dispatch]);

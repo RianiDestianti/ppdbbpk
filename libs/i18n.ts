@@ -9,6 +9,7 @@ export const t = {
         info:       { id: "Informasi",      en: "Information" } as Dict,
         formulir:   { id: "Formulir 26/27", en: "Form 26/27" } as Dict,
         signin:     { id: "Sign In",        en: "Sign In" } as Dict,
+        dashboard:  { id: "Dashboard",      en: "Dashboard" } as Dict,
         tk:         { id: "TK 2026/2027",   en: "Kindergarten 2026/2027" } as Dict,
         sd:         { id: "SD 2026/2027",   en: "Elementary 2026/2027" } as Dict,
         smp:        { id: "SMP 2026/2027",  en: "Junior High 2026/2027" } as Dict,
@@ -156,13 +157,6 @@ export const t = {
     signin: {
         title:      { id: "SPMB Online",            en: "SPMB Online" } as Dict,
         subtitle:   { id: "BPK PENABUR Bandung",    en: "BPK PENABUR Bandung" } as Dict,
-        username:   { id: "No. Registrasi / Username", en: "Registration No. / Username" } as Dict,
-        usernamePh: { id: "Masukkan nomor registrasi", en: "Enter registration number" } as Dict,
-        password:   { id: "Password",               en: "Password" } as Dict,
-        button:     { id: "Sign In",                en: "Sign In" } as Dict,
-        forgot:     { id: "Lupa password? Hubungi admin sekolah masing-masing.",
-                      en: "Forgot password? Contact your respective school admin." } as Dict,
-        orDivider:  { id: "atau",                   en: "or" } as Dict,
         google:     { id: "Masuk dengan Google",    en: "Sign in with Google" } as Dict,
     },
 };

@@ -12,6 +12,7 @@ export default function Navbar() {
     const [showTop, setShowTop]               = useState(false);
     const [mobileOpen, setMobileOpen]         = useState(false);
     const [mobileFormulir, setMobileFormulir] = useState(false);
+    const [isLoggedIn, setIsLoggedIn]         = useState(false);
 
     const jenjangItems = [
         { href: "/form?jenjang=tk",  label: t.nav.tk[lang] },
@@ -28,6 +29,22 @@ export default function Navbar() {
 
         return () => window.removeEventListener("scroll", onScroll);
     }, []);
+
+    useEffect(() => {
+        const checkAuth = () => setIsLoggedIn(!!localStorage.getItem("auth-key"));
+
+        checkAuth();
+        window.addEventListener("storage", checkAuth);
+        window.addEventListener("focus",   checkAuth);
+
+        return () => {
+            window.removeEventListener("storage", checkAuth);
+            window.removeEventListener("focus",   checkAuth);
+        };
+    }, []);
+
+    const authHref  = isLoggedIn ? "/dashboard"        : "/sign-in";
+    const authLabel = isLoggedIn ? t.nav.dashboard[lang] : t.nav.signin[lang];
 
     const closeMobile = () => {
         setMobileOpen(false);
@@ -87,8 +104,8 @@ export default function Navbar() {
                             )}
                         </div>
 
-                        <Link href="/sign-in" className="text-gray-700 hover:text-red-600">
-                            {t.nav.signin[lang]}
+                        <Link href={authHref} className="text-gray-700 hover:text-red-600">
+                            {authLabel}
                         </Link>
                     </nav>
 
@@ -148,8 +165,8 @@ export default function Navbar() {
                                 </div>
                             )}
 
-                            <Link href="/sign-in" onClick={closeMobile} className="rounded-md px-1 py-2.5 text-gray-700 hover:bg-gray-50 hover:text-red-600">
-                                {t.nav.signin[lang]}
+                            <Link href={authHref} onClick={closeMobile} className="rounded-md px-1 py-2.5 text-gray-700 hover:bg-gray-50 hover:text-red-600">
+                                {authLabel}
                             </Link>
                         </nav>
                     </div>

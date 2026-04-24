@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -34,33 +34,8 @@ const hitungUsiaTahun = (tanggalLahir: string, pada: Date) => {
 
 const PHONE_REGEX = /^(\+62|62|0)8[1-9][0-9]{7,11}$/;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const IMAGE_MAX_SIZE = 2 * 1024 * 1024;
-const IMAGE_MAX_SIZE_TEXT = "2 MB";
 
 const isValidEmail = (value: string): boolean => EMAIL_REGEX.test(value);
-
-const readImageFile = (file: File): Promise<string> => {
-    if (!file.type.startsWith("image/")) {
-        return Promise.reject(new Error("File harus berupa gambar."));
-    }
-
-    if (file.size > IMAGE_MAX_SIZE) {
-        return Promise.reject(new Error(`Ukuran gambar maksimal ${IMAGE_MAX_SIZE_TEXT}.`));
-    }
-
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-            if (typeof reader.result === "string") {
-                resolve(reader.result);
-            } else {
-                reject(new Error("Gagal membaca gambar."));
-            }
-        };
-        reader.onerror = () => reject(new Error("Gagal membaca gambar."));
-        reader.readAsDataURL(file);
-    });
-};
 
 const normalizePhoneInput = (value: string): string => {
     const onlyAllowed = value.replace(/[^\d+]/g, "");
@@ -656,23 +631,6 @@ function FormStep2({
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        const imageChecks: Array<{ label: string; value: string }> = [
-            { label: "Foto Siswa", value: formData.fotoSiswa },
-            { label: "Tanda Tangan Orang Tua", value: formData.tandaTanganOrtu },
-        ];
-
-        for (const image of imageChecks) {
-            if (!image.value) {
-                Swal.fire({
-                    icon               : "error",
-                    title              : `${image.label} Diperlukan`,
-                    text               : `Mohon lengkapi ${image.label}.`,
-                    confirmButtonColor : "#dc2626",
-                });
-                return;
-            }
-        }
-
         const phoneChecks: Array<{ label: string; value: string; required: boolean }> = [
             { label: "No HP (WhatsApp)", value: formData.noHp,      required: true  },
             { label: "No. HP. Ayah",     value: formData.noHpAyah,  required: true  },
@@ -827,13 +785,6 @@ function FormStep2({
 
                         <InputField label="No HP (WhatsApp) Untuk Informasi Akademik" required type="tel" name="noHp" value={formData.noHp} onChange={(e) => handleChangeInput(e, setFormData)} />
                         <InputField label="Email" type="email" doubleRequired name="email" value={formData.email} onChange={(e) => handleChangeInput(e, setFormData)} />
-                        <ImageCaptureField
-                            label="Foto Siswa"
-                            required
-                            value={formData.fotoSiswa}
-                            onChange={(value) => setFormData((prev) => ({ ...prev, fotoSiswa: value }))}
-                            hint={`Unggah foto siswa atau ambil foto langsung dari kamera. Maksimal ${IMAGE_MAX_SIZE_TEXT}.`}
-                        />
 
                         <div className="md:col-span-1">
                             <Label required>Alamat Rumah</Label>
@@ -931,10 +882,6 @@ function FormStep2({
                                 />
                             </div>
                         </div>
-                        <SignatureField
-                            value={formData.tandaTanganOrtu}
-                            onChange={(value) => setFormData((prev) => ({ ...prev, tandaTanganOrtu: value }))}
-                        />
                     </div>
                 </section>
 
@@ -972,9 +919,7 @@ function FormStep2({
                             !isEmailValid(formData.email) ||
                             !isExactDigits(formData.nisn, 10) ||
                             !isExactDigits(formData.nik,  16) ||
-                            !isExactDigits(formData.nokk, 16) ||
-                            !formData.fotoSiswa ||
-                            !formData.tandaTanganOrtu
+                            !isExactDigits(formData.nokk, 16)
                         }
                         className="flex-1 bg-gray-900 hover:bg-black text-white font-medium py-3 rounded-md transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
@@ -988,285 +933,6 @@ function FormStep2({
                 </div>
             </form>
         </>
-    );
-}
-
-function ImageCaptureField({
-    label,
-    value,
-    onChange,
-    required,
-    hint,
-}: {
-    label: string;
-    value: string;
-    onChange: (value: string) => void;
-    required?: boolean;
-    hint?: string;
-}) {
-    const uploadInputRef = useRef<HTMLInputElement>(null);
-    const cameraInputRef = useRef<HTMLInputElement>(null);
-
-    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        try {
-            const dataUrl = await readImageFile(file);
-            onChange(dataUrl);
-        } catch (error) {
-            Swal.fire({
-                icon               : "error",
-                title              : "Gambar Tidak Valid",
-                text               : error instanceof Error ? error.message : "Gagal membaca gambar.",
-                confirmButtonColor : "#dc2626",
-            });
-        } finally {
-            e.target.value = "";
-        }
-    };
-
-    return (
-        <div className="md:col-span-2">
-            <Label required={required}>{label}</Label>
-            {hint && <p className="text-xs italic text-gray-500 -mt-1 mb-2">{hint}</p>}
-            <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-4 items-start">
-                <div className="h-56 border border-gray-300 rounded-md bg-gray-50 flex items-center justify-center overflow-hidden">
-                    {value ? (
-                        <>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={value} alt={label} className="w-full h-full object-contain bg-white" />
-                        </>
-                    ) : (
-                        <span className="text-xs text-gray-500 text-center px-4">Belum ada foto</span>
-                    )}
-                </div>
-                <div className="space-y-3">
-                    <input
-                        ref={uploadInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        className="hidden"
-                    />
-                    <input
-                        ref={cameraInputRef}
-                        type="file"
-                        accept="image/*"
-                        capture="user"
-                        onChange={handleImageChange}
-                        className="hidden"
-                    />
-                    <div className="flex flex-wrap gap-3">
-                        <button
-                            type="button"
-                            onClick={() => uploadInputRef.current?.click()}
-                            className="px-4 py-2.5 rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium text-sm flex items-center gap-2"
-                        >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M12 3v12M8 7l4-4 4 4M4 15v4a2 2 0 002 2h12a2 2 0 002-2v-4" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                            Unggah Foto
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => cameraInputRef.current?.click()}
-                            className="px-4 py-2.5 rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium text-sm flex items-center gap-2"
-                        >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" strokeLinecap="round" strokeLinejoin="round" />
-                                <circle cx="12" cy="13" r="4" />
-                            </svg>
-                            Ambil Foto
-                        </button>
-                        {value && (
-                            <button
-                                type="button"
-                                onClick={() => onChange("")}
-                                className="px-4 py-2.5 rounded-md border border-red-200 hover:bg-red-50 text-red-600 font-medium text-sm"
-                            >
-                                Hapus
-                            </button>
-                        )}
-                    </div>
-                    <p className="text-xs text-gray-500">
-                        Format gambar JPG, PNG, atau format gambar lain yang didukung browser.
-                    </p>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function SignatureField({
-    value,
-    onChange,
-}: {
-    value: string;
-    onChange: (value: string) => void;
-}) {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-    const uploadInputRef = useRef<HTMLInputElement>(null);
-    const isDrawingRef = useRef(false);
-
-    useEffect(() => {
-        if (value) return;
-
-        const canvas = canvasRef.current;
-        const context = canvas?.getContext("2d");
-        if (!canvas || !context) return;
-
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        context.fillStyle = "#ffffff";
-        context.fillRect(0, 0, canvas.width, canvas.height);
-        context.lineCap = "round";
-        context.lineJoin = "round";
-        context.strokeStyle = "#111827";
-        context.lineWidth = 4;
-    }, [value]);
-
-    const resetCanvas = (shouldUpdateValue = true) => {
-        const canvas = canvasRef.current;
-        const context = canvas?.getContext("2d");
-        if (!canvas || !context) return;
-
-        context.clearRect(0, 0, canvas.width, canvas.height);
-        context.fillStyle = "#ffffff";
-        context.fillRect(0, 0, canvas.width, canvas.height);
-        context.lineCap = "round";
-        context.lineJoin = "round";
-        context.strokeStyle = "#111827";
-        context.lineWidth = 4;
-
-        if (shouldUpdateValue) onChange("");
-    };
-
-    const getPoint = (e: React.PointerEvent<HTMLCanvasElement>) => {
-        const canvas = canvasRef.current;
-        if (!canvas) return { x: 0, y: 0 };
-
-        const rect = canvas.getBoundingClientRect();
-        return {
-            x: (e.clientX - rect.left) * (canvas.width / rect.width),
-            y: (e.clientY - rect.top) * (canvas.height / rect.height),
-        };
-    };
-
-    const startDrawing = (e: React.PointerEvent<HTMLCanvasElement>) => {
-        const canvas = canvasRef.current;
-        const context = canvas?.getContext("2d");
-        if (!canvas || !context) return;
-
-        e.preventDefault();
-        e.currentTarget.setPointerCapture(e.pointerId);
-        const point = getPoint(e);
-        isDrawingRef.current = true;
-        context.beginPath();
-        context.moveTo(point.x, point.y);
-    };
-
-    const draw = (e: React.PointerEvent<HTMLCanvasElement>) => {
-        if (!isDrawingRef.current) return;
-
-        const context = canvasRef.current?.getContext("2d");
-        if (!context) return;
-
-        e.preventDefault();
-        const point = getPoint(e);
-        context.lineTo(point.x, point.y);
-        context.stroke();
-    };
-
-    const finishDrawing = (e: React.PointerEvent<HTMLCanvasElement>) => {
-        if (!isDrawingRef.current) return;
-
-        isDrawingRef.current = false;
-        if (e.currentTarget.hasPointerCapture(e.pointerId)) {
-            e.currentTarget.releasePointerCapture(e.pointerId);
-        }
-
-        const canvas = canvasRef.current;
-        if (canvas) onChange(canvas.toDataURL("image/png"));
-    };
-
-    const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (!file) return;
-
-        try {
-            const dataUrl = await readImageFile(file);
-            resetCanvas(false);
-            onChange(dataUrl);
-        } catch (error) {
-            Swal.fire({
-                icon               : "error",
-                title              : "Gambar Tidak Valid",
-                text               : error instanceof Error ? error.message : "Gagal membaca gambar.",
-                confirmButtonColor : "#dc2626",
-            });
-        } finally {
-            e.target.value = "";
-        }
-    };
-
-    return (
-        <div>
-            <Label required>Tanda Tangan Orang Tua</Label>
-            <p className="text-xs italic text-gray-500 -mt-1 mb-2">
-                Unggah gambar tanda tangan atau tanda tangan langsung pada kotak.
-            </p>
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_220px] gap-4">
-                <div>
-                    <canvas
-                        ref={canvasRef}
-                        width={800}
-                        height={220}
-                        onPointerDown={startDrawing}
-                        onPointerMove={draw}
-                        onPointerUp={finishDrawing}
-                        onPointerCancel={finishDrawing}
-                        className="w-full h-44 border border-gray-300 rounded-md bg-white cursor-crosshair"
-                        style={{ touchAction: "none" }}
-                    />
-                    <input
-                        ref={uploadInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={handleUpload}
-                        className="hidden"
-                    />
-                    <div className="flex flex-wrap gap-3 mt-3">
-                        <button
-                            type="button"
-                            onClick={() => uploadInputRef.current?.click()}
-                            className="px-4 py-2.5 rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium text-sm flex items-center gap-2"
-                        >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M12 3v12M8 7l4-4 4 4M4 15v4a2 2 0 002 2h12a2 2 0 002-2v-4" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                            Unggah Tanda Tangan
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => resetCanvas()}
-                            className="px-4 py-2.5 rounded-md border border-red-200 hover:bg-red-50 text-red-600 font-medium text-sm"
-                        >
-                            Hapus
-                        </button>
-                    </div>
-                </div>
-                <div className="h-44 border border-gray-300 rounded-md bg-gray-50 flex items-center justify-center overflow-hidden">
-                    {value ? (
-                        <>
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={value} alt="Tanda tangan orang tua" className="max-w-full max-h-full object-contain bg-white" />
-                        </>
-                    ) : (
-                        <span className="text-xs text-gray-500 text-center px-4">Belum ada tanda tangan</span>
-                    )}
-                </div>
-            </div>
-        </div>
     );
 }
 

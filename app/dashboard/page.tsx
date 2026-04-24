@@ -75,12 +75,6 @@ export default function DashboardPage() {
                                 </div>
                             </div>
                             <div className="space-y-2 md:text-left">
-                                <Link
-                                    href="/dashboard/change-password"
-                                    className="block text-[#1976d2] hover:underline font-medium"
-                                >
-                                    Ganti Password
-                                </Link>
                                 <button
                                     onClick={handleSignOut}
                                     className="block text-[#1976d2] hover:underline font-medium"

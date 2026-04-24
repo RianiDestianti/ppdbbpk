@@ -59,7 +59,7 @@ const maxTanggalLahirFor = (jenjang: Jenjang): string => {
 const formatTanggalId = (d: Date) =>
     d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
 
-const steps = [1, 2];
+const steps = [1, 2, 3];
 const tkProgramPilihan2Options = [
     "- Pilih -",
     "TODDLER",
@@ -376,66 +376,120 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
         window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
+    const goToPreview = () => {
+        setCurrentStep(3);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    const backFromPreview = () => {
+        setCurrentStep(2);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
     return (
         <>
             <Navbar />
 
-            <main className="flex-1 bg-gray-50">
-                <div className="max-w-5xl mx-auto px-6 py-10">
-                    <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-8 text-center">
-                        Formulir Pendaftaran Online Jenjang {config.label}
-                        <br />
-                        SPMB BPK PENABUR BANDUNG 2026/2027
-                    </h1>
+            <main className="flex-1 relative overflow-hidden bg-slate-50">
+                <div className="absolute inset-0 -z-10 pointer-events-none">
+                    <div className="absolute -top-32 -left-32 w-96 h-96 rounded-full bg-blue-200/40 blur-3xl" />
+                    <div className="absolute top-40 -right-32 w-[28rem] h-[28rem] rounded-full bg-red-200/30 blur-3xl" />
+                </div>
+
+                <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+                    <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#0d47a1] via-[#1565c0] to-[#1976d2] text-white p-8 sm:p-10 mb-8 shadow-[0_20px_60px_-20px_rgba(13,71,161,0.6)]">
+                        <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full border-[30px] border-white/5" />
+                        <div className="absolute -bottom-20 -left-10 w-48 h-48 rounded-full bg-white/5" />
+                        <div className="relative">
+                            <div className="flex items-center gap-3 mb-4">
+                                <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur text-white text-xs font-semibold uppercase tracking-wider ring-1 ring-white/25">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-pulse" />
+                                    Jenjang {config.label}
+                                </span>
+                                <span className="text-xs text-blue-100/80 font-medium">SPMB 2026 / 2027</span>
+                            </div>
+                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold leading-tight tracking-tight">
+                                Formulir Pendaftaran Online
+                            </h1>
+                            <p className="mt-2 text-sm sm:text-base text-blue-100/90">
+                                BPK PENABUR Bandung — lengkapi data dengan benar untuk melanjutkan proses penerimaan.
+                            </p>
+                        </div>
+                    </div>
 
                     <div className="flex items-center justify-center mb-10">
-                        {steps.map((step, idx) => (
-                            <div key={step} className="flex items-center">
-                                <div
-                                    className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm border-2 ${
-                                        step === currentStep
-                                            ? "bg-red-600 border-red-600 text-white"
-                                            : step < currentStep
-                                            ? "bg-red-600 border-red-600 text-white"
-                                            : "bg-white border-gray-300 text-gray-400"
-                                    }`}
-                                >
-                                    {step < currentStep ? (
-                                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2.5">
-                                            <path d="M3 7l3 3 5-6" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
-                                    ) : (
-                                        step
+                        {steps.map((step, idx) => {
+                            const isActive = step === currentStep;
+                            const isDone   = step < currentStep;
+                            const stepLabel = step === 1 ? "Pilihan Sekolah" : step === 2 ? "Data Pendaftar" : "Konfirmasi";
+                            return (
+                                <div key={step} className="flex items-center">
+                                    <div className="flex flex-col items-center">
+                                        <div
+                                            className={`w-11 h-11 rounded-full flex items-center justify-center font-semibold text-sm border-2 transition-all ${
+                                                isActive
+                                                    ? "bg-gradient-to-br from-[#1976d2] to-[#0d47a1] border-[#1976d2] text-white shadow-lg shadow-blue-500/30 scale-110"
+                                                    : isDone
+                                                    ? "bg-gradient-to-br from-[#1976d2] to-[#0d47a1] border-[#1976d2] text-white"
+                                                    : "bg-white border-gray-300 text-gray-400"
+                                            }`}
+                                        >
+                                            {isDone ? (
+                                                <svg width="16" height="16" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                                    <path d="M3 7l3 3 5-6" strokeLinecap="round" strokeLinejoin="round" />
+                                                </svg>
+                                            ) : (
+                                                step
+                                            )}
+                                        </div>
+                                        <span className={`mt-2 text-xs font-medium hidden sm:block ${
+                                            isActive || isDone ? "text-[#1976d2]" : "text-gray-400"
+                                        }`}>
+                                            {stepLabel}
+                                        </span>
+                                    </div>
+                                    {idx < steps.length - 1 && (
+                                        <div
+                                            className={`w-16 md:w-32 h-0.5 mx-2 sm:mx-3 mb-5 sm:mb-6 transition-all ${
+                                                isDone ? "bg-gradient-to-r from-[#1976d2] to-[#0d47a1]" : "bg-gray-300"
+                                            }`}
+                                        />
                                     )}
                                 </div>
-                                {idx < steps.length - 1 && (
-                                    <div
-                                        className={`w-16 md:w-24 h-0.5 ${
-                                            step < currentStep ? "bg-red-600" : "bg-gray-300"
-                                        }`}
-                                    />
-                                )}
-                            </div>
-                        ))}
+                            );
+                        })}
                     </div>
 
                     {currentStep === 1 && (
                         <>
-                            <div className="bg-red-500 text-white rounded-md p-5 mb-8 shadow-sm">
-                                <h2 className="font-semibold text-base mb-3 flex items-center gap-2">
-                                    <span>⚠</span>
-                                    Peringatan
-                                </h2>
-                                <ol className="list-decimal list-inside space-y-1.5 text-sm leading-relaxed">
-                                    {config.peringatan.map((text, i) => (
-                                        <li key={i}>{text}</li>
-                                    ))}
-                                </ol>
+                            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-500 to-red-600 text-white p-6 mb-8 shadow-lg shadow-red-500/20">
+                                <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/10" />
+                                <div className="absolute -bottom-12 -left-8 w-32 h-32 rounded-full bg-white/5" />
+                                <div className="relative">
+                                    <h2 className="font-semibold text-base mb-3 flex items-center gap-2">
+                                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/20 ring-1 ring-white/30">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                                <path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                        </span>
+                                        Peringatan Penting
+                                    </h2>
+                                    <ol className="list-decimal list-inside space-y-1.5 text-sm leading-relaxed marker:text-white/70">
+                                        {config.peringatan.map((text, i) => (
+                                            <li key={i}>{text}</li>
+                                        ))}
+                                    </ol>
+                                </div>
                             </div>
 
-                            <form className="space-y-8" onSubmit={goNext}>
-                                <section className="bg-white rounded-md border border-gray-200 p-6 shadow-sm">
-                                    <h2 className="text-lg font-semibold text-gray-800 mb-5 pb-3 border-b border-gray-200">
+                            <form className="space-y-6" onSubmit={goNext}>
+                                <section className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-7 shadow-sm hover:shadow-md transition-shadow">
+                                    <h2 className="text-lg font-semibold text-gray-800 mb-6 pb-4 border-b border-gray-100 flex items-center gap-3">
+                                        <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-blue-50 text-[#1976d2]">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                        </span>
                                         Asal Sekolah
                                     </h2>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -451,28 +505,28 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
                                         </SelectField>
                                         {isDariBpk && (
                                             <div className="md:col-span-2">
-                                                <label className="block text-sm text-gray-700 mb-2">
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
                                                     Nomor SPB
                                                     <span className="text-red-500 ml-1">*</span>
                                                 </label>
-                                                <p className="text-xs italic text-gray-500 -mt-1 mb-1.5">
+                                                <p className="text-xs italic text-gray-500 -mt-1 mb-2">
                                                     Wajib diisi untuk pendaftar dari BPK PENABUR (untuk pengecekan tunggakan)
                                                 </p>
                                                 <input
                                                     type="text"
                                                     value={noSpb}
                                                     onChange={(e) => setNoSpb(e.target.value)}
-                                                    className="w-full border border-gray-300 rounded-md px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-700 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-[#1976d2] transition"
                                                 />
                                             </div>
                                         )}
                                         {isTargetTk && (
                                             <div className="md:col-span-2">
-                                                <label className="block text-sm text-gray-700 mb-2">
+                                                <label className="block text-sm font-medium text-gray-700 mb-2">
                                                     Tanggal Lahir Calon Siswa
                                                     <span className="text-red-500 ml-1">*</span>
                                                 </label>
-                                                <p className="text-xs italic text-gray-500 -mt-1 mb-1.5">
+                                                <p className="text-xs italic text-gray-500 -mt-1 mb-2">
                                                     Minimum usia {MIN_USIA_BY_JENJANG[jenjang]} tahun pada {formatTanggalId(TAHUN_AJARAN_MULAI)} (awal tahun ajaran)
                                                 </p>
                                                 <input
@@ -480,18 +534,23 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
                                                     value={tanggalLahirAwal}
                                                     onChange={(e) => setTanggalLahirAwal(e.target.value)}
                                                     max={maxTanggalLahirFor(jenjang)}
-                                                    className="w-full border border-gray-300 rounded-md px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-700 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-[#1976d2] transition"
                                                 />
                                             </div>
                                         )}
                                     </div>
                                 </section>
 
-                                <section className="bg-white rounded-md border border-gray-200 p-6 shadow-sm">
-                                    <h2 className="text-lg font-semibold text-gray-800 mb-5 pb-3 border-b border-gray-200">
+                                <section className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-7 shadow-sm hover:shadow-md transition-shadow">
+                                    <h2 className="text-lg font-semibold text-gray-800 mb-6 pb-4 border-b border-gray-100 flex items-center gap-3">
+                                        <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-amber-50 text-amber-600">
+                                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" strokeLinecap="round" strokeLinejoin="round" />
+                                            </svg>
+                                        </span>
                                         Pilihan Sekolah
                                     </h2>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                         <SelectField label="Pilihan 1" required value={pilihan1} onChange={handlePilihan1Change}>
                                             {pilihan1Options.map((opt) => (
                                                 <option key={opt}>{opt}</option>
@@ -518,18 +577,23 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
                                 <button
                                     type="submit"
                                     disabled={!isStep1Valid || tunggakanLoading}
-                                    className="w-full bg-gray-900 hover:bg-black text-white font-medium py-4 rounded-md transition-colors flex items-center justify-center gap-2 disabled:bg-gray-400 disabled:hover:bg-gray-400 disabled:cursor-not-allowed"
+                                    className="group w-full bg-gradient-to-r from-[#1976d2] to-[#0d47a1] hover:from-[#1565c0] hover:to-[#0d47a1] text-white font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 active:scale-[0.99] disabled:bg-gray-300 disabled:bg-none disabled:shadow-none disabled:cursor-not-allowed"
                                 >
                                     {tunggakanLoading ? "Memeriksa Tunggakan..." : "Berikutnya"}
-                                    {!tunggakanLoading && <span>→</span>}
+                                    {!tunggakanLoading && (
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:translate-x-1 transition-transform">
+                                            <path d="M5 12h14M13 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                    )}
                                 </button>
                             </form>
                         </>
                     )}
 
-                    {currentStep === 2 && (
+                    {currentStep >= 2 && (
                         <FormStep2
                             jenjang={jenjang}
+                            asalSekolah={asalSekolah}
                             programAsal={programAsal}
                             pilihan1={pilihan1}
                             program1={program1}
@@ -539,7 +603,10 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
                             tanggalLahirAwal={tanggalLahirAwal}
                             sekolahAsalStep2Options={config.sekolahAsalStep2Options}
                             sumbanganOptions={config.sumbanganOptions}
+                            showPreview={currentStep === 3}
                             onBack={goBack}
+                            onEnterPreview={goToPreview}
+                            onExitPreview={backFromPreview}
                         />
                     )}
                 </div>
@@ -552,6 +619,7 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
 
 function FormStep2({
     jenjang,
+    asalSekolah,
     programAsal,
     pilihan1,
     program1,
@@ -561,9 +629,13 @@ function FormStep2({
     tanggalLahirAwal,
     sekolahAsalStep2Options,
     sumbanganOptions,
+    showPreview,
     onBack,
+    onEnterPreview,
+    onExitPreview,
 }: {
     jenjang: Jenjang;
+    asalSekolah: string;
     programAsal: string;
     pilihan1: string;
     program1: string;
@@ -573,8 +645,12 @@ function FormStep2({
     tanggalLahirAwal: string;
     sekolahAsalStep2Options: string[];
     sumbanganOptions: string[];
+    showPreview: boolean;
     onBack: () => void;
+    onEnterPreview: () => void;
+    onExitPreview: () => void;
 }) {
+    const isDariBpk = asalSekolah.includes("BPK PENABUR");
     const maxTanggalLahir = maxTanggalLahirFor(jenjang);
     const minUsiaJenjang  = MIN_USIA_BY_JENJANG[jenjang];
     const isUsiaValid     = (tanggal: string) => {
@@ -602,15 +678,24 @@ function FormStep2({
                 icon              : 'success',
                 title             : 'Pendaftaran Berhasil',
                 html              : `
-                    <p style="margin:0 0 8px 0;">No. Registrasi: <b>${response.data.noreg}</b></p>
-                    <p style="margin:0;color:#555;font-size:14px;">
+                    <p style="margin:0 0 10px 0;">No. Registrasi: <b>${response.data.noreg}</b></p>
+                    <p style="margin:0 0 14px 0;color:#555;font-size:14px;">
                         Silahkan cek email Anda untuk melihat informasi pendaftaran lebih lanjut
                         (No. VA, Username, Password, dll).
                     </p>
+                    <div style="margin-top:12px;padding:12px 14px;border-radius:10px;background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a;font-size:13px;text-align:left;line-height:1.55;">
+                        <b>Langkah Selanjutnya:</b><br/>
+                        Silakan login ke <b>Dashboard</b> dan lengkapi / perbarui <b>Data Profile</b> Anda agar proses pendaftaran dapat dilanjutkan.
+                    </div>
                 `,
                 confirmButtonColor: '#dc2626',
+                confirmButtonText : 'Ke Dashboard',
+                allowOutsideClick : false,
+                allowEscapeKey    : false,
+            }).then(() => {
+                dispatch(resetResponse());
+                window.location.href = "/dashboard";
             });
-            dispatch(resetResponse());
         } else if (response?.status === 422) {
             Swal.fire({
                 icon  : 'error',
@@ -697,6 +782,10 @@ function FormStep2({
             }
         }
 
+        onEnterPreview();
+    };
+
+    const handleConfirmSubmit = () => {
         const sekolahAsal = formData.sekolahAsalNama || sekolahAsalSelect;
 
         dispatch(saveSiswa({
@@ -712,39 +801,216 @@ function FormStep2({
         }));
     };
 
+    const formatTanggalLahirId = (d: string) => {
+        if (!d) return "-";
+        const date = new Date(d);
+        if (isNaN(date.getTime())) return d;
+        return formatTanggalId(date);
+    };
+
+    const sekolahAsalPreview  = formData.sekolahAsalNama || sekolahAsalSelect;
+    const sumbanganPreviewVal = sumbanganLainnya
+        ? `${sumbangan}${sumbangan !== "Lainnya" ? " + " : ""}${sumbanganLainnya}`
+        : sumbangan;
+
+    if (showPreview) {
+        return (
+            <>
+                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 text-white p-6 mb-6 shadow-lg shadow-amber-500/20">
+                    <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/10" />
+                    <div className="absolute -bottom-8 -left-6 w-28 h-28 rounded-full bg-white/5" />
+                    <div className="relative flex items-start gap-3">
+                        <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/20 ring-1 ring-white/30 flex-shrink-0">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" strokeLinecap="round" strokeLinejoin="round" />
+                                <circle cx="12" cy="12" r="3" />
+                            </svg>
+                        </span>
+                        <div>
+                            <h2 className="font-semibold text-base sm:text-lg mb-1">Preview Data Pendaftaran</h2>
+                            <p className="text-sm text-amber-50/95 leading-relaxed">
+                                Mohon periksa kembali data di bawah ini. Jika sudah benar, klik <b>Kirim Pendaftaran</b>. Jika ada yang perlu diubah, klik <b>Kembali</b>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <section className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-7 shadow-sm mb-6">
+                    <h2 className="text-lg font-semibold text-gray-800 mb-6 pb-4 border-b border-gray-100 flex items-center gap-3">
+                        <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-amber-50 text-amber-600">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                        </span>
+                        Pilihan Sekolah
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <PreviewField label="Asal Sekolah" value={asalSekolah} />
+                        <PreviewField label="Program Asal" value={programAsal} />
+                        {isDariBpk && <PreviewField label="Nomor SPB" value={noSpb} />}
+                        <PreviewField label="Pilihan 1" value={pilihan1} />
+                        <PreviewField label="Program Pilihan 1" value={program1} />
+                        <PreviewField label="Pilihan 2" value={pilihan2} />
+                        <PreviewField label="Program Pilihan 2" value={program2} />
+                    </div>
+                </section>
+
+                <section className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-7 shadow-sm mb-6">
+                    <h2 className="text-lg font-semibold text-gray-800 mb-6 pb-4 border-b border-gray-100 flex items-center gap-3">
+                        <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-blue-50 text-[#1976d2]">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
+                                <circle cx="8.5" cy="7" r="4" />
+                                <path d="M20 8v6M23 11h-6" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                        </span>
+                        Biodata Siswa
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <PreviewField label="NISN" value={formData.nisn} />
+                        <PreviewField label="NIK" value={formData.nik} />
+                        <PreviewField label="Nomor Kartu Keluarga" value={formData.nokk} />
+                        <PreviewField label="Nama Lengkap" value={formData.nama} />
+                        <PreviewField label="Tempat Lahir" value={formData.tempatLahir} />
+                        <PreviewField label="Tanggal Lahir" value={formatTanggalLahirId(formData.tanggalLahir)} />
+                        <PreviewField label="Jenis Kelamin" value={jenisKelamin} />
+                        <PreviewField label="No HP (WhatsApp)" value={formData.noHp} />
+                        <PreviewField label="Email" value={formData.email} />
+                        <PreviewField label="Sekolah Asal" value={sekolahAsalPreview} />
+                        <PreviewField label="Kota Sekolah Asal" value={formData.kotaSekolahAsal} />
+                        <div className="md:col-span-2">
+                            <PreviewField label="Alamat Rumah" value={formData.alamat} multiline />
+                        </div>
+                    </div>
+                </section>
+
+                <section className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-7 shadow-sm mb-6">
+                    <h2 className="text-lg font-semibold text-gray-800 mb-6 pb-4 border-b border-gray-100 flex items-center gap-3">
+                        <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-purple-50 text-purple-600">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" strokeLinecap="round" strokeLinejoin="round" />
+                                <circle cx="9" cy="7" r="4" />
+                            </svg>
+                        </span>
+                        Biodata Keluarga
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <PreviewField label="Nama Ayah" value={formData.namaAyah} />
+                        <PreviewField label="No. HP. Ayah" value={formData.noHpAyah} />
+                        <PreviewField label="Nama Ibu" value={formData.namaIbu} />
+                        <PreviewField label="No. HP. Ibu" value={formData.noHpIbu} />
+                        <PreviewField label="Nama Wali" value={formData.namaWali} />
+                        <PreviewField label="No. HP. Wali" value={formData.noHpWali} />
+                    </div>
+                </section>
+
+                <section className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-7 shadow-sm mb-6">
+                    <h2 className="text-lg font-semibold text-gray-800 mb-6 pb-4 border-b border-gray-100 flex items-center gap-3">
+                        <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <rect x="2" y="5" width="20" height="14" rx="2" />
+                                <path d="M2 10h20" />
+                            </svg>
+                        </span>
+                        Data Administratif
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <PreviewField label="Uang Sumbangan Sukarela" value={sumbanganPreviewVal} />
+                    </div>
+                </section>
+
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-gray-700 mb-6">
+                    <p className="flex items-start gap-2">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-amber-600 flex-shrink-0 mt-0.5">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 16v-4M12 8h.01" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <span>
+                            Pastikan seluruh data di atas sudah benar. Setelah dikirim, data tidak dapat diubah melalui form ini.
+                        </span>
+                    </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3">
+                    <button
+                        type="button"
+                        onClick={onExitPreview}
+                        disabled={loading}
+                        className="px-6 py-3.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-50 transition"
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        Kembali
+                    </button>
+                    <button
+                        type="button"
+                        onClick={handleConfirmSubmit}
+                        disabled={loading}
+                        className="group flex-1 bg-gradient-to-r from-[#1976d2] to-[#0d47a1] hover:from-[#1565c0] hover:to-[#0d47a1] text-white font-semibold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 active:scale-[0.99] disabled:bg-gray-300 disabled:bg-none disabled:shadow-none disabled:cursor-not-allowed"
+                    >
+                        {loading ? "Mengirim..." : "Kirim Pendaftaran"}
+                        {!loading && (
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="group-hover:translate-x-1 transition-transform">
+                                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                        )}
+                    </button>
+                </div>
+            </>
+        );
+    }
+
     return (
         <>
-            <div className="bg-white rounded-md border border-gray-200 p-5 mb-5 text-sm text-gray-700 space-y-1">
-                <div>
-                    <span className="font-semibold">Pilihan 1: </span>
-                    {pilihan1}
-                </div>
-                <div>
-                    <span className="font-semibold">Program pilihan 1: </span>
-                    {program1}
-                </div>
-                <div className="pt-2">
-                    <span className="font-semibold">Pilihan 2: </span>
-                    {pilihan2}
-                </div>
-                <div>
-                    <span className="font-semibold">Program pilihan 2: </span>
-                    {program2}
-                </div>
-            </div>
-
-            <div className="bg-red-500 text-white rounded-md p-4 mb-8 text-sm leading-relaxed">
-                Untuk mendapatkan potongan pelunasan dan potongan tambahan Amaze U, Orang Tua Pendaftar dapat segera melakukan pembayaran tahap 1 di sekolah pilihan pertama sebelum 27 Juli 2025. (Kami tidak menyarankan pembayaran di lokasi pameran Amaze U) Terima kasih
-            </div>
-
-            <form className="space-y-8" onSubmit={handleSubmit}>
-                <section className="bg-white rounded-md border border-gray-200 p-6 shadow-sm">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-5 pb-3 border-b border-gray-200 flex items-center gap-2">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
-                            <circle cx="8.5" cy="7" r="4" />
-                            <path d="M20 8v6M23 11h-6" strokeLinecap="round" strokeLinejoin="round" />
+            <div className="bg-white rounded-2xl border border-gray-100 p-5 mb-5 shadow-sm">
+                <div className="flex items-center gap-2 mb-3 pb-3 border-b border-gray-100">
+                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50 text-[#1976d2]">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
+                    </span>
+                    <h3 className="text-sm font-semibold text-gray-800">Ringkasan Pilihan Sekolah</h3>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                    <div className="bg-blue-50/50 rounded-lg p-3 border border-blue-100">
+                        <div className="text-xs uppercase tracking-wide text-[#1976d2] font-semibold mb-1">Pilihan 1</div>
+                        <div className="text-gray-800 font-medium">{pilihan1}</div>
+                        <div className="text-xs text-gray-500 mt-1">Program: {program1}</div>
+                    </div>
+                    <div className="bg-blue-50/50 rounded-lg p-3 border border-blue-100">
+                        <div className="text-xs uppercase tracking-wide text-[#1976d2] font-semibold mb-1">Pilihan 2</div>
+                        <div className="text-gray-800 font-medium">{pilihan2}</div>
+                        <div className="text-xs text-gray-500 mt-1">Program: {program2}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-red-500 to-red-600 text-white p-5 mb-8 shadow-lg shadow-red-500/20">
+                <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/10" />
+                <div className="relative flex items-start gap-3 text-sm leading-relaxed">
+                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/20 ring-1 ring-white/30 flex-shrink-0">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 16v-4M12 8h.01" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                    </span>
+                    <span>
+                        Untuk mendapatkan potongan pelunasan dan potongan tambahan Amaze U, Orang Tua Pendaftar dapat segera melakukan pembayaran tahap 1 di sekolah pilihan pertama sebelum 27 Juli 2025. (Kami tidak menyarankan pembayaran di lokasi pameran Amaze U) Terima kasih
+                    </span>
+                </div>
+            </div>
+
+            <form className="space-y-6" onSubmit={handleSubmit}>
+                <section className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-7 shadow-sm hover:shadow-md transition-shadow">
+                    <h2 className="text-lg font-semibold text-gray-800 mb-6 pb-4 border-b border-gray-100 flex items-center gap-3">
+                        <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-blue-50 text-[#1976d2]">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
+                                <circle cx="8.5" cy="7" r="4" />
+                                <path d="M20 8v6M23 11h-6" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                        </span>
                         Biodata Siswa
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -757,29 +1023,35 @@ function FormStep2({
 
                         <div>
                             <Label required>Jenis Kelamin</Label>
-                            <div className="space-y-2 mt-2">
-                                <label className="flex items-center gap-2 text-sm text-gray-700">
-                                    <input
-                                        type="radio"
-                                        name="jk"
-                                        value="Laki-laki"
-                                        checked={jenisKelamin === "Laki-laki"}
-                                        onChange={(e) => setJenisKelamin(e.target.value)}
-                                        className="w-4 h-4 text-red-600"
-                                    />
-                                    Laki-laki
-                                </label>
-                                <label className="flex items-center gap-2 text-sm text-gray-700">
-                                    <input
-                                        type="radio"
-                                        name="jk"
-                                        value="Perempuan"
-                                        checked={jenisKelamin === "Perempuan"}
-                                        onChange={(e) => setJenisKelamin(e.target.value)}
-                                        className="w-4 h-4 text-red-600"
-                                    />
-                                    Perempuan
-                                </label>
+                            <div className="grid grid-cols-2 gap-3">
+                                {["Laki-laki", "Perempuan"].map((opt) => {
+                                    const active = jenisKelamin === opt;
+                                    return (
+                                        <label
+                                            key={opt}
+                                            className={`flex items-center gap-2.5 px-4 py-3 rounded-lg border cursor-pointer text-sm transition ${
+                                                active
+                                                    ? "border-[#1976d2] bg-blue-50 text-[#1976d2] font-medium ring-2 ring-blue-200"
+                                                    : "border-gray-200 bg-gray-50/50 text-gray-700 hover:bg-white hover:border-gray-300"
+                                            }`}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="jk"
+                                                value={opt}
+                                                checked={active}
+                                                onChange={(e) => setJenisKelamin(e.target.value)}
+                                                className="sr-only"
+                                            />
+                                            <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
+                                                active ? "border-[#1976d2]" : "border-gray-300"
+                                            }`}>
+                                                {active && <span className="w-2 h-2 rounded-full bg-[#1976d2]" />}
+                                            </span>
+                                            {opt}
+                                        </label>
+                                    );
+                                })}
                             </div>
                         </div>
 
@@ -793,7 +1065,7 @@ function FormStep2({
                                 value={formData.alamat}
                                 onChange={(e) => handleChangeInput(e, setFormData)}
                                 rows={5}
-                                className="w-full border border-gray-300 rounded-md px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 resize-none"
+                                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-700 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-[#1976d2] transition resize-none"
                             />
                         </div>
 
@@ -803,7 +1075,8 @@ function FormStep2({
                                 <select
                                     value={sekolahAsalSelect}
                                     onChange={(e) => setSekolahAsalSelect(e.target.value)}
-                                    className="w-full border border-gray-300 rounded-md px-3 py-2.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-700 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-[#1976d2] transition appearance-none bg-no-repeat bg-[right_1rem_center] bg-[length:1rem] pr-10"
+                                    style={{ backgroundImage: "url(\"data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='M6 9l6 6 6-6'/%3e%3c/svg%3e\")" }}
                                 >
                                     {sekolahAsalStep2Options.map((opt) => (
                                         <option key={opt}>{opt}</option>
@@ -814,10 +1087,10 @@ function FormStep2({
                                     name="sekolahAsalNama"
                                     value={formData.sekolahAsalNama}
                                     onChange={(e) => handleChangeInput(e, setFormData)}
-                                    placeholder=""
-                                    className="w-full mt-2 border border-gray-300 rounded-md px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                    placeholder="Nama sekolah lainnya (jika tidak ada di pilihan)"
+                                    className="w-full mt-2 border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-700 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-[#1976d2] transition"
                                 />
-                                <p className="text-xs italic text-gray-500 mt-1">
+                                <p className="text-xs italic text-gray-500 mt-1.5">
                                     Nama Sekolah Asal Jika Tidak ada di Pilihan
                                 </p>
                             </div>
@@ -826,12 +1099,14 @@ function FormStep2({
                     </div>
                 </section>
 
-                <section className="bg-white rounded-md border border-gray-200 p-6 shadow-sm">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-5 pb-3 border-b border-gray-200 flex items-center gap-2">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" strokeLinecap="round" strokeLinejoin="round" />
-                            <circle cx="9" cy="7" r="4" />
-                        </svg>
+                <section className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-7 shadow-sm hover:shadow-md transition-shadow">
+                    <h2 className="text-lg font-semibold text-gray-800 mb-6 pb-4 border-b border-gray-100 flex items-center gap-3">
+                        <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-purple-50 text-purple-600">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" strokeLinecap="round" strokeLinejoin="round" />
+                                <circle cx="9" cy="7" r="4" />
+                            </svg>
+                        </span>
                         Biodata Keluarga
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -844,12 +1119,14 @@ function FormStep2({
                     </div>
                 </section>
 
-                <section className="bg-white rounded-md border border-gray-200 p-6 shadow-sm">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-5 pb-3 border-b border-gray-200 flex items-center gap-2">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <rect x="2" y="5" width="20" height="14" rx="2" />
-                            <path d="M2 10h20" />
-                        </svg>
+                <section className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-7 shadow-sm hover:shadow-md transition-shadow">
+                    <h2 className="text-lg font-semibold text-gray-800 mb-6 pb-4 border-b border-gray-100 flex items-center gap-3">
+                        <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <rect x="2" y="5" width="20" height="14" rx="2" />
+                                <path d="M2 10h20" />
+                            </svg>
+                        </span>
                         Data Administratif
                     </h2>
                     <p className="text-sm text-gray-700 mb-5">
@@ -861,7 +1138,8 @@ function FormStep2({
                             <select
                                 value={sumbangan}
                                 onChange={(e) => setSumbangan(e.target.value)}
-                                className="w-full border border-gray-300 rounded-md px-3 py-2.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-700 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-[#1976d2] transition appearance-none bg-no-repeat bg-[right_1rem_center] bg-[length:1rem] pr-10"
+                                style={{ backgroundImage: "url(\"data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='M6 9l6 6 6-6'/%3e%3c/svg%3e\")" }}
                             >
                                 {sumbanganOptions.map((opt) => (
                                     <option key={opt}>{opt}</option>
@@ -869,7 +1147,7 @@ function FormStep2({
                             </select>
                         </div>
                         <div>
-                            <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
+                            <div className="bg-blue-50/40 border border-blue-100 rounded-xl p-4">
                                 <p className="text-xs italic text-gray-600 mb-2">
                                     Tuliskan jumlah sumbangan, Jika tidak ada di Pilihan (Nilai Sumbangan dalam satuan Rp. 1.000.000)
                                 </p>
@@ -878,33 +1156,41 @@ function FormStep2({
                                     value={sumbanganLainnya}
                                     onChange={(e) => setSumbanganLainnya(e.target.value)}
                                     placeholder="Rp"
-                                    className="w-full border border-gray-300 rounded-md px-3 py-2.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-[#1976d2] transition"
                                 />
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <div className="text-sm text-gray-600 space-y-1">
-                    <p>
-                        <span className="text-red-500">*</span>Wajib Diisi
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-gray-700 space-y-1.5">
+                    <p className="flex items-start gap-2">
+                        <span className="text-red-500 font-bold">*</span>
+                        <span>Wajib Diisi</span>
                     </p>
-                    <p>
-                        <span className="text-red-500">**</span>Wajib Diisi Untuk SD, SMP dan SMA
+                    <p className="flex items-start gap-2">
+                        <span className="text-red-500 font-bold">**</span>
+                        <span>Wajib Diisi Untuk SD, SMP dan SMA</span>
                     </p>
-                    <p className="pt-2">
-                        - Pastikan data sudah terisi dengan benar, tidak diperkenankan back history browser setelah submit dihalaman ini.
+                    <p className="flex items-start gap-2 pt-2 border-t border-amber-200/60 mt-2">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-amber-600 flex-shrink-0 mt-0.5">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 16v-4M12 8h.01" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        <span>Pastikan data sudah terisi dengan benar, tidak diperkenankan back history browser setelah submit dihalaman ini.</span>
                     </p>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3">
                     <button
                         type="button"
                         onClick={onBack}
                         disabled={loading}
-                        className="px-6 py-3 rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium text-sm flex items-center gap-2 disabled:opacity-50"
+                        className="px-6 py-3.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-50 transition"
                     >
-                        <span>←</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
                         Kembali
                     </button>
                     <button
@@ -921,18 +1207,42 @@ function FormStep2({
                             !isExactDigits(formData.nik,  16) ||
                             !isExactDigits(formData.nokk, 16)
                         }
-                        className="flex-1 bg-gray-900 hover:bg-black text-white font-medium py-3 rounded-md transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="group flex-1 bg-gradient-to-r from-[#1976d2] to-[#0d47a1] hover:from-[#1565c0] hover:to-[#0d47a1] text-white font-semibold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 active:scale-[0.99] disabled:bg-gray-300 disabled:bg-none disabled:shadow-none disabled:cursor-not-allowed"
                     >
-                        {loading ? "Mengirim..." : "Kirim"}
+                        {loading ? "Memproses..." : "Lanjut ke Preview"}
                         {!loading && (
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round" />
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:translate-x-1 transition-transform">
+                                <path d="M5 12h14M13 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
                         )}
                     </button>
                 </div>
             </form>
         </>
+    );
+}
+
+function PreviewField({
+    label,
+    value,
+    multiline,
+}: {
+    label: string;
+    value: string;
+    multiline?: boolean;
+}) {
+    const displayValue = value && value.trim() !== "" && value !== "- Pilih -" ? value : "-";
+    return (
+        <div>
+            <div className="block text-sm font-medium text-gray-600 mb-2">{label}</div>
+            <div
+                className={`w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-800 bg-gray-50 ${
+                    multiline ? "whitespace-pre-wrap min-h-[80px]" : "truncate"
+                }`}
+            >
+                {displayValue}
+            </div>
+        </div>
     );
 }
 
@@ -946,7 +1256,7 @@ function Label({
     doubleRequired?: boolean;
 }) {
     return (
-        <label className="block text-sm text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
             {children}
             {required && <span className="text-red-500 ml-1">*</span>}
             {doubleRequired && <span className="text-red-500 ml-1">**</span>}
@@ -1011,7 +1321,7 @@ function InputField({
             <Label required={required} doubleRequired={doubleRequired}>
                 {label}
             </Label>
-            {hint && <p className="text-xs italic text-gray-500 -mt-1 mb-1.5">{hint}</p>}
+            {hint && <p className="text-xs italic text-gray-500 -mt-1 mb-2">{hint}</p>}
             <input
                 type={isEmail ? "email" : digitsOnly ? "text" : type}
                 inputMode={isPhone || digitsOnly ? "numeric" : undefined}
@@ -1020,13 +1330,21 @@ function InputField({
                 value={value}
                 onChange={handleChange}
                 max={max}
-                className={`w-full border rounded-md px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 ${
+                className={`w-full border rounded-lg px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 transition ${
                     hasError
-                        ? "border-red-500 focus:ring-red-200 focus:border-red-500"
-                        : "border-gray-300 focus:ring-red-500 focus:border-red-500"
+                        ? "border-red-300 bg-red-50/30 focus:ring-red-200 focus:border-red-500"
+                        : "border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-blue-200 focus:border-[#1976d2]"
                 }`}
             />
-            {hasError && <p className="text-xs text-red-500 mt-1">{errorMessage}</p>}
+            {hasError && (
+                <p className="text-xs text-red-500 mt-1.5 flex items-center gap-1">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M12 8v4M12 16h.01" strokeLinecap="round" />
+                    </svg>
+                    {errorMessage}
+                </p>
+            )}
         </div>
     );
 }
@@ -1048,7 +1366,7 @@ function SelectField({
 }) {
     return (
         <div>
-            <label className="block text-sm text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
                 {label}
                 {required && <span className="text-red-500 ml-1">*</span>}
             </label>
@@ -1056,7 +1374,8 @@ function SelectField({
                 defaultValue={defaultValue}
                 value={value}
                 onChange={onChange ? (e) => onChange(e.target.value) : undefined}
-                className="w-full border border-gray-300 rounded-md px-3 py-2.5 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-700 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-[#1976d2] transition appearance-none bg-no-repeat bg-[right_1rem_center] bg-[length:1rem] pr-10"
+                style={{ backgroundImage: "url(\"data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='M6 9l6 6 6-6'/%3e%3c/svg%3e\")" }}
             >
                 {children}
             </select>

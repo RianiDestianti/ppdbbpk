@@ -22,6 +22,8 @@ export interface SiswaPayload {
     program1        : string
     pilihan2        : string
     program2        : string
+    fotoSiswa       : string
+    tandaTanganOrtu : string
     noSpb          ?: string
 }
 
@@ -130,6 +132,8 @@ export interface SiswaFormData {
     noHpIbu         : string
     namaWali        : string
     noHpWali        : string
+    fotoSiswa       : string
+    tandaTanganOrtu : string
 }
 
 export const initialFormSiswa: SiswaFormData = {
@@ -150,4 +154,6 @@ export const initialFormSiswa: SiswaFormData = {
     noHpIbu         : "",
     namaWali        : "",
     noHpWali        : "",
+    fotoSiswa       : "",
+    tandaTanganOrtu : "",
 }

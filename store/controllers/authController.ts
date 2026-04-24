@@ -1,9 +1,14 @@
 import api from "@/services/api";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { ChangePasswordRequest, LoginRequest } from "../types/AuthTypes";
+import { ChangePasswordRequest, GoogleLoginRequest, LoginRequest } from "../types/AuthTypes";
 
 export const handleActionLogin = createAsyncThunk('/auth/login', async (payload: LoginRequest) => {
     const response = (await api.post(`/login`, payload)).data;
+    return response;
+});
+
+export const handleGoogleLogin = createAsyncThunk('/auth/google', async (payload: GoogleLoginRequest) => {
+    const response = (await api.post(`/auth/google`, payload)).data;
     return response;
 });
 

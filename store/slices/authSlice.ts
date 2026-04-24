@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { changePassword, getProfile, handleActionLogin } from '../controllers/authController';
+import { changePassword, getProfile, handleActionLogin, handleGoogleLogin } from '../controllers/authController';
 import { ChangePasswordResponse, DataAuthType, ResponseLoginType } from '../types/AuthTypes';
 
 interface AuthState {
@@ -54,6 +54,26 @@ const authSlice = createSlice({
             .addCase(handleActionLogin.rejected, (state) => {
                 state.loading = false;
                 state.error   = 'Gagal menghubungi server';
+            })
+
+            .addCase(handleGoogleLogin.pending, (state) => {
+                state.loading = true;
+                state.error   = null;
+            })
+            .addCase(handleGoogleLogin.fulfilled, (state, action) => {
+                state.loading  = false;
+                const response = action.payload;
+
+                if (response.status === 200) {
+                    state.responseLogin = response.data;
+                    state.error         = null;
+                } else {
+                    state.error         = response.message;
+                }
+            })
+            .addCase(handleGoogleLogin.rejected, (state) => {
+                state.loading = false;
+                state.error   = 'Gagal login dengan Google';
             })
 
             .addCase(getProfile.fulfilled, (state, action) => {

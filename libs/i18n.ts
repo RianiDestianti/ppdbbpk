@@ -162,5 +162,7 @@ export const t = {
         button:     { id: "Sign In",                en: "Sign In" } as Dict,
         forgot:     { id: "Lupa password? Hubungi admin sekolah masing-masing.",
                       en: "Forgot password? Contact your respective school admin." } as Dict,
+        orDivider:  { id: "atau",                   en: "or" } as Dict,
+        google:     { id: "Masuk dengan Google",    en: "Sign in with Google" } as Dict,
     },
 };

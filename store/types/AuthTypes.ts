@@ -29,3 +29,14 @@ export interface ChangePasswordResponse {
     message : string;
     data?   : Record<string, string[]>;
 }
+
+export interface GoogleLoginRequest {
+    code          : string;
+    redirect_uri? : string;
+}
+
+export interface GoogleLoginResponse {
+    status   : number;
+    message  : string;
+    data?    : ResponseLoginType;
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -15,7 +15,13 @@ import { handleChangeInput } from "@/libs/general";
 import Swal from "sweetalert2";
 
 const TAHUN_AJARAN_MULAI = new Date("2026-07-01");
-const MIN_USIA_TK        = 4;
+
+const MIN_USIA_BY_JENJANG: Record<Jenjang, number> = {
+    tk  : 4,
+    sd  : 6,
+    smp : 12,
+    sma : 16,
+};
 
 const hitungUsiaTahun = (tanggalLahir: string, pada: Date) => {
     const td = new Date(tanggalLahir);
@@ -24,6 +30,55 @@ const hitungUsiaTahun = (tanggalLahir: string, pada: Date) => {
     const m  = pada.getMonth() - td.getMonth();
     if (m < 0 || (m === 0 && pada.getDate() < td.getDate())) usia--;
     return usia;
+};
+
+const PHONE_REGEX = /^(\+62|62|0)8[1-9][0-9]{7,11}$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const IMAGE_MAX_SIZE = 2 * 1024 * 1024;
+const IMAGE_MAX_SIZE_TEXT = "2 MB";
+
+const isValidEmail = (value: string): boolean => EMAIL_REGEX.test(value);
+
+const readImageFile = (file: File): Promise<string> => {
+    if (!file.type.startsWith("image/")) {
+        return Promise.reject(new Error("File harus berupa gambar."));
+    }
+
+    if (file.size > IMAGE_MAX_SIZE) {
+        return Promise.reject(new Error(`Ukuran gambar maksimal ${IMAGE_MAX_SIZE_TEXT}.`));
+    }
+
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            if (typeof reader.result === "string") {
+                resolve(reader.result);
+            } else {
+                reject(new Error("Gagal membaca gambar."));
+            }
+        };
+        reader.onerror = () => reject(new Error("Gagal membaca gambar."));
+        reader.readAsDataURL(file);
+    });
+};
+
+const normalizePhoneInput = (value: string): string => {
+    const onlyAllowed = value.replace(/[^\d+]/g, "");
+    if (onlyAllowed.startsWith("+")) {
+        return "+" + onlyAllowed.slice(1).replace(/\+/g, "");
+    }
+    return onlyAllowed.replace(/\+/g, "");
+};
+
+const isValidPhone = (value: string): boolean => PHONE_REGEX.test(value);
+
+const maxTanggalLahirFor = (jenjang: Jenjang): string => {
+    const batas = new Date(TAHUN_AJARAN_MULAI);
+    batas.setFullYear(batas.getFullYear() - MIN_USIA_BY_JENJANG[jenjang]);
+    const year  = batas.getFullYear();
+    const month = String(batas.getMonth() + 1).padStart(2, "0");
+    const day   = String(batas.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
 };
 
 const formatTanggalId = (d: Date) =>
@@ -234,9 +289,14 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
     const isSelected      = (v: string) => v !== "- Pilih -" && v !== "-" && v.trim() !== "";
     const isPilihanValid  = (pilihan: string, options: string[]) => isSelected(pilihan) && options.includes(pilihan);
     const isProgramValid  = (program: string, options: string[]) => isSelected(program) && options.includes(program);
+    const minUsiaStep1        = MIN_USIA_BY_JENJANG[jenjang];
+    const isUsiaStep1Valid    = !isTargetTk || (
+        tanggalLahirAwal !== "" && hitungUsiaTahun(tanggalLahirAwal, TAHUN_AJARAN_MULAI) >= minUsiaStep1
+    );
     const isStep1Valid  = isSelected(asalSekolah) && isSelected(programAsal) &&
                           isPilihanValid(pilihan1, pilihan1Options) && isProgramValid(program1, program1Options) &&
-                          isPilihanValid(pilihan2, config.pilihanSekolahOptions) && isProgramValid(program2, program2Options);
+                          isPilihanValid(pilihan2, config.pilihanSekolahOptions) && isProgramValid(program2, program2Options) &&
+                          isUsiaStep1Valid;
 
     const handlePilihan1Change = (value: string) => {
         setPilihan1(value);
@@ -262,13 +322,14 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
                 });
                 return;
             }
-            const usia = hitungUsiaTahun(tanggalLahirAwal, TAHUN_AJARAN_MULAI);
-            if (usia < MIN_USIA_TK) {
+            const minUsia = MIN_USIA_BY_JENJANG[jenjang];
+            const usia    = hitungUsiaTahun(tanggalLahirAwal, TAHUN_AJARAN_MULAI);
+            if (usia < minUsia) {
                 Swal.fire({
                     icon               : "error",
                     title              : "Usia Belum Mencukupi",
                     html               : `
-                        Usia minimum untuk jenjang TK adalah <b>${MIN_USIA_TK} tahun</b> pada saat tahun ajaran dimulai
+                        Usia minimum untuk jenjang ${jenjang.toUpperCase()} adalah <b>${minUsia} tahun</b> pada saat tahun ajaran dimulai
                         (<b>${formatTanggalId(TAHUN_AJARAN_MULAI)}</b>).
                         <br/>Usia calon siswa pada tanggal tersebut: <b>${usia < 0 ? 0 : usia} tahun</b>.
                     `,
@@ -308,20 +369,10 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
                                      result.data.tunggakan.toLowerCase() !== "lunas";
 
                 if (adaTunggakan) {
-                    const d = result.data;
                     await Swal.fire({
                         icon               : "warning",
-                        title              : "Masih Ada Tunggakan",
-                        html               : `
-                            <div style="text-align:left;font-size:14px">
-                                <p style="margin:4px 0"><b>Nama:</b> ${d.nama}</p>
-                                <p style="margin:4px 0"><b>Nomor SPB:</b> ${d.nospb}</p>
-                                <p style="margin:4px 0"><b>Tunggakan:</b> ${d.tunggakan}</p>
-                                ${d.keterangan ? `<p style="margin:4px 0"><b>Keterangan:</b> ${d.keterangan}</p>` : ""}
-                                <hr style="margin:12px 0"/>
-                                <p>Silakan hubungi admin sekolah untuk melunasi tunggakan terlebih dahulu sebelum melanjutkan pendaftaran.</p>
-                            </div>
-                        `,
+                        title              : "Ups, Kamu Masih Memiliki Tunggakan!",
+                        text               : "Silahkan hubungi admin untuk lebih lanjut",
                         confirmButtonText  : "Tutup",
                         confirmButtonColor : "#dc2626",
                     });
@@ -447,12 +498,13 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
                                                     <span className="text-red-500 ml-1">*</span>
                                                 </label>
                                                 <p className="text-xs italic text-gray-500 -mt-1 mb-1.5">
-                                                    Minimum usia {MIN_USIA_TK} tahun pada {formatTanggalId(TAHUN_AJARAN_MULAI)} (awal tahun ajaran)
+                                                    Minimum usia {MIN_USIA_BY_JENJANG[jenjang]} tahun pada {formatTanggalId(TAHUN_AJARAN_MULAI)} (awal tahun ajaran)
                                                 </p>
                                                 <input
                                                     type="date"
                                                     value={tanggalLahirAwal}
                                                     onChange={(e) => setTanggalLahirAwal(e.target.value)}
+                                                    max={maxTanggalLahirFor(jenjang)}
                                                     className="w-full border border-gray-300 rounded-md px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                                                 />
                                             </div>
@@ -502,7 +554,7 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
 
                     {currentStep === 2 && (
                         <FormStep2
-                            asalSekolah={asalSekolah}
+                            jenjang={jenjang}
                             programAsal={programAsal}
                             pilihan1={pilihan1}
                             program1={program1}
@@ -524,7 +576,7 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
 }
 
 function FormStep2({
-    asalSekolah,
+    jenjang,
     programAsal,
     pilihan1,
     program1,
@@ -536,7 +588,7 @@ function FormStep2({
     sumbanganOptions,
     onBack,
 }: {
-    asalSekolah: string;
+    jenjang: Jenjang;
     programAsal: string;
     pilihan1: string;
     program1: string;
@@ -548,6 +600,16 @@ function FormStep2({
     sumbanganOptions: string[];
     onBack: () => void;
 }) {
+    const maxTanggalLahir = maxTanggalLahirFor(jenjang);
+    const minUsiaJenjang  = MIN_USIA_BY_JENJANG[jenjang];
+    const isUsiaValid     = (tanggal: string) => {
+        if (!tanggal) return false;
+        return hitungUsiaTahun(tanggal, TAHUN_AJARAN_MULAI) >= minUsiaJenjang;
+    };
+    const isPhoneRequiredValid = (value: string) => isValidPhone(value);
+    const isPhoneOptionalValid = (value: string) => !value || isValidPhone(value);
+    const isEmailValid         = (value: string) => !value || isValidEmail(value);
+    const isExactDigits        = (value: string, n: number) => !value || /^\d+$/.test(value) && value.length === n;
     const dispatch                                  = useAppDispatch();
     const { loading, response }                     = useAppSelector((state) => state.siswa);
     const [formData, setFormData]                   = useState<SiswaFormData>({
@@ -593,6 +655,89 @@ function FormStep2({
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+
+        const imageChecks: Array<{ label: string; value: string }> = [
+            { label: "Foto Siswa", value: formData.fotoSiswa },
+            { label: "Tanda Tangan Orang Tua", value: formData.tandaTanganOrtu },
+        ];
+
+        for (const image of imageChecks) {
+            if (!image.value) {
+                Swal.fire({
+                    icon               : "error",
+                    title              : `${image.label} Diperlukan`,
+                    text               : `Mohon lengkapi ${image.label}.`,
+                    confirmButtonColor : "#dc2626",
+                });
+                return;
+            }
+        }
+
+        const phoneChecks: Array<{ label: string; value: string; required: boolean }> = [
+            { label: "No HP (WhatsApp)", value: formData.noHp,      required: true  },
+            { label: "No. HP. Ayah",     value: formData.noHpAyah,  required: true  },
+            { label: "No. HP. Ibu",      value: formData.noHpIbu,   required: true  },
+            { label: "No. HP. Wali",     value: formData.noHpWali,  required: false },
+        ];
+
+        for (const phone of phoneChecks) {
+            if (!phone.value && !phone.required) continue;
+            if (!isValidPhone(phone.value)) {
+                Swal.fire({
+                    icon               : "error",
+                    title              : "Nomor Telepon Tidak Valid",
+                    text               : `Format ${phone.label} tidak valid. Contoh: 08123456789`,
+                    confirmButtonColor : "#dc2626",
+                });
+                return;
+            }
+        }
+
+        const digitChecks: Array<{ label: string; value: string; length: number }> = [
+            { label: "NISN", value: formData.nisn, length: 10 },
+            { label: "NIK",  value: formData.nik,  length: 16 },
+            { label: "NoKK", value: formData.nokk, length: 16 },
+        ];
+
+        for (const field of digitChecks) {
+            if (!field.value) continue;
+            if (!isExactDigits(field.value, field.length)) {
+                Swal.fire({
+                    icon               : "error",
+                    title              : `${field.label} Tidak Valid`,
+                    text               : `${field.label} harus ${field.length} digit angka.`,
+                    confirmButtonColor : "#dc2626",
+                });
+                return;
+            }
+        }
+
+        if (formData.email && !isEmailValid(formData.email)) {
+            Swal.fire({
+                icon               : "error",
+                title              : "Email Tidak Valid",
+                text               : "Format email tidak valid. Contoh: nama@gmail.com",
+                confirmButtonColor : "#dc2626",
+            });
+            return;
+        }
+
+        if (formData.tanggalLahir) {
+            const usia = hitungUsiaTahun(formData.tanggalLahir, TAHUN_AJARAN_MULAI);
+            if (usia < minUsiaJenjang) {
+                Swal.fire({
+                    icon               : "error",
+                    title              : "Usia Belum Mencukupi",
+                    html               : `
+                        Usia minimum untuk jenjang ${jenjang.toUpperCase()} adalah <b>${minUsiaJenjang} tahun</b> pada saat tahun ajaran dimulai
+                        (<b>${formatTanggalId(TAHUN_AJARAN_MULAI)}</b>).
+                        <br/>Usia calon siswa pada tanggal tersebut: <b>${usia < 0 ? 0 : usia} tahun</b>.
+                    `,
+                    confirmButtonColor : "#dc2626",
+                });
+                return;
+            }
+        }
 
         const sekolahAsal = formData.sekolahAsalNama || sekolahAsalSelect;
 
@@ -645,12 +790,12 @@ function FormStep2({
                         Biodata Siswa
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <InputField label="Nomor Induk Siswa Nasional (NISN)" doubleRequired name="nisn" value={formData.nisn} onChange={(e) => handleChangeInput(e, setFormData)} />
-                        <InputField label="Nomor Induk Kependudukan (NIK)" doubleRequired name="nik" value={formData.nik} onChange={(e) => handleChangeInput(e, setFormData)} />
-                        <InputField label="Nomor Kartu Keluarga (NoKK)" doubleRequired name="nokk" value={formData.nokk} onChange={(e) => handleChangeInput(e, setFormData)} />
+                        <InputField label="Nomor Induk Siswa Nasional (NISN)" doubleRequired digitsOnly exactLength={10} name="nisn" value={formData.nisn} onChange={(e) => handleChangeInput(e, setFormData)} />
+                        <InputField label="Nomor Induk Kependudukan (NIK)" doubleRequired digitsOnly exactLength={16} name="nik" value={formData.nik} onChange={(e) => handleChangeInput(e, setFormData)} />
+                        <InputField label="Nomor Kartu Keluarga (NoKK)" doubleRequired digitsOnly exactLength={16} name="nokk" value={formData.nokk} onChange={(e) => handleChangeInput(e, setFormData)} />
                         <InputField label="Nama Lengkap" required hint="Sesuai Akte Lahir Anak" name="nama" value={formData.nama} onChange={(e) => handleChangeInput(e, setFormData)} />
                         <InputField label="Tempat Lahir" required name="tempatLahir" value={formData.tempatLahir} onChange={(e) => handleChangeInput(e, setFormData)} />
-                        <InputField label="Tanggal Lahir" required type="date" name="tanggalLahir" value={formData.tanggalLahir} onChange={(e) => handleChangeInput(e, setFormData)} />
+                        <InputField label="Tanggal Lahir" required type="date" name="tanggalLahir" value={formData.tanggalLahir} max={maxTanggalLahir} hint={`Minimum usia ${minUsiaJenjang} tahun pada ${formatTanggalId(TAHUN_AJARAN_MULAI)}`} onChange={(e) => handleChangeInput(e, setFormData)} />
 
                         <div>
                             <Label required>Jenis Kelamin</Label>
@@ -680,8 +825,15 @@ function FormStep2({
                             </div>
                         </div>
 
-                        <InputField label="No HP (WhatsApp) Untuk Informasi Akademik" required name="noHp" value={formData.noHp} onChange={(e) => handleChangeInput(e, setFormData)} />
+                        <InputField label="No HP (WhatsApp) Untuk Informasi Akademik" required type="tel" name="noHp" value={formData.noHp} onChange={(e) => handleChangeInput(e, setFormData)} />
                         <InputField label="Email" type="email" doubleRequired name="email" value={formData.email} onChange={(e) => handleChangeInput(e, setFormData)} />
+                        <ImageCaptureField
+                            label="Foto Siswa"
+                            required
+                            value={formData.fotoSiswa}
+                            onChange={(value) => setFormData((prev) => ({ ...prev, fotoSiswa: value }))}
+                            hint={`Unggah foto siswa atau ambil foto langsung dari kamera. Maksimal ${IMAGE_MAX_SIZE_TEXT}.`}
+                        />
 
                         <div className="md:col-span-1">
                             <Label required>Alamat Rumah</Label>
@@ -734,10 +886,10 @@ function FormStep2({
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <InputField label="Nama Ayah" required hint="Sesuai Akte Lahir Anak" name="namaAyah" value={formData.namaAyah} onChange={(e) => handleChangeInput(e, setFormData)} />
                         <InputField label="Nama Ibu" required hint="Sesuai Akte Lahir Anak" name="namaIbu" value={formData.namaIbu} onChange={(e) => handleChangeInput(e, setFormData)} />
-                        <InputField label="No. HP. Ayah" required name="noHpAyah" value={formData.noHpAyah} onChange={(e) => handleChangeInput(e, setFormData)} />
-                        <InputField label="No. HP. Ibu" required name="noHpIbu" value={formData.noHpIbu} onChange={(e) => handleChangeInput(e, setFormData)} />
+                        <InputField label="No. HP. Ayah" required type="tel" name="noHpAyah" value={formData.noHpAyah} onChange={(e) => handleChangeInput(e, setFormData)} />
+                        <InputField label="No. HP. Ibu" required type="tel" name="noHpIbu" value={formData.noHpIbu} onChange={(e) => handleChangeInput(e, setFormData)} />
                         <InputField label="Nama Wali" name="namaWali" value={formData.namaWali} onChange={(e) => handleChangeInput(e, setFormData)} />
-                        <InputField label="No. HP. Wali" name="noHpWali" value={formData.noHpWali} onChange={(e) => handleChangeInput(e, setFormData)} />
+                        <InputField label="No. HP. Wali" type="tel" name="noHpWali" value={formData.noHpWali} onChange={(e) => handleChangeInput(e, setFormData)} />
                     </div>
                 </section>
 
@@ -779,6 +931,10 @@ function FormStep2({
                                 />
                             </div>
                         </div>
+                        <SignatureField
+                            value={formData.tandaTanganOrtu}
+                            onChange={(value) => setFormData((prev) => ({ ...prev, tandaTanganOrtu: value }))}
+                        />
                     </div>
                 </section>
 
@@ -806,8 +962,21 @@ function FormStep2({
                     </button>
                     <button
                         type="submit"
-                        disabled={loading}
-                        className="flex-1 bg-gray-900 hover:bg-black text-white font-medium py-3 rounded-md transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                        disabled={
+                            loading ||
+                            !isUsiaValid(formData.tanggalLahir) ||
+                            !isPhoneRequiredValid(formData.noHp) ||
+                            !isPhoneRequiredValid(formData.noHpAyah) ||
+                            !isPhoneRequiredValid(formData.noHpIbu) ||
+                            !isPhoneOptionalValid(formData.noHpWali) ||
+                            !isEmailValid(formData.email) ||
+                            !isExactDigits(formData.nisn, 10) ||
+                            !isExactDigits(formData.nik,  16) ||
+                            !isExactDigits(formData.nokk, 16) ||
+                            !formData.fotoSiswa ||
+                            !formData.tandaTanganOrtu
+                        }
+                        className="flex-1 bg-gray-900 hover:bg-black text-white font-medium py-3 rounded-md transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {loading ? "Mengirim..." : "Kirim"}
                         {!loading && (
@@ -819,6 +988,285 @@ function FormStep2({
                 </div>
             </form>
         </>
+    );
+}
+
+function ImageCaptureField({
+    label,
+    value,
+    onChange,
+    required,
+    hint,
+}: {
+    label: string;
+    value: string;
+    onChange: (value: string) => void;
+    required?: boolean;
+    hint?: string;
+}) {
+    const uploadInputRef = useRef<HTMLInputElement>(null);
+    const cameraInputRef = useRef<HTMLInputElement>(null);
+
+    const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+            const dataUrl = await readImageFile(file);
+            onChange(dataUrl);
+        } catch (error) {
+            Swal.fire({
+                icon               : "error",
+                title              : "Gambar Tidak Valid",
+                text               : error instanceof Error ? error.message : "Gagal membaca gambar.",
+                confirmButtonColor : "#dc2626",
+            });
+        } finally {
+            e.target.value = "";
+        }
+    };
+
+    return (
+        <div className="md:col-span-2">
+            <Label required={required}>{label}</Label>
+            {hint && <p className="text-xs italic text-gray-500 -mt-1 mb-2">{hint}</p>}
+            <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-4 items-start">
+                <div className="h-56 border border-gray-300 rounded-md bg-gray-50 flex items-center justify-center overflow-hidden">
+                    {value ? (
+                        <>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={value} alt={label} className="w-full h-full object-contain bg-white" />
+                        </>
+                    ) : (
+                        <span className="text-xs text-gray-500 text-center px-4">Belum ada foto</span>
+                    )}
+                </div>
+                <div className="space-y-3">
+                    <input
+                        ref={uploadInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="hidden"
+                    />
+                    <input
+                        ref={cameraInputRef}
+                        type="file"
+                        accept="image/*"
+                        capture="user"
+                        onChange={handleImageChange}
+                        className="hidden"
+                    />
+                    <div className="flex flex-wrap gap-3">
+                        <button
+                            type="button"
+                            onClick={() => uploadInputRef.current?.click()}
+                            className="px-4 py-2.5 rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium text-sm flex items-center gap-2"
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M12 3v12M8 7l4-4 4 4M4 15v4a2 2 0 002 2h12a2 2 0 002-2v-4" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            Unggah Foto
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => cameraInputRef.current?.click()}
+                            className="px-4 py-2.5 rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium text-sm flex items-center gap-2"
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z" strokeLinecap="round" strokeLinejoin="round" />
+                                <circle cx="12" cy="13" r="4" />
+                            </svg>
+                            Ambil Foto
+                        </button>
+                        {value && (
+                            <button
+                                type="button"
+                                onClick={() => onChange("")}
+                                className="px-4 py-2.5 rounded-md border border-red-200 hover:bg-red-50 text-red-600 font-medium text-sm"
+                            >
+                                Hapus
+                            </button>
+                        )}
+                    </div>
+                    <p className="text-xs text-gray-500">
+                        Format gambar JPG, PNG, atau format gambar lain yang didukung browser.
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function SignatureField({
+    value,
+    onChange,
+}: {
+    value: string;
+    onChange: (value: string) => void;
+}) {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const uploadInputRef = useRef<HTMLInputElement>(null);
+    const isDrawingRef = useRef(false);
+
+    useEffect(() => {
+        if (value) return;
+
+        const canvas = canvasRef.current;
+        const context = canvas?.getContext("2d");
+        if (!canvas || !context) return;
+
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.lineCap = "round";
+        context.lineJoin = "round";
+        context.strokeStyle = "#111827";
+        context.lineWidth = 4;
+    }, [value]);
+
+    const resetCanvas = (shouldUpdateValue = true) => {
+        const canvas = canvasRef.current;
+        const context = canvas?.getContext("2d");
+        if (!canvas || !context) return;
+
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.fillStyle = "#ffffff";
+        context.fillRect(0, 0, canvas.width, canvas.height);
+        context.lineCap = "round";
+        context.lineJoin = "round";
+        context.strokeStyle = "#111827";
+        context.lineWidth = 4;
+
+        if (shouldUpdateValue) onChange("");
+    };
+
+    const getPoint = (e: React.PointerEvent<HTMLCanvasElement>) => {
+        const canvas = canvasRef.current;
+        if (!canvas) return { x: 0, y: 0 };
+
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: (e.clientX - rect.left) * (canvas.width / rect.width),
+            y: (e.clientY - rect.top) * (canvas.height / rect.height),
+        };
+    };
+
+    const startDrawing = (e: React.PointerEvent<HTMLCanvasElement>) => {
+        const canvas = canvasRef.current;
+        const context = canvas?.getContext("2d");
+        if (!canvas || !context) return;
+
+        e.preventDefault();
+        e.currentTarget.setPointerCapture(e.pointerId);
+        const point = getPoint(e);
+        isDrawingRef.current = true;
+        context.beginPath();
+        context.moveTo(point.x, point.y);
+    };
+
+    const draw = (e: React.PointerEvent<HTMLCanvasElement>) => {
+        if (!isDrawingRef.current) return;
+
+        const context = canvasRef.current?.getContext("2d");
+        if (!context) return;
+
+        e.preventDefault();
+        const point = getPoint(e);
+        context.lineTo(point.x, point.y);
+        context.stroke();
+    };
+
+    const finishDrawing = (e: React.PointerEvent<HTMLCanvasElement>) => {
+        if (!isDrawingRef.current) return;
+
+        isDrawingRef.current = false;
+        if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+            e.currentTarget.releasePointerCapture(e.pointerId);
+        }
+
+        const canvas = canvasRef.current;
+        if (canvas) onChange(canvas.toDataURL("image/png"));
+    };
+
+    const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+            const dataUrl = await readImageFile(file);
+            resetCanvas(false);
+            onChange(dataUrl);
+        } catch (error) {
+            Swal.fire({
+                icon               : "error",
+                title              : "Gambar Tidak Valid",
+                text               : error instanceof Error ? error.message : "Gagal membaca gambar.",
+                confirmButtonColor : "#dc2626",
+            });
+        } finally {
+            e.target.value = "";
+        }
+    };
+
+    return (
+        <div>
+            <Label required>Tanda Tangan Orang Tua</Label>
+            <p className="text-xs italic text-gray-500 -mt-1 mb-2">
+                Unggah gambar tanda tangan atau tanda tangan langsung pada kotak.
+            </p>
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_220px] gap-4">
+                <div>
+                    <canvas
+                        ref={canvasRef}
+                        width={800}
+                        height={220}
+                        onPointerDown={startDrawing}
+                        onPointerMove={draw}
+                        onPointerUp={finishDrawing}
+                        onPointerCancel={finishDrawing}
+                        className="w-full h-44 border border-gray-300 rounded-md bg-white cursor-crosshair"
+                        style={{ touchAction: "none" }}
+                    />
+                    <input
+                        ref={uploadInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleUpload}
+                        className="hidden"
+                    />
+                    <div className="flex flex-wrap gap-3 mt-3">
+                        <button
+                            type="button"
+                            onClick={() => uploadInputRef.current?.click()}
+                            className="px-4 py-2.5 rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium text-sm flex items-center gap-2"
+                        >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M12 3v12M8 7l4-4 4 4M4 15v4a2 2 0 002 2h12a2 2 0 002-2v-4" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            Unggah Tanda Tangan
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => resetCanvas()}
+                            className="px-4 py-2.5 rounded-md border border-red-200 hover:bg-red-50 text-red-600 font-medium text-sm"
+                        >
+                            Hapus
+                        </button>
+                    </div>
+                </div>
+                <div className="h-44 border border-gray-300 rounded-md bg-gray-50 flex items-center justify-center overflow-hidden">
+                    {value ? (
+                        <>
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={value} alt="Tanda tangan orang tua" className="max-w-full max-h-full object-contain bg-white" />
+                        </>
+                    ) : (
+                        <span className="text-xs text-gray-500 text-center px-4">Belum ada tanda tangan</span>
+                    )}
+                </div>
+            </div>
+        </div>
     );
 }
 
@@ -849,6 +1297,9 @@ function InputField({
     name,
     value,
     onChange,
+    max,
+    digitsOnly,
+    exactLength,
 }: {
     label: string;
     required?: boolean;
@@ -858,7 +1309,37 @@ function InputField({
     name?: string;
     value?: string;
     onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    max?: string;
+    digitsOnly?: boolean;
+    exactLength?: number;
 }) {
+    const isPhone = type === "tel";
+    const isEmail = type === "email";
+
+    const phoneInvalid  = isPhone && !!value && !isValidPhone(value);
+    const emailInvalid  = isEmail && !!value && !isValidEmail(value);
+    const lengthInvalid = !!exactLength && !!value && value.length !== exactLength;
+    const hasError      = phoneInvalid || emailInvalid || lengthInvalid;
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (isPhone) {
+            e.target.value = normalizePhoneInput(e.target.value);
+        } else if (digitsOnly) {
+            let digits = e.target.value.replace(/\D/g, "");
+            if (exactLength) digits = digits.slice(0, exactLength);
+            e.target.value = digits;
+        }
+        onChange?.(e);
+    };
+
+    const errorMessage = phoneInvalid
+        ? "Format nomor tidak valid. Contoh: 08123456789 atau +628123456789"
+        : emailInvalid
+        ? "Format email tidak valid. Contoh: nama@gmail.com"
+        : lengthInvalid
+        ? `Harus ${exactLength} digit angka (saat ini ${value?.length ?? 0})`
+        : "";
+
     return (
         <div>
             <Label required={required} doubleRequired={doubleRequired}>
@@ -866,12 +1347,20 @@ function InputField({
             </Label>
             {hint && <p className="text-xs italic text-gray-500 -mt-1 mb-1.5">{hint}</p>}
             <input
-                type={type}
+                type={isEmail ? "email" : digitsOnly ? "text" : type}
+                inputMode={isPhone || digitsOnly ? "numeric" : undefined}
+                maxLength={isPhone ? 15 : exactLength}
                 name={name}
                 value={value}
-                onChange={onChange}
-                className="w-full border border-gray-300 rounded-md px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                onChange={handleChange}
+                max={max}
+                className={`w-full border rounded-md px-3 py-2.5 text-sm text-gray-700 focus:outline-none focus:ring-2 ${
+                    hasError
+                        ? "border-red-500 focus:ring-red-200 focus:border-red-500"
+                        : "border-gray-300 focus:ring-red-500 focus:border-red-500"
+                }`}
             />
+            {hasError && <p className="text-xs text-red-500 mt-1">{errorMessage}</p>}
         </div>
     );
 }

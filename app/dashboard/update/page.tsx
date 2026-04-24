@@ -132,11 +132,11 @@ export default function UpdatePendaftarPage() {
                 <PageBanner />
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
-                    <div className="flex items-center justify-between">
-                        <h1 className="text-xl font-semibold text-gray-800">Update Data Pendaftar</h1>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <h1 className="text-lg sm:text-xl font-semibold text-gray-800">Update Data Pendaftar</h1>
                         <button
                             onClick={() => router.push("/dashboard")}
-                            className="text-sm text-[#1976d2] hover:underline"
+                            className="text-sm text-[#1976d2] hover:underline self-start sm:self-auto"
                         >
                             ← Kembali ke Dashboard
                         </button>
@@ -287,19 +287,19 @@ export default function UpdatePendaftarPage() {
                             </div>
                         </Section>
 
-                        <div className="flex justify-end gap-3">
+                        <div className="flex flex-col sm:flex-row sm:justify-end gap-3">
                             <button
                                 type="button"
                                 onClick={() => router.push("/dashboard")}
                                 disabled={loading}
-                                className="px-6 py-3 rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium text-sm disabled:opacity-50"
+                                className="px-6 py-3 rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium text-sm disabled:opacity-50 order-2 sm:order-1"
                             >
                                 Batal
                             </button>
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="px-8 py-3 rounded-md bg-[#1976d2] hover:bg-[#1565c0] text-white font-medium text-sm disabled:opacity-50"
+                                className="px-8 py-3 rounded-md bg-[#1976d2] hover:bg-[#1565c0] text-white font-medium text-sm disabled:opacity-50 order-1 sm:order-2"
                             >
                                 {loading ? "Menyimpan..." : "Simpan Perubahan"}
                             </button>
@@ -316,10 +316,10 @@ export default function UpdatePendaftarPage() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
     return (
         <section className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-            <div className="border-b border-gray-100 px-6 py-4">
-                <h2 className="text-lg font-semibold text-gray-800">{title}</h2>
+            <div className="border-b border-gray-100 px-4 sm:px-6 py-4">
+                <h2 className="text-base sm:text-lg font-semibold text-gray-800">{title}</h2>
             </div>
-            <div className="px-6 py-5">{children}</div>
+            <div className="px-4 sm:px-6 py-5">{children}</div>
         </section>
     );
 }

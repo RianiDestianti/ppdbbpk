@@ -60,10 +60,10 @@ export default function DashboardPage() {
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
                     <section className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                        <div className="border-b border-gray-100 px-6 py-4">
-                            <h1 className="text-xl font-semibold text-gray-800 tracking-wide">LAST USER ACTIVITY</h1>
+                        <div className="border-b border-gray-100 px-4 sm:px-6 py-4">
+                            <h1 className="text-lg sm:text-xl font-semibold text-gray-800 tracking-wide">LAST USER ACTIVITY</h1>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-6 py-5">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 px-4 sm:px-6 py-5">
                             <div className="text-sm text-gray-700 space-y-2">
                                 <div className="flex">
                                     <span className="w-28 text-gray-600">Username</span>
@@ -85,8 +85,8 @@ export default function DashboardPage() {
                         </div>
                     </section>
 
-                    <div className="bg-[#1976d2] text-white rounded-md px-5 py-4 text-sm flex items-center gap-2">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <div className="bg-[#1976d2] text-white rounded-md px-4 sm:px-5 py-3 sm:py-4 text-sm flex items-start gap-2">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="flex-shrink-0 mt-0.5">
                             <circle cx="12" cy="12" r="10" />
                             <path d="M12 16v-4M12 8h.01" strokeLinecap="round" />
                         </svg>
@@ -99,17 +99,17 @@ export default function DashboardPage() {
                     </div>
 
                     <section className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                        <div className="border-b border-gray-100 px-6 py-4">
-                            <h2 className="text-xl font-semibold text-gray-800">Control Panel Pendaftar SPMB</h2>
+                        <div className="border-b border-gray-100 px-4 sm:px-6 py-4">
+                            <h2 className="text-lg sm:text-xl font-semibold text-gray-800">Control Panel Pendaftar SPMB</h2>
                         </div>
 
-                        <div className="px-6 py-5">
-                            <div className="bg-gray-50 border border-gray-200 rounded-md px-5 py-4 text-sm text-gray-700 space-y-1">
+                        <div className="px-4 sm:px-6 py-5">
+                            <div className="bg-gray-50 border border-gray-200 rounded-md px-4 sm:px-5 py-3 sm:py-4 text-sm text-gray-700 space-y-1 break-words">
                                 <div>Pilihan 1 : {pilihan1}</div>
                                 <div>Pilihan 2 : {pilihan2}</div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mt-6">
                                 <MenuItem
                                     href="/dashboard/status"
                                     iconBg="bg-green-500"

@@ -8,9 +8,9 @@ export default function Footer() {
     const { lang } = useLanguage();
 
     return (
-        <footer className="mt-16 bg-[#0d47a1] text-gray-200">
-            <div className="max-w-7xl mx-auto px-6 py-12">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+        <footer className="mt-12 sm:mt-16 bg-[#0d47a1] text-gray-200">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 py-10 sm:py-12">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10">
                     <div>
                         <h3 className="text-white font-semibold mb-1">{t.footer.pendaftaran[lang]}</h3>
                         <div className="w-12 h-[2px] bg-red-500 mb-4" />
@@ -88,7 +88,7 @@ export default function Footer() {
                     </div>
                 </div>
 
-                <div className="mt-10">
+                <div className="mt-8 sm:mt-10">
                     <h3 className="text-white font-semibold mb-1">{t.footer.website[lang]}</h3>
                     <div className="w-12 h-[2px] bg-red-500 mb-4" />
                     <select className="w-full md:w-96 bg-white/10 border border-white/20 rounded-md px-3 py-2 text-sm text-gray-100">
@@ -97,7 +97,7 @@ export default function Footer() {
                 </div>
             </div>
 
-            <div className="bg-red-700 text-white text-center text-sm py-3">
+            <div className="bg-red-700 text-white text-center text-xs sm:text-sm px-4 py-3">
                 {t.footer.copyright[lang]}
             </div>
         </footer>

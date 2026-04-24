@@ -19,12 +19,12 @@ export default function FAQPage() {
                 <PageBanner />
                 <LanguageToggle />
 
-                <section className="max-w-7xl mx-auto px-6 py-12">
-                    <h1 className="text-2xl text-gray-700">{t.faq.title[lang]}</h1>
-                    <p className="mt-1 tracking-[0.3em] text-gray-500 text-xs">{t.faq.sub[lang]}</p>
+                <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+                    <h1 className="text-xl sm:text-2xl text-gray-700">{t.faq.title[lang]}</h1>
+                    <p className="mt-1 tracking-[0.3em] text-gray-500 text-[10px] sm:text-xs">{t.faq.sub[lang]}</p>
                     <div className="w-16 h-[3px] bg-red-600 mt-3" />
 
-                    <p className="mt-10 text-gray-700 text-[15px] flex flex-wrap items-center gap-3">
+                    <p className="mt-8 sm:mt-10 text-gray-700 text-sm sm:text-[15px] flex flex-wrap items-center gap-2 sm:gap-3">
                         <span>{t.faq.intro[lang]}</span>
                         <a
                             href="tel:0224203808"
@@ -48,13 +48,13 @@ export default function FAQPage() {
                         </a>
                     </p>
 
-                    <div className="mt-10 space-y-8">
+                    <div className="mt-8 sm:mt-10 space-y-6 sm:space-y-8">
                         {items.map((f, i) => (
                             <div key={i}>
-                                <p className="font-bold italic text-gray-800 text-[15px]">
+                                <p className="font-bold italic text-gray-800 text-sm sm:text-[15px]">
                                     {t.faq.tanya[lang]} : {f.q}
                                 </p>
-                                <div className="mt-2 text-gray-700 text-[15px] leading-relaxed">
+                                <div className="mt-2 text-gray-700 text-sm sm:text-[15px] leading-relaxed">
                                     <span>{t.faq.jawab[lang]} : </span>
                                     {f.a}
                                     {"list" in f && f.list && (

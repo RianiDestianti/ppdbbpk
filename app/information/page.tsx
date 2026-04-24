@@ -19,12 +19,12 @@ export default function InformationPage() {
                 <PageBanner />
                 <LanguageToggle />
 
-                <section className="max-w-7xl mx-auto px-6 py-12">
-                    <h1 className="text-2xl text-gray-700">{t.info.title[lang]}</h1>
-                    <p className="mt-1 tracking-[0.3em] text-gray-500 text-xs">{t.info.sub[lang]}</p>
+                <section className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+                    <h1 className="text-xl sm:text-2xl text-gray-700">{t.info.title[lang]}</h1>
+                    <p className="mt-1 tracking-[0.3em] text-gray-500 text-[10px] sm:text-xs">{t.info.sub[lang]}</p>
                     <div className="w-16 h-[3px] bg-red-600 mt-3" />
 
-                    <div className="mt-10 space-y-6 text-gray-700 text-[15px] leading-relaxed">
+                    <div className="mt-8 sm:mt-10 space-y-6 text-gray-700 text-sm sm:text-[15px] leading-relaxed">
                         <p>{t.info.intro[lang]}</p>
                         <p>{t.info.lead[lang]}</p>
 
@@ -37,7 +37,7 @@ export default function InformationPage() {
                             ))}
                         </ol>
 
-                        <div className="mt-8 bg-[#1976d2] text-white rounded-md p-5">
+                        <div className="mt-8 bg-[#1976d2] text-white rounded-md p-4 sm:p-5">
                             <div className="flex items-center gap-2 font-semibold mb-2">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <circle cx="12" cy="12" r="10" />

@@ -2,12 +2,14 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/providers/LanguageProvider";
 import { t } from "@/libs/i18n";
 
 export default function Navbar() {
     const { lang }                            = useLanguage();
+    const router                              = useRouter();
     const [showFormulir, setShowFormulir]     = useState(false);
     const [showTop, setShowTop]               = useState(false);
     const [mobileOpen, setMobileOpen]         = useState(false);
@@ -20,6 +22,25 @@ export default function Navbar() {
         { href: "/form?jenjang=smp", label: t.nav.smp[lang] },
         { href: "/form?jenjang=sma", label: t.nav.sma[lang] },
     ];
+
+    const handleFormulirClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+        if (!isLoggedIn) {
+            e.preventDefault();
+            sessionStorage.setItem("auth-redirect", href);
+            closeMobile();
+            setShowFormulir(false);
+            router.push("/sign-in");
+        } else {
+            closeMobile();
+        }
+    };
+
+    const handleAuthClick = () => {
+        if (!isLoggedIn) {
+            sessionStorage.removeItem("auth-redirect");
+        }
+        closeMobile();
+    };
 
     useEffect(() => {
         const onScroll = () => setShowTop(window.scrollY > 200);
@@ -95,6 +116,7 @@ export default function Navbar() {
                                         <Link
                                             key={item.href}
                                             href={item.href}
+                                            onClick={(e) => handleFormulirClick(e, item.href)}
                                             className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                                         >
                                             {item.label}
@@ -104,7 +126,7 @@ export default function Navbar() {
                             )}
                         </div>
 
-                        <Link href={authHref} className="text-gray-700 hover:text-[#1976d2]">
+                        <Link href={authHref} onClick={handleAuthClick} className="text-gray-700 hover:text-[#1976d2]">
                             {authLabel}
                         </Link>
                     </nav>
@@ -156,7 +178,7 @@ export default function Navbar() {
                                         <Link
                                             key={item.href}
                                             href={item.href}
-                                            onClick={closeMobile}
+                                            onClick={(e) => handleFormulirClick(e, item.href)}
                                             className="rounded-md px-1 py-2 text-sm text-gray-600 hover:bg-gray-50 hover:text-[#1976d2]"
                                         >
                                             {item.label}
@@ -165,7 +187,7 @@ export default function Navbar() {
                                 </div>
                             )}
 
-                            <Link href={authHref} onClick={closeMobile} className="rounded-md px-1 py-2.5 text-gray-700 hover:bg-gray-50 hover:text-[#1976d2]">
+                            <Link href={authHref} onClick={handleAuthClick} className="rounded-md px-1 py-2.5 text-gray-700 hover:bg-gray-50 hover:text-[#1976d2]">
                                 {authLabel}
                             </Link>
                         </nav>

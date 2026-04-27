@@ -50,6 +50,9 @@ function GoogleCallback() {
             localStorage.setItem("auth-username", stateLogin.responseLogin.username);
             localStorage.setItem("auth-nama",     stateLogin.responseLogin.nama);
 
+            const redirectTarget = sessionStorage.getItem("auth-redirect") || "/dashboard";
+            sessionStorage.removeItem("auth-redirect");
+
             Swal.fire({
                 icon              : "success",
                 title             : "Login Berhasil",
@@ -59,7 +62,7 @@ function GoogleCallback() {
                 showConfirmButton : false,
             }).then(() => {
                 dispatch(handleCleanResponse());
-                window.location.href = "/dashboard";
+                window.location.href = redirectTarget;
             });
         }
     }, [stateLogin.responseLogin, dispatch]);

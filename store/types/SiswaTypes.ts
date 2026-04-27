@@ -24,6 +24,7 @@ export interface SiswaPayload {
     program2        : string
     fotoSiswa       : string
     tandaTanganOrtu : string
+    jenjang        ?: string
     noSpb          ?: string
 }
 

@@ -7,6 +7,7 @@ import Footer from "@/components/Footer";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
 import { saveSiswa } from "@/store/controllers/siswaController";
 import { checkTunggakan } from "@/store/controllers/tunggakanController";
+import { getProfile } from "@/store/controllers/authController";
 import { resetResponse } from "@/store/slices/siswaSlice";
 import { resetTunggakan } from "@/store/slices/tunggakanSlice";
 import { initialFormSiswa, SiswaFormData } from "@/store/types/SiswaTypes";
@@ -663,6 +664,10 @@ function FormStep2({
     const isExactDigits        = (value: string, n: number) => !value || /^\d+$/.test(value) && value.length === n;
     const dispatch                                  = useAppDispatch();
     const { loading, response }                     = useAppSelector((state) => state.siswa);
+    const authProfile                               = useAppSelector((state) => state.auth.profile);
+    const [cachedEmail]                             = useState(() =>
+        typeof window !== "undefined" ? localStorage.getItem("auth-email") || "" : ""
+    );
     const [formData, setFormData]                   = useState<SiswaFormData>({
         ...initialFormSiswa,
         tanggalLahir: tanggalLahirAwal || initialFormSiswa.tanggalLahir,
@@ -672,14 +677,31 @@ function FormStep2({
     const [sumbangan, setSumbangan]                 = useState("Rp. 0");
     const [sumbanganLainnya, setSumbanganLainnya]   = useState("");
 
+    const loginEmail = authProfile?.email || cachedEmail || "";
+
+    useEffect(() => {
+        if (!authProfile?.email) {
+            dispatch(getProfile());
+        }
+    }, [dispatch, authProfile?.email]);
+
+    useEffect(() => {
+        if (authProfile?.email) {
+            localStorage.setItem("auth-email", authProfile.email);
+        }
+    }, [authProfile?.email]);
+
     useEffect(() => {
         if (response?.status === 200) {
+            const noreg = response.data?.noreg ?? "";
+
             Swal.fire({
                 icon              : 'success',
                 title             : 'Pendaftaran Berhasil',
                 html              : `
-                    <p style="margin:0 0 10px 0;">No. Registrasi: <b>${response.data.noreg}</b></p>
+                    <p style="margin:0 0 10px 0;">No. Registrasi: <b>${noreg}</b></p>
                     <p style="margin:0 0 14px 0;color:#555;font-size:14px;">
+                        Notifikasi telah dikirim ke <b>email login</b> Anda dan <b>WhatsApp</b> ke nomor terdaftar.
                         Silahkan cek email Anda untuk melihat informasi pendaftaran lebih lanjut
                         (No. VA, Username, Password, dll).
                     </p>
@@ -755,7 +777,7 @@ function FormStep2({
             }
         }
 
-        if (formData.email && !isEmailValid(formData.email)) {
+        if (loginEmail && !isEmailValid(loginEmail)) {
             Swal.fire({
                 icon               : "error",
                 title              : "Email Tidak Valid",
@@ -790,6 +812,7 @@ function FormStep2({
 
         dispatch(saveSiswa({
             ...formData,
+            email: loginEmail,
             jenisKelamin,
             sekolahAsal,
             programAsal,
@@ -797,6 +820,7 @@ function FormStep2({
             program1,
             pilihan2,
             program2,
+            jenjang,
             noSpb,
         }));
     };
@@ -875,7 +899,7 @@ function FormStep2({
                         <PreviewField label="Tanggal Lahir" value={formatTanggalLahirId(formData.tanggalLahir)} />
                         <PreviewField label="Jenis Kelamin" value={jenisKelamin} />
                         <PreviewField label="No HP (WhatsApp)" value={formData.noHp} />
-                        <PreviewField label="Email" value={formData.email} />
+                        <PreviewField label="Email" value={loginEmail} />
                         <PreviewField label="Sekolah Asal" value={sekolahAsalPreview} />
                         <PreviewField label="Kota Sekolah Asal" value={formData.kotaSekolahAsal} />
                         <div className="md:col-span-2">
@@ -1056,7 +1080,7 @@ function FormStep2({
                         </div>
 
                         <InputField label="No HP (WhatsApp) Untuk Informasi Akademik" required type="tel" name="noHp" value={formData.noHp} onChange={(e) => handleChangeInput(e, setFormData)} />
-                        <InputField label="Email" type="email" doubleRequired name="email" value={formData.email} onChange={(e) => handleChangeInput(e, setFormData)} />
+                        <InputField label="Email (Akun Login)" type="email" doubleRequired name="email" value={loginEmail} readOnly hint="Email diambil dari akun login. Notifikasi pendaftaran akan dikirim ke email ini." />
 
                         <div className="md:col-span-1">
                             <Label required>Alamat Rumah</Label>
@@ -1202,7 +1226,7 @@ function FormStep2({
                             !isPhoneRequiredValid(formData.noHpAyah) ||
                             !isPhoneRequiredValid(formData.noHpIbu) ||
                             !isPhoneOptionalValid(formData.noHpWali) ||
-                            !isEmailValid(formData.email) ||
+                            !isEmailValid(loginEmail) ||
                             !isExactDigits(formData.nisn, 10) ||
                             !isExactDigits(formData.nik,  16) ||
                             !isExactDigits(formData.nokk, 16)
@@ -1276,6 +1300,7 @@ function InputField({
     max,
     digitsOnly,
     exactLength,
+    readOnly,
 }: {
     label: string;
     required?: boolean;
@@ -1288,6 +1313,7 @@ function InputField({
     max?: string;
     digitsOnly?: boolean;
     exactLength?: number;
+    readOnly?: boolean;
 }) {
     const isPhone = type === "tel";
     const isEmail = type === "email";
@@ -1330,8 +1356,11 @@ function InputField({
                 value={value}
                 onChange={handleChange}
                 max={max}
+                readOnly={readOnly}
                 className={`w-full border rounded-lg px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 transition ${
-                    hasError
+                    readOnly
+                        ? "border-gray-200 bg-gray-100 text-gray-600 cursor-not-allowed"
+                        : hasError
                         ? "border-red-300 bg-red-50/30 focus:ring-red-200 focus:border-red-500"
                         : "border-gray-200 bg-gray-50/50 focus:bg-white focus:ring-blue-200 focus:border-[#1976d2]"
                 }`}

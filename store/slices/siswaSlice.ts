@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit'
-import { getMySiswa, saveSiswa, updateSiswa } from '../controllers/siswaController'
+import { getMySiswa, getMySiswaList, saveSiswa, updateSiswa } from '../controllers/siswaController'
 import { SiswaState } from '../types/SiswaTypes'
 
 const initialState: SiswaState = {
@@ -7,6 +7,7 @@ const initialState: SiswaState = {
     response    : null,
     error       : null,
     detail      : null,
+    list        : [],
     updateResp  : null,
 }
 
@@ -64,6 +65,21 @@ const siswaSlice = createSlice({
         .addCase(updateSiswa.rejected, (state) => {
             state.loading = false
             state.error   = 'Gagal memperbarui data'
+        })
+
+        .addCase(getMySiswaList.pending, (state) => {
+            state.loading = true
+        })
+        .addCase(getMySiswaList.fulfilled, (state, action) => {
+            state.loading = false
+            if (action.payload.status === 200) {
+                state.list = Array.isArray(action.payload.data) ? action.payload.data : []
+            }
+        })
+        .addCase(getMySiswaList.rejected, (state) => {
+            state.loading = false
+            state.list    = []
+            state.error   = 'Gagal memuat daftar pendaftaran'
         })
     },
 })

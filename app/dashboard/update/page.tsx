@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import PageBanner from "@/components/PageBanner";
@@ -42,9 +42,19 @@ function encodeSdr(row: SdrRow): string {
 }
 
 export default function UpdatePendaftarPage() {
-    const router                        = useRouter();
-    const dispatch                      = useAppDispatch();
-    const { detail, loading, updateResp } = useAppSelector((state) => state.siswa);
+    return (
+        <Suspense fallback={null}>
+            <UpdatePendaftarContent />
+        </Suspense>
+    );
+}
+
+function UpdatePendaftarContent() {
+    const router                          = useRouter();
+    const searchParams                    = useSearchParams();
+    const noregParam                      = searchParams.get("noreg") ?? "";
+    const dispatch                        = useAppDispatch();
+    const { detail, list, loading, updateResp } = useAppSelector((state) => state.siswa);
 
     const [form, setForm] = useState<SiswaDetail>({});
     const [sdrRows, setSdrRows] = useState<SdrRow[]>([
@@ -57,30 +67,32 @@ export default function UpdatePendaftarPage() {
             router.replace("/sign-in");
             return;
         }
-        dispatch(getMySiswa());
-    }, [dispatch, router]);
+
+        const cached = noregParam ? list.find((s) => s.noreg === noregParam) : null;
+        if (cached) {
+            return;
+        }
+
+        dispatch(getMySiswa(noregParam || undefined));
+    }, [dispatch, router, noregParam, list]);
 
     useEffect(() => {
-        if (detail) {
-            if (Number(detail.status ?? 0) !== 1) {
-                Swal.fire({
-                    icon               : "info",
-                    title              : "Belum Tersedia",
-                    html               : `Menu <b>Update Data Pendaftar</b> hanya dapat diakses jika status pendaftaran Anda <b>Diterima</b>.<br/>Silakan menunggu hasil verifikasi dari panitia.`,
-                    confirmButtonColor : "#1976d2",
-                }).then(() => router.replace("/dashboard"));
-                return;
-            }
-            setForm(detail);
+        const source = noregParam
+            ? (list.find((s) => s.noreg === noregParam) ?? (detail?.noreg === noregParam ? detail : null))
+            : detail;
+
+        if (source) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
+            setForm(source);
             setSdrRows([
-                decodeSdr(detail.sdr1),
-                decodeSdr(detail.sdr2),
-                decodeSdr(detail.sdr3),
-                decodeSdr(detail.sdr4),
-                decodeSdr(detail.sdr5),
+                decodeSdr(source.sdr1),
+                decodeSdr(source.sdr2),
+                decodeSdr(source.sdr3),
+                decodeSdr(source.sdr4),
+                decodeSdr(source.sdr5),
             ]);
         }
-    }, [detail, router]);
+    }, [detail, list, noregParam, router]);
 
     useEffect(() => {
         if (!updateResp) return;
@@ -114,6 +126,7 @@ export default function UpdatePendaftarPage() {
         e.preventDefault();
         const payload = {
             ...form,
+            noreg: form.noreg ?? noregParam ?? undefined,
             sdr1: encodeSdr(sdrRows[0]),
             sdr2: encodeSdr(sdrRows[1]),
             sdr3: encodeSdr(sdrRows[2]),

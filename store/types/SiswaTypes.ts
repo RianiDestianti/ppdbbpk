@@ -33,6 +33,7 @@ export interface SiswaState {
     response    : any
     error       : string | null
     detail      : SiswaDetail | null
+    list        : SiswaDetail[]
     updateResp  : any
 }
 
@@ -112,6 +113,14 @@ export interface SiswaDetail {
     alamat_skl_asal      ?: string
     kota_skl_asal        ?: string
     status               ?: number | string
+    pilihan1             ?: string
+    pilihan2             ?: string
+    jenis                ?: string
+    sekolah_tujuan       ?: string
+    sekolah_tujuan2      ?: string
+    prog1                ?: string
+    prog2                ?: string
+    no_va                ?: string
 }
 
 export type UpdateSiswaPayload = Partial<SiswaDetail>;

@@ -10,10 +10,19 @@ export const saveSiswa = createAsyncThunk<any, SiswaPayload>(
     }
 )
 
-export const getMySiswa = createAsyncThunk<any>(
+export const getMySiswa = createAsyncThunk<any, string | undefined>(
     "siswa/getMySiswa",
+    async (noreg) => {
+        const url      = noreg ? `/siswa/me?noreg=${encodeURIComponent(noreg)}` : "/siswa/me"
+        const response = await apiClient.get(url)
+        return response.data
+    }
+)
+
+export const getMySiswaList = createAsyncThunk<any>(
+    "siswa/getMySiswaList",
     async () => {
-        const response = await apiClient.get("/siswa/me")
+        const response = await apiClient.get("/siswa/me/list")
         return response.data
     }
 )

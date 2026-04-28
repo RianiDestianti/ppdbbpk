@@ -8,14 +8,14 @@ import Footer from "@/components/Footer";
 import PageBanner from "@/components/PageBanner";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
 import { getProfile } from "@/store/controllers/authController";
-import { getMySiswa } from "@/store/controllers/siswaController";
+import { getMySiswaList } from "@/store/controllers/siswaController";
+import { SiswaDetail } from "@/store/types/SiswaTypes";
 import Swal from "sweetalert2";
 
 export default function DashboardPage() {
-    const router                = useRouter();
-    const dispatch              = useAppDispatch();
-    const { profile }           = useAppSelector((state) => state.auth);
-    const { detail: siswa }     = useAppSelector((state) => state.siswa);
+    const router                  = useRouter();
+    const dispatch                = useAppDispatch();
+    const { list: siswaList, loading } = useAppSelector((state) => state.siswa);
     const [username, setUsername] = useState("");
     const [nama,     setNama]     = useState("");
 
@@ -30,10 +30,8 @@ export default function DashboardPage() {
         setNama(localStorage.getItem("auth-nama") ?? "");
 
         dispatch(getProfile());
-        dispatch(getMySiswa());
+        dispatch(getMySiswaList());
     }, [dispatch, router]);
-
-    const isDiterima = Number(siswa?.status ?? 0) === 1;
 
     const handleLockedMenu = (label: string) => {
         Swal.fire({
@@ -62,9 +60,6 @@ export default function DashboardPage() {
         });
     };
 
-    const pilihan1 = profile?.pilihan1 || "-";
-    const pilihan2 = profile?.pilihan2 || "-";
-
     return (
         <>
             <Navbar />
@@ -87,6 +82,12 @@ export default function DashboardPage() {
                                     <span className="w-28 text-gray-600">Author</span>
                                     <span className="text-gray-800">: {nama || "-"}</span>
                                 </div>
+                                {siswaList.length > 0 && (
+                                    <div className="flex">
+                                        <span className="w-28 text-gray-600">Total Daftar</span>
+                                        <span className="text-gray-800">: {siswaList.length} pendaftaran</span>
+                                    </div>
+                                )}
                             </div>
                             <div className="space-y-2 md:text-left">
                                 <button
@@ -112,73 +113,158 @@ export default function DashboardPage() {
                         </span>
                     </div>
 
-                    <section className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
-                        <div className="border-b border-gray-100 px-4 sm:px-6 py-4">
-                            <h2 className="text-lg sm:text-xl font-semibold text-gray-800">Control Panel Pendaftar SPMB</h2>
+                    {loading && siswaList.length === 0 && (
+                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-6 py-10 text-center text-sm text-gray-500">
+                            Memuat data pendaftaran...
                         </div>
+                    )}
 
-                        <div className="px-4 sm:px-6 py-5">
-                            <div className="bg-gray-50 border border-gray-200 rounded-md px-4 sm:px-5 py-3 sm:py-4 text-sm text-gray-700 space-y-1 break-words">
-                                <div>Pilihan 1 : {pilihan1}</div>
-                                <div>Pilihan 2 : {pilihan2}</div>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mt-6">
-                                <MenuItem
-                                    href="/dashboard/status"
-                                    iconBg="bg-green-500"
-                                    icon={
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
-                                            <path d="M12 5v14M5 12h14" strokeLinecap="round" />
-                                        </svg>
-                                    }
-                                    label="Status Pendaftaran"
-                                />
-                                <MenuItem
-                                    href="/dashboard/update"
-                                    iconBg="bg-[#1976d2]"
-                                    icon={
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                                            <circle cx="12" cy="12" r="9" />
-                                            <path d="M12 7v5l3 2" strokeLinecap="round" />
-                                        </svg>
-                                    }
-                                    label="Update Data Pendaftar"
-                                    disabled={!isDiterima}
-                                    onLockedClick={handleLockedMenu}
-                                />
-                                <MenuItem
-                                    href="/dashboard/konfirmasi"
-                                    iconBg="bg-gray-700"
-                                    icon={
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                                            <rect x="3" y="4" width="18" height="13" rx="2" />
-                                            <path d="M8 20h8M12 17v3" strokeLinecap="round" />
-                                        </svg>
-                                    }
-                                    label="Konfirmasi Pembayaran"
-                                />
-                                <MenuItem
-                                    href="/dashboard/print"
-                                    iconBg="bg-slate-600"
-                                    icon={
-                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                                            <path d="M6 9V3h12v6M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" />
-                                            <rect x="6" y="14" width="12" height="7" />
-                                        </svg>
-                                    }
-                                    label="Print Formulir"
-                                    disabled={!isDiterima}
-                                    onLockedClick={handleLockedMenu}
-                                />
-                            </div>
+                    {!loading && siswaList.length === 0 && (
+                        <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-6 py-10 text-center">
+                            <p className="text-sm text-gray-600">Belum ada pendaftaran pada akun ini.</p>
+                            <Link href="/" className="inline-block mt-3 text-[#1976d2] font-semibold hover:underline text-sm">
+                                Mulai Pendaftaran Baru →
+                            </Link>
                         </div>
-                    </section>
+                    )}
+
+                    {siswaList.map((siswa, idx) => (
+                        <SiswaCard
+                            key={siswa.noreg ?? idx}
+                            siswa={siswa}
+                            index={idx + 1}
+                            total={siswaList.length}
+                            onLockedClick={handleLockedMenu}
+                        />
+                    ))}
                 </div>
             </main>
 
             <Footer />
         </>
+    );
+}
+
+function SiswaCard({
+    siswa,
+    index,
+    total,
+    onLockedClick,
+}: {
+    siswa         : SiswaDetail;
+    index         : number;
+    total         : number;
+    onLockedClick : (label: string) => void;
+}) {
+    const isDiterima = Number(siswa.status ?? 0) === 1;
+    const noreg      = siswa.noreg ?? "";
+    const qs         = noreg ? `?noreg=${encodeURIComponent(noreg)}` : "";
+    const jenjang    = resolveJenjang(siswa);
+
+    const pilihan1 = siswa.pilihan1
+        ?? [siswa.sekolah_tujuan, siswa.prog1].filter(Boolean).join(" - ")
+        ?? "-";
+    const pilihan2 = siswa.pilihan2
+        ?? [siswa.sekolah_tujuan2, siswa.prog2].filter(Boolean).join(" - ")
+        ?? "-";
+
+    return (
+        <section className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+            <div className="border-b border-gray-100 px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                    <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
+                        Control Panel Pendaftar SPMB
+                        {total > 1 && <span className="ml-2 text-sm text-gray-400 font-normal">({index} dari {total})</span>}
+                    </h2>
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs sm:text-sm text-gray-600">
+                        <span className="inline-flex items-center gap-1 bg-blue-50 text-[#1976d2] border border-blue-100 px-2 py-0.5 rounded font-medium">
+                            No. Reg: {noreg || "-"}
+                        </span>
+                        {siswa.nama && (
+                            <span className="inline-flex items-center gap-1 bg-gray-50 text-gray-700 border border-gray-200 px-2 py-0.5 rounded">
+                                {siswa.nama}
+                            </span>
+                        )}
+                        {siswa.jenis && (
+                            <span className="inline-flex items-center gap-1 bg-gray-50 text-gray-700 border border-gray-200 px-2 py-0.5 rounded">
+                                {siswa.jenis}
+                            </span>
+                        )}
+                        <StatusBadge status={Number(siswa.status ?? 0)} />
+                    </div>
+                </div>
+            </div>
+
+            <div className="px-4 sm:px-6 py-5">
+                <div className="bg-gray-50 border border-gray-200 rounded-md px-4 sm:px-5 py-3 sm:py-4 text-sm text-gray-700 space-y-1 break-words">
+                    <div>Pilihan 1 : {pilihan1 || "-"}</div>
+                    <div>Pilihan 2 : {pilihan2 || "-"}</div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mt-6">
+                    <MenuItem
+                        href={`/dashboard/status${qs}`}
+                        iconBg="bg-green-500"
+                        icon={
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                                <path d="M12 5v14M5 12h14" strokeLinecap="round" />
+                            </svg>
+                        }
+                        label="Status Pendaftaran"
+                    />
+                    <MenuItem
+                        href={`/dashboard/update${qs}`}
+                        iconBg="bg-[#1976d2]"
+                        icon={
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                                <circle cx="12" cy="12" r="9" />
+                                <path d="M12 7v5l3 2" strokeLinecap="round" />
+                            </svg>
+                        }
+                        label="Update Data Pendaftar"
+                        disabled={!isDiterima}
+                        onLockedClick={onLockedClick}
+                    />
+                    <div className="hidden sm:block" />
+                    <MenuItem
+                        href={`/pdf/${jenjang}${qs}`}
+                        iconBg="bg-slate-600"
+                        icon={
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                                <path d="M6 9V3h12v6M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" />
+                                <rect x="6" y="14" width="12" height="7" />
+                            </svg>
+                        }
+                        label="Print Formulir"
+                        disabled={!isDiterima}
+                        onLockedClick={onLockedClick}
+                    />
+                </div>
+            </div>
+        </section>
+    );
+}
+
+function resolveJenjang(siswa: SiswaDetail): "tk" | "sd" | "smp" | "sma" {
+    const target = (siswa.sekolah_tujuan ?? siswa.pilihan1 ?? "").toUpperCase();
+    if (target.includes("SMAK") || target.includes("SMA "))                                                   return "sma";
+    if (target.includes("SMPK") || target.includes("SMP "))                                                   return "smp";
+    if (target.includes("SDK")  || target.includes("SD "))                                                    return "sd";
+    if (target.includes("TKK")  || target.includes("TK ") || target.includes("TODDLER") || target.includes("KELOMPOK BERMAIN")) return "tk";
+    return "tk";
+}
+
+function StatusBadge({ status }: { status: number }) {
+    if (status !== 1 && status !== 2) return null;
+
+    const cfg = status === 1
+        ? { label: "Diterima", cls: "bg-green-50 text-green-700 border-green-200" }
+        : { label: "Ditolak",  cls: "bg-red-50 text-red-700 border-red-200"      };
+
+    return (
+        <span className={`inline-flex items-center gap-1 ${cfg.cls} border px-2 py-0.5 rounded font-medium`}>
+            {cfg.label}
+        </span>
     );
 }
 

@@ -62,6 +62,15 @@ export default function UpdatePendaftarPage() {
 
     useEffect(() => {
         if (detail) {
+            if (Number(detail.status ?? 0) !== 1) {
+                Swal.fire({
+                    icon               : "info",
+                    title              : "Belum Tersedia",
+                    html               : `Menu <b>Update Data Pendaftar</b> hanya dapat diakses jika status pendaftaran Anda <b>Diterima</b>.<br/>Silakan menunggu hasil verifikasi dari panitia.`,
+                    confirmButtonColor : "#1976d2",
+                }).then(() => router.replace("/dashboard"));
+                return;
+            }
             setForm(detail);
             setSdrRows([
                 decodeSdr(detail.sdr1),
@@ -71,7 +80,7 @@ export default function UpdatePendaftarPage() {
                 decodeSdr(detail.sdr5),
             ]);
         }
-    }, [detail]);
+    }, [detail, router]);
 
     useEffect(() => {
         if (!updateResp) return;

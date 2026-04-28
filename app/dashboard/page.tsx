@@ -8,12 +8,14 @@ import Footer from "@/components/Footer";
 import PageBanner from "@/components/PageBanner";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
 import { getProfile } from "@/store/controllers/authController";
+import { getMySiswa } from "@/store/controllers/siswaController";
 import Swal from "sweetalert2";
 
 export default function DashboardPage() {
     const router                = useRouter();
     const dispatch              = useAppDispatch();
     const { profile }           = useAppSelector((state) => state.auth);
+    const { detail: siswa }     = useAppSelector((state) => state.siswa);
     const [username, setUsername] = useState("");
     const [nama,     setNama]     = useState("");
 
@@ -28,7 +30,19 @@ export default function DashboardPage() {
         setNama(localStorage.getItem("auth-nama") ?? "");
 
         dispatch(getProfile());
+        dispatch(getMySiswa());
     }, [dispatch, router]);
+
+    const isDiterima = Number(siswa?.status ?? 0) === 1;
+
+    const handleLockedMenu = (label: string) => {
+        Swal.fire({
+            icon               : "info",
+            title              : "Belum Tersedia",
+            html               : `Menu <b>${label}</b> hanya dapat diakses jika status pendaftaran Anda <b>Diterima</b>.<br/>Silakan menunggu hasil verifikasi dari panitia.`,
+            confirmButtonColor : "#1976d2",
+        });
+    };
 
     const handleSignOut = () => {
         Swal.fire({
@@ -130,6 +144,8 @@ export default function DashboardPage() {
                                         </svg>
                                     }
                                     label="Update Data Pendaftar"
+                                    disabled={!isDiterima}
+                                    onLockedClick={handleLockedMenu}
                                 />
                                 <MenuItem
                                     href="/dashboard/konfirmasi"
@@ -152,6 +168,8 @@ export default function DashboardPage() {
                                         </svg>
                                     }
                                     label="Print Formulir"
+                                    disabled={!isDiterima}
+                                    onLockedClick={handleLockedMenu}
                                 />
                             </div>
                         </div>
@@ -169,12 +187,42 @@ function MenuItem({
     iconBg,
     icon,
     label,
+    disabled,
+    onLockedClick,
 }: {
-    href   : string;
-    iconBg : string;
-    icon   : React.ReactNode;
-    label  : string;
+    href           : string;
+    iconBg         : string;
+    icon           : React.ReactNode;
+    label          : string;
+    disabled      ?: boolean;
+    onLockedClick ?: (label: string) => void;
 }) {
+    if (disabled) {
+        return (
+            <button
+                type="button"
+                onClick={() => onLockedClick?.(label)}
+                className="flex items-center gap-3 rounded-md px-3 py-2 w-full text-left cursor-not-allowed opacity-60 hover:bg-gray-50 transition"
+                aria-disabled="true"
+                title="Hanya tersedia jika status pendaftaran Diterima"
+            >
+                <span className={`w-9 h-9 rounded-full ${iconBg} flex items-center justify-center shadow-sm relative`}>
+                    {icon}
+                    <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-white border border-gray-200 flex items-center justify-center">
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="3">
+                            <rect x="5" y="11" width="14" height="10" rx="2" />
+                            <path d="M8 11V7a4 4 0 018 0v4" strokeLinecap="round" />
+                        </svg>
+                    </span>
+                </span>
+                <span className="flex flex-col">
+                    <span className="text-gray-400 font-semibold">{label}</span>
+                    <span className="text-xs text-gray-400">Tersedia setelah status Diterima</span>
+                </span>
+            </button>
+        );
+    }
+
     return (
         <Link
             href={href}

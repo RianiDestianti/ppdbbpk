@@ -111,6 +111,7 @@ export interface SiswaDetail {
     sekolah_asal         ?: string
     alamat_skl_asal      ?: string
     kota_skl_asal        ?: string
+    status               ?: number | string
 }
 
 export type UpdateSiswaPayload = Partial<SiswaDetail>;

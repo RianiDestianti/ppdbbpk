@@ -90,6 +90,29 @@ const tkProgramPilihanBySekolah: Record<string, string[]> = {
     ],
 };
 
+const sumbanganOptionsDefault = [
+    "Rp. 0",
+    "Rp. 100.000",
+    "Rp. 200.000",
+    "Rp. 300.000",
+    "Rp. 400.000",
+    "Rp. 500.000",
+    "Rp. 600.000",
+    "Rp. 700.000",
+    "Rp. 800.000",
+    "Rp. 900.000",
+    "Rp. 1.000.000",
+    "Rp. 1.500.000",
+    "Rp. 2.000.000",
+    "Rp. 2.500.000",
+    "Rp. 3.000.000",
+    "Rp. 3.500.000",
+    "Rp. 4.000.000",
+    "Rp. 4.500.000",
+    "Rp. 5.000.000",
+    "Lainnya",
+];
+
 const jenjangConfig: Record<Jenjang, JenjangConfig> = {
     tk: {
         label: "TK",
@@ -131,28 +154,7 @@ const jenjangConfig: Record<Jenjang, JenjangConfig> = {
             "TK-B",
         ],
         sekolahAsalStep2Options: ["- Pilih -", "Lainnya"],
-        sumbanganOptions: [
-            "Rp. 0",
-            "Rp. 100.000",
-            "Rp. 200.000",
-            "Rp. 300.000",
-            "Rp. 400.000",
-            "Rp. 500.000",
-            "Rp. 600.000",
-            "Rp. 700.000",
-            "Rp. 800.000",
-            "Rp. 900.000",
-            "Rp. 1.000.000",
-            "Rp. 1.500.000",
-            "Rp. 2.000.000",
-            "Rp. 2.500.000",
-            "Rp. 3.000.000",
-            "Rp. 3.500.000",
-            "Rp. 4.000.000",
-            "Rp. 4.500.000",
-            "Rp. 5.000.000",
-            "Lainnya",
-        ],
+        sumbanganOptions:        sumbanganOptionsDefault,
     },
     sd: {
         label: "SD",
@@ -177,7 +179,7 @@ const jenjangConfig: Record<Jenjang, JenjangConfig> = {
         pilihanSekolahOptions: ["- Pilih -", "SDK 1 BPK PENABUR", "SDK 2 BPK PENABUR", "SDK 3 BPK PENABUR", "Luar BPK"],
         programPilihanOptions:   ["- Pilih -", "Classical", "Reguler"],
         sekolahAsalStep2Options: ["- Pilih -", "TKK BPK PENABUR", "Luar BPK"],
-        sumbanganOptions:        ["Rp. 0", "Rp. 1.000.000", "Rp. 5.000.000", "Rp. 10.000.000", "Rp. 25.000.000", "Rp. 50.000.000", "Lainnya"],
+        sumbanganOptions:        sumbanganOptionsDefault,
     },
     smp: {
         label: "SMP",
@@ -192,7 +194,7 @@ const jenjangConfig: Record<Jenjang, JenjangConfig> = {
         pilihanSekolahOptions: ["- Pilih -", "SMPK 1 BPK PENABUR", "SMPK 2 BPK PENABUR", "SMPK 3 BPK PENABUR", "Luar BPK"],
         programPilihanOptions:   ["- Pilih -", "Reguler", "Bilingual"],
         sekolahAsalStep2Options: ["- Pilih -", "SDK BPK PENABUR", "Luar BPK"],
-        sumbanganOptions:        ["Rp. 0", "Rp. 1.000.000", "Rp. 5.000.000", "Rp. 10.000.000", "Rp. 25.000.000", "Rp. 50.000.000", "Lainnya"],
+        sumbanganOptions:        sumbanganOptionsDefault,
     },
     sma: {
         label: "SMA",
@@ -208,7 +210,7 @@ const jenjangConfig: Record<Jenjang, JenjangConfig> = {
         pilihanSekolahOptions: ["- Pilih -", "SMAK 1 BPK PENABUR", "SMAK 2 BPK PENABUR", "SMAK 3 BPK PENABUR", "Luar BPK"],
         programPilihanOptions:   ["- Pilih -", "Reguler", "IPA", "Bilingual", "LSP", "DCP"],
         sekolahAsalStep2Options: ["- Pilih -", "SMPK BPK PENABUR", "Luar BPK"],
-        sumbanganOptions:        ["Rp. 0", "Rp. 1.000.000", "Rp. 5.000.000", "Rp. 10.000.000", "Rp. 25.000.000", "Rp. 50.000.000", "Lainnya"],
+        sumbanganOptions:        sumbanganOptionsDefault,
     },
 };
 
@@ -1274,7 +1276,11 @@ function FormStep2({
                             <Label>Uang Sumbangan Sukarela</Label>
                             <select
                                 value={sumbangan}
-                                onChange={(e) => setSumbangan(e.target.value)}
+                                onChange={(e) => {
+                                    const val = e.target.value;
+                                    setSumbangan(val);
+                                    if (val !== "Lainnya") setSumbanganLainnya("");
+                                }}
                                 className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-700 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-[#1976d2] transition appearance-none bg-no-repeat bg-[right_1rem_center] bg-[length:1rem] pr-10"
                                 style={{ backgroundImage: "url(\"data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='M6 9l6 6 6-6'/%3e%3c/svg%3e\")" }}
                             >
@@ -1284,16 +1290,17 @@ function FormStep2({
                             </select>
                         </div>
                         <div>
-                            <div className="bg-blue-50/40 border border-blue-100 rounded-xl p-4">
+                            <div className={`border rounded-xl p-4 transition ${sumbangan === "Lainnya" ? "bg-blue-50/40 border-blue-100" : "bg-gray-100/60 border-gray-200"}`}>
                                 <p className="text-xs italic text-gray-600 mb-2">
-                                    Tuliskan jumlah sumbangan, Jika tidak ada di Pilihan (Nilai Sumbangan dalam satuan Rp. 1.000.000)
+                                    Tuliskan jumlah sumbangan Jika Tidak ada di Pilihan (Untuk Sumbangan sukarela diatas Rp. 5.000.000)
                                 </p>
                                 <input
                                     type="text"
                                     value={sumbanganLainnya}
                                     onChange={(e) => setSumbanganLainnya(e.target.value)}
                                     placeholder="Rp"
-                                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-[#1976d2] transition"
+                                    disabled={sumbangan !== "Lainnya"}
+                                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-[#1976d2] transition disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                                 />
                             </div>
                         </div>

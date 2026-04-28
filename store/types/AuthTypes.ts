@@ -23,3 +23,12 @@ export interface GoogleLoginResponse {
     message  : string;
     data?    : ResponseLoginType;
 }
+
+export interface SignaturePayload {
+    signature : string;
+}
+
+export interface SignatureData {
+    social_id ?: string;
+    signature ?: string | null;
+}

@@ -1,13 +1,13 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
 import { saveSiswa } from "@/store/controllers/siswaController";
 import { checkTunggakan } from "@/store/controllers/tunggakanController";
-import { getProfile } from "@/store/controllers/authController";
+import { getProfile, getSignature, saveSignature } from "@/store/controllers/authController";
 import { resetResponse } from "@/store/slices/siswaSlice";
 import { resetTunggakan } from "@/store/slices/tunggakanSlice";
 import { initialFormSiswa, SiswaFormData } from "@/store/types/SiswaTypes";
@@ -665,6 +665,8 @@ function FormStep2({
     const dispatch                                  = useAppDispatch();
     const { loading, response }                     = useAppSelector((state) => state.siswa);
     const authProfile                               = useAppSelector((state) => state.auth.profile);
+    const storedSignature                           = useAppSelector((state) => state.auth.signature);
+    const signatureSaving                           = useAppSelector((state) => state.auth.signatureSaving);
     const [cachedEmail]                             = useState(() =>
         typeof window !== "undefined" ? localStorage.getItem("auth-email") || "" : ""
     );
@@ -676,6 +678,7 @@ function FormStep2({
     const [sekolahAsalSelect, setSekolahAsalSelect] = useState("- Pilih -");
     const [sumbangan, setSumbangan]                 = useState("Rp. 0");
     const [sumbanganLainnya, setSumbanganLainnya]   = useState("");
+    const [signatureData, setSignatureData]         = useState<string>("");
 
     const loginEmail = authProfile?.email || cachedEmail || "";
 
@@ -690,6 +693,17 @@ function FormStep2({
             localStorage.setItem("auth-email", authProfile.email);
         }
     }, [authProfile?.email]);
+
+    useEffect(() => {
+        dispatch(getSignature());
+    }, [dispatch]);
+
+    useEffect(() => {
+        if (storedSignature && !signatureData) {
+            setSignatureData(storedSignature);
+            setFormData((prev) => ({ ...prev, tandaTanganOrtu: storedSignature }));
+        }
+    }, [storedSignature, signatureData]);
 
     useEffect(() => {
         if (response?.status === 200) {
@@ -804,14 +818,43 @@ function FormStep2({
             }
         }
 
+        if (!signatureData) {
+            Swal.fire({
+                icon               : "warning",
+                title              : "Tanda Tangan Diperlukan",
+                text               : "Mohon bubuhkan tanda tangan Orang Tua / Wali sebelum melanjutkan.",
+                confirmButtonColor : "#dc2626",
+            });
+            return;
+        }
+
         onEnterPreview();
     };
 
-    const handleConfirmSubmit = () => {
+    const handleConfirmSubmit = async () => {
         const sekolahAsal = formData.sekolahAsalNama || sekolahAsalSelect;
+
+        const isNewSignature = signatureData && signatureData.startsWith('data:image/');
+        let signatureUrl     = storedSignature ?? "";
+
+        if (isNewSignature) {
+            try {
+                const result = await dispatch(saveSignature({ signature: signatureData })).unwrap();
+                signatureUrl = result?.data?.signature ?? "";
+            } catch {
+                Swal.fire({
+                    icon               : "error",
+                    title              : "Gagal Menyimpan Tanda Tangan",
+                    text               : "Terjadi kesalahan saat menyimpan tanda tangan. Silakan coba lagi.",
+                    confirmButtonColor : "#dc2626",
+                });
+                return;
+            }
+        }
 
         dispatch(saveSiswa({
             ...formData,
+            tandaTanganOrtu: signatureUrl,
             email: loginEmail,
             jenisKelamin,
             sekolahAsal,
@@ -930,6 +973,34 @@ function FormStep2({
 
                 <section className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-7 shadow-sm mb-6">
                     <h2 className="text-lg font-semibold text-gray-800 mb-6 pb-4 border-b border-gray-100 flex items-center gap-3">
+                        <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-rose-50 text-rose-600">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M12 19l7-7 3 3-7 7-3-3z" strokeLinecap="round" strokeLinejoin="round" />
+                                <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" strokeLinecap="round" strokeLinejoin="round" />
+                                <path d="M2 2l7.586 7.586" strokeLinecap="round" strokeLinejoin="round" />
+                                <circle cx="11" cy="11" r="2" />
+                            </svg>
+                        </span>
+                        Tanda Tangan Orang Tua / Wali
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <PreviewField label="Nama Penanda Tangan" value={formData.namaAyah} />
+                        <div>
+                            <div className="block text-sm font-medium text-gray-600 mb-2">Tanda Tangan</div>
+                            {signatureData ? (
+                                <div className="w-full border border-gray-200 rounded-lg p-3 bg-gray-50 flex items-center justify-center">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img src={signatureData} alt="Tanda Tangan" className="max-h-32 object-contain" />
+                                </div>
+                            ) : (
+                                <div className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-800 bg-gray-50">-</div>
+                            )}
+                        </div>
+                    </div>
+                </section>
+
+                <section className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-7 shadow-sm mb-6">
+                    <h2 className="text-lg font-semibold text-gray-800 mb-6 pb-4 border-b border-gray-100 flex items-center gap-3">
                         <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <rect x="2" y="5" width="20" height="14" rx="2" />
@@ -959,7 +1030,7 @@ function FormStep2({
                     <button
                         type="button"
                         onClick={onExitPreview}
-                        disabled={loading}
+                        disabled={loading || signatureSaving}
                         className="px-6 py-3.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-50 transition"
                     >
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -970,11 +1041,11 @@ function FormStep2({
                     <button
                         type="button"
                         onClick={handleConfirmSubmit}
-                        disabled={loading}
+                        disabled={loading || signatureSaving}
                         className="group flex-1 bg-gradient-to-r from-[#1976d2] to-[#0d47a1] hover:from-[#1565c0] hover:to-[#0d47a1] text-white font-semibold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 active:scale-[0.99] disabled:bg-gray-300 disabled:bg-none disabled:shadow-none disabled:cursor-not-allowed"
                     >
-                        {loading ? "Mengirim..." : "Kirim Pendaftaran"}
-                        {!loading && (
+                        {loading || signatureSaving ? "Mengirim..." : "Kirim Pendaftaran"}
+                        {!(loading || signatureSaving) && (
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="group-hover:translate-x-1 transition-transform">
                                 <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round" />
                             </svg>
@@ -1145,6 +1216,48 @@ function FormStep2({
 
                 <section className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-7 shadow-sm hover:shadow-md transition-shadow">
                     <h2 className="text-lg font-semibold text-gray-800 mb-6 pb-4 border-b border-gray-100 flex items-center gap-3">
+                        <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-rose-50 text-rose-600">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M12 19l7-7 3 3-7 7-3-3z" strokeLinecap="round" strokeLinejoin="round" />
+                                <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" strokeLinecap="round" strokeLinejoin="round" />
+                                <path d="M2 2l7.586 7.586" strokeLinecap="round" strokeLinejoin="round" />
+                                <circle cx="11" cy="11" r="2" />
+                            </svg>
+                        </span>
+                        Tanda Tangan Orang Tua / Wali
+                    </h2>
+                    <div className="space-y-4">
+                        <div>
+                            <Label required>Nama Penanda Tangan</Label>
+                            <input
+                                type="text"
+                                value={formData.namaAyah}
+                                readOnly
+                                placeholder="Otomatis terisi dari Nama Ayah"
+                                className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-600 bg-gray-100 cursor-not-allowed"
+                            />
+                            <p className="text-xs italic text-gray-500 mt-1.5">
+                                Nama otomatis menggunakan Nama Ayah yang Anda isi pada bagian Biodata Keluarga.
+                            </p>
+                        </div>
+                        <div>
+                            <Label required>Tanda Tangan</Label>
+                            <SignaturePad
+                                value={signatureData}
+                                onChange={(data) => {
+                                    setSignatureData(data);
+                                    setFormData((prev) => ({ ...prev, tandaTanganOrtu: data }));
+                                }}
+                            />
+                            <p className="text-xs italic text-gray-500 mt-1.5">
+                                Goreskan tanda tangan menggunakan mouse atau jari pada area di atas. Tanda tangan akan tersimpan dan dapat digunakan kembali pada pendaftaran berikutnya.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <section className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-7 shadow-sm hover:shadow-md transition-shadow">
+                    <h2 className="text-lg font-semibold text-gray-800 mb-6 pb-4 border-b border-gray-100 flex items-center gap-3">
                         <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600">
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                 <rect x="2" y="5" width="20" height="14" rx="2" />
@@ -1229,7 +1342,9 @@ function FormStep2({
                             !isEmailValid(loginEmail) ||
                             !isExactDigits(formData.nisn, 10) ||
                             !isExactDigits(formData.nik,  16) ||
-                            !isExactDigits(formData.nokk, 16)
+                            !isExactDigits(formData.nokk, 16) ||
+                            !signatureData ||
+                            !formData.namaAyah
                         }
                         className="group flex-1 bg-gradient-to-r from-[#1976d2] to-[#0d47a1] hover:from-[#1565c0] hover:to-[#0d47a1] text-white font-semibold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 active:scale-[0.99] disabled:bg-gray-300 disabled:bg-none disabled:shadow-none disabled:cursor-not-allowed"
                     >
@@ -1408,6 +1523,175 @@ function SelectField({
             >
                 {children}
             </select>
+        </div>
+    );
+}
+
+function SignaturePad({
+    value,
+    onChange,
+}: {
+    value: string;
+    onChange: (data: string) => void;
+}) {
+    const canvasRef    = useRef<HTMLCanvasElement | null>(null);
+    const containerRef = useRef<HTMLDivElement | null>(null);
+    const drawingRef   = useRef(false);
+    const lastPointRef = useRef<{ x: number; y: number } | null>(null);
+    const hasStrokeRef = useRef(false);
+    const [isEmpty, setIsEmpty] = useState(!value);
+
+    const setupCanvas = useCallback(() => {
+        const canvas    = canvasRef.current;
+        const container = containerRef.current;
+        if (!canvas || !container) return;
+
+        const ratio  = window.devicePixelRatio || 1;
+        const width  = container.clientWidth;
+        const height = 200;
+
+        canvas.width        = Math.floor(width * ratio);
+        canvas.height       = Math.floor(height * ratio);
+        canvas.style.width  = `${width}px`;
+        canvas.style.height = `${height}px`;
+
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.scale(ratio, ratio);
+        ctx.lineCap     = "round";
+        ctx.lineJoin    = "round";
+        ctx.lineWidth   = 2.2;
+        ctx.strokeStyle = "#0d47a1";
+        ctx.fillStyle   = "#ffffff";
+        ctx.fillRect(0, 0, width, height);
+    }, []);
+
+    const drawImageFromData = useCallback((source: string) => {
+        const canvas = canvasRef.current;
+        if (!canvas || !source) return;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        const img = new Image();
+        if (!source.startsWith("data:")) {
+            img.crossOrigin = "anonymous";
+        }
+        img.onload = () => {
+            const ratio  = window.devicePixelRatio || 1;
+            const width  = canvas.width / ratio;
+            const height = canvas.height / ratio;
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, width, height);
+            ctx.drawImage(img, 0, 0, width, height);
+            hasStrokeRef.current = true;
+            setIsEmpty(false);
+        };
+        img.onerror = () => {
+            hasStrokeRef.current = false;
+            setIsEmpty(true);
+        };
+        img.src = source;
+    }, []);
+
+    useEffect(() => {
+        setupCanvas();
+        if (value) {
+            drawImageFromData(value);
+        }
+        const onResize = () => {
+            const current = canvasRef.current?.toDataURL("image/png") || "";
+            setupCanvas();
+            if (hasStrokeRef.current && current) {
+                drawImageFromData(current);
+            }
+        };
+        window.addEventListener("resize", onResize);
+        return () => window.removeEventListener("resize", onResize);
+    }, [setupCanvas, drawImageFromData, value]);
+
+    const getPoint = (e: React.PointerEvent<HTMLCanvasElement>) => {
+        const canvas = canvasRef.current;
+        if (!canvas) return { x: 0, y: 0 };
+        const rect = canvas.getBoundingClientRect();
+        return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    };
+
+    const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+        e.preventDefault();
+        canvasRef.current?.setPointerCapture(e.pointerId);
+        drawingRef.current   = true;
+        lastPointRef.current = getPoint(e);
+    };
+
+    const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+        if (!drawingRef.current) return;
+        const canvas = canvasRef.current;
+        const ctx    = canvas?.getContext("2d");
+        if (!canvas || !ctx) return;
+        const point = getPoint(e);
+        const last  = lastPointRef.current;
+        if (!last) return;
+        ctx.beginPath();
+        ctx.moveTo(last.x, last.y);
+        ctx.lineTo(point.x, point.y);
+        ctx.stroke();
+        lastPointRef.current = point;
+        hasStrokeRef.current = true;
+        if (isEmpty) setIsEmpty(false);
+    };
+
+    const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
+        if (!drawingRef.current) return;
+        drawingRef.current   = false;
+        lastPointRef.current = null;
+        canvasRef.current?.releasePointerCapture(e.pointerId);
+        const dataUrl = canvasRef.current?.toDataURL("image/png") || "";
+        onChange(dataUrl);
+    };
+
+    const handleClear = () => {
+        const canvas = canvasRef.current;
+        const ctx    = canvas?.getContext("2d");
+        if (!canvas || !ctx) return;
+        const ratio  = window.devicePixelRatio || 1;
+        const width  = canvas.width / ratio;
+        const height = canvas.height / ratio;
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, width, height);
+        hasStrokeRef.current = false;
+        setIsEmpty(true);
+        onChange("");
+    };
+
+    return (
+        <div ref={containerRef} className="w-full">
+            <div className="relative w-full rounded-lg border border-dashed border-gray-300 bg-white overflow-hidden">
+                <canvas
+                    ref={canvasRef}
+                    onPointerDown={handlePointerDown}
+                    onPointerMove={handlePointerMove}
+                    onPointerUp={handlePointerUp}
+                    onPointerLeave={handlePointerUp}
+                    className="block w-full touch-none cursor-crosshair"
+                />
+                {isEmpty && (
+                    <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-sm text-gray-400 select-none">
+                        Goreskan tanda tangan di sini
+                    </div>
+                )}
+            </div>
+            <div className="flex justify-end mt-2">
+                <button
+                    type="button"
+                    onClick={handleClear}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md border border-gray-200 text-xs font-medium text-gray-600 hover:bg-gray-50 transition"
+                >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    Hapus Tanda Tangan
+                </button>
+            </div>
         </div>
     );
 }

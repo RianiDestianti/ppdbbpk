@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { getProfile, handleGoogleLogin } from '../controllers/authController';
+import { getProfile, getSignature, handleGoogleLogin, saveSignature } from '../controllers/authController';
 import { DataAuthType, ResponseLoginType } from '../types/AuthTypes';
 
 interface AuthState {
@@ -8,6 +8,8 @@ interface AuthState {
     error           : string | null;
     errorCode       : number | null;
     profile         : DataAuthType | null;
+    signature       : string | null;
+    signatureSaving : boolean;
 }
 
 const initialState: AuthState = {
@@ -16,6 +18,8 @@ const initialState: AuthState = {
     error           : null,
     errorCode       : null,
     profile         : null,
+    signature       : null,
+    signatureSaving : false,
 };
 
 const authSlice = createSlice({
@@ -53,6 +57,25 @@ const authSlice = createSlice({
                 state.loading   = false;
                 state.profile   = action.payload.data;
                 state.errorCode = action.payload.status;
+            })
+
+            .addCase(saveSignature.pending, (state) => {
+                state.signatureSaving = true;
+            })
+            .addCase(saveSignature.fulfilled, (state, action) => {
+                state.signatureSaving = false;
+                if (action.payload?.status === 200 && action.payload?.data?.signature) {
+                    state.signature = action.payload.data.signature;
+                }
+            })
+            .addCase(saveSignature.rejected, (state) => {
+                state.signatureSaving = false;
+            })
+
+            .addCase(getSignature.fulfilled, (state, action) => {
+                if (action.payload?.status === 200) {
+                    state.signature = action.payload.data?.signature ?? null;
+                }
             });
     },
 });

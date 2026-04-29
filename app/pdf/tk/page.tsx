@@ -114,7 +114,7 @@ function PdfTkContent() {
                                 <div className="bg-black text-white font-bold text-sm px-3 py-1.5">
                                     PHOTO SISWA
                                 </div>
-                                <div className="mt-2 border border-gray-300 bg-white/70 h-[150px] flex items-center justify-center text-sm text-gray-700">
+                                <div className="mt-2 border border-gray-300 bg-white/70 w-[151px] h-[227px] mx-auto flex items-center justify-center text-sm text-gray-700">
                                     <div className="text-center">
                                         <div>Photo siswa</div>
                                         <div>4 x 6</div>

@@ -163,9 +163,9 @@ function PdfTkContent() {
                                     bersedia mendukung dana (sesuai tarif yang telah ditentukan):
                                 </p>
                                 <ol className="space-y-1.5 pl-1">
-                                    <li>1. Uang Sumbangan Sarana Pendidikan : Rp _________________(diisi sesuai petunjuk Operator SPMB)</li>
-                                    <li>2. Uang Sumbangan Sukarela : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Rp _________________(diisi Oleh Orang tua siswa)</li>
-                                    <li>3. Uang Sekolah bulan Juli 2026 : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Rp ____________(diisi sesuai petunjuk Operator SPMB)</li>
+                                    <li>1. Dana Sumbangan Sarana Pendidikan : Rp _________________(diisi sesuai petunjuk Operator SPMB)</li>
+                                    <li>2. Dana Sumbangan Sukarela : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Rp _________________(diisi Oleh Orang tua siswa)</li>
+                                    <li>3. Dana Sekolah bulan Juli 2026 : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Rp ____________(diisi sesuai petunjuk Operator SPMB)</li>
                                 </ol>
 
                                 <p className="mt-4">
@@ -271,8 +271,8 @@ function PdfTkContent() {
                                 ketentuan khusus tentang kewajiban administrasi keuangan BPK PENABUR Bandung;
                             </li>
                             <li>
-                                Bersedia membayar uang sekolah, sesuai dengan ketentuan untuk sekolah yang dituju tepat pada waktunya dan jika
-                                tidak dapat membayar uang sekolah tepat waktu, maka bersedia menyerahkan penampatan Sekolah anak saya sesuai
+                                Bersedia membayar dana sekolah, sesuai dengan ketentuan untuk sekolah yang dituju tepat pada waktunya dan jika
+                                tidak dapat membayar dana sekolah tepat waktu, maka bersedia menyerahkan penampatan Sekolah anak saya sesuai
                                 dengan ketentuan khusus tentang kewajiban administrasi keuangan BPK PENABUR Bandung yang diatur dalam
                                 adendum khusus;
                             </li>

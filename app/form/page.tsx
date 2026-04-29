@@ -1256,7 +1256,7 @@ function FormStep2({
                     </p>
                     <div className="space-y-5">
                         <div>
-                            <Label>Uang Sumbangan Sukarela</Label>
+                            <Label>Dana Sumbangan Sukarela</Label>
                             <select
                                 value={sumbangan}
                                 onChange={(e) => {
@@ -1602,7 +1602,7 @@ function PreviewModal({
                             Data Administratif
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <PreviewField label="Uang Sumbangan Sukarela" value={sumbanganPreviewVal} />
+                            <PreviewField label="Dana Sumbangan Sukarela" value={sumbanganPreviewVal} />
                         </div>
                     </section>
 

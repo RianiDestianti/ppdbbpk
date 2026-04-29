@@ -20,9 +20,9 @@ const pendidikanOptions     = ["- Pilih -", "SD", "SMP", "SMA", "D1", "D2", "D3"
 const pekerjaanOptions      = ["- Pilih -", "PNS", "TNI/Polri", "Karyawan Swasta", "Wiraswasta", "Pendeta", "Guru/Dosen", "Dokter", "Ibu Rumah Tangga", "Lainnya"];
 const penghasilanOptions    = ["- Pilih -", "< Rp. 2.000.000", "Rp. 2.000.000 - Rp. 5.000.000", "Rp. 5.000.000 - Rp. 10.000.000", "> Rp. 10.000.000"];
 
-type SdrRow = { nama: string; sekolah: string; uang: string; keterangan: string };
+type SdrRow = { nama: string; sekolah: string; dana: string; keterangan: string };
 
-const emptySdr: SdrRow = { nama: "", sekolah: "", uang: "", keterangan: "" };
+const emptySdr: SdrRow = { nama: "", sekolah: "", dana: "", keterangan: "" };
 
 function decodeSdr(value?: string): SdrRow {
     if (!value) return { ...emptySdr };
@@ -30,15 +30,15 @@ function decodeSdr(value?: string): SdrRow {
     return {
         nama       : parts[0] ?? "",
         sekolah    : parts[1] ?? "",
-        uang       : parts[2] ?? "",
+        dana       : parts[2] ?? "",
         keterangan : parts[3] ?? "",
     };
 }
 
 function encodeSdr(row: SdrRow): string {
-    const { nama, sekolah, uang, keterangan } = row;
-    if (!nama && !sekolah && !uang && !keterangan) return "";
-    return [nama, sekolah, uang, keterangan].join("|");
+    const { nama, sekolah, dana, keterangan } = row;
+    if (!nama && !sekolah && !dana && !keterangan) return "";
+    return [nama, sekolah, dana, keterangan].join("|");
 }
 
 export default function UpdatePendaftarPage() {
@@ -262,7 +262,7 @@ function UpdatePendaftarContent() {
                                             <th className="border border-gray-200 px-3 py-2 text-left w-12">No</th>
                                             <th className="border border-gray-200 px-3 py-2 text-left">Nama Anak</th>
                                             <th className="border border-gray-200 px-3 py-2 text-left">Sekolah / Kelas</th>
-                                            <th className="border border-gray-200 px-3 py-2 text-left">Uang Sekolah</th>
+                                            <th className="border border-gray-200 px-3 py-2 text-left">Dana Sekolah</th>
                                             <th className="border border-gray-200 px-3 py-2 text-left">Keterangan</th>
                                         </tr>
                                     </thead>
@@ -289,8 +289,8 @@ function UpdatePendaftarContent() {
                                                 <td className="border border-gray-200 px-2 py-1">
                                                     <input
                                                         type="text"
-                                                        value={row.uang}
-                                                        onChange={(e) => setSdr(idx, "uang", e.target.value)}
+                                                        value={row.dana}
+                                                        onChange={(e) => setSdr(idx, "dana", e.target.value)}
                                                         className="w-full border border-gray-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-red-500"
                                                     />
                                                 </td>

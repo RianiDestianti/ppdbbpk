@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
-import { saveSiswa } from "@/store/controllers/siswaController";
+import { saveSiswa, checkNik } from "@/store/controllers/siswaController";
 import { checkTunggakan } from "@/store/controllers/tunggakanController";
 import { getProfile, getSignature, saveSignature } from "@/store/controllers/authController";
 import { resetResponse } from "@/store/slices/siswaSlice";
@@ -763,6 +763,32 @@ function FormStep2({
     const [sumbangan, setSumbangan]                 = useState("Rp. 0");
     const [sumbanganLainnya, setSumbanganLainnya]   = useState("");
     const [signatureData, setSignatureData]         = useState<string>("");
+    const [nikError, setNikError]                   = useState<string>("");
+    const [nikChecking, setNikChecking]             = useState<boolean>(false);
+    const [nikChecked, setNikChecked]               = useState<string>("");
+
+    const runNikCheck = useCallback(async (nik: string) => {
+        if (!/^\d{16}$/.test(nik)) {
+            setNikError("");
+            setNikChecked("");
+            return;
+        }
+        if (nik === nikChecked) return;
+        setNikChecking(true);
+        try {
+            const result = await dispatch(checkNik({ nik })).unwrap();
+            if (result?.status === 409) {
+                setNikError("NIK ini sudah terdaftar dalam periode pendaftaran yang sedang berjalan.");
+            } else {
+                setNikError("");
+            }
+            setNikChecked(nik);
+        } catch {
+            setNikError("");
+        } finally {
+            setNikChecking(false);
+        }
+    }, [dispatch, nikChecked]);
 
     const loginEmail = authProfile?.email || cachedEmail || "";
 
@@ -839,7 +865,7 @@ function FormStep2({
         }
     }, [response, dispatch]);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         const phoneChecks: Array<{ label: string; value: string; required: boolean }> = [
@@ -906,6 +932,20 @@ function FormStep2({
                 });
                 return;
             }
+        }
+
+        if (/^\d{16}$/.test(formData.nik) && formData.nik !== nikChecked) {
+            await runNikCheck(formData.nik);
+        }
+
+        if (nikError) {
+            Swal.fire({
+                icon               : "error",
+                title              : "NIK Sudah Terdaftar",
+                text               : "NIK ini sudah terdaftar dalam periode pendaftaran yang sedang berjalan.",
+                confirmButtonColor : "#dc2626",
+            });
+            return;
         }
 
         if (isSumbanganManual && sumbanganManualValue > 0 && sumbanganManualValue <= SUMBANGAN_MANUAL_MIN) {
@@ -1217,7 +1257,22 @@ function FormStep2({
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <InputField label="Nomor Induk Siswa Nasional (NISN)" doubleRequired digitsOnly exactLength={10} name="nisn" value={formData.nisn} onChange={(e) => handleChangeInput(e, setFormData)} />
-                        <InputField label="Nomor Induk Kependudukan (NIK)" doubleRequired digitsOnly exactLength={16} name="nik" value={formData.nik} onChange={(e) => handleChangeInput(e, setFormData)} />
+                        <InputField
+                            label="Nomor Induk Kependudukan (NIK)"
+                            doubleRequired
+                            digitsOnly
+                            exactLength={16}
+                            name="nik"
+                            value={formData.nik}
+                            onChange={(e) => {
+                                handleChangeInput(e, setFormData);
+                                if (nikError) setNikError("");
+                                if (nikChecked && e.target.value !== nikChecked) setNikChecked("");
+                            }}
+                            onBlur={(e) => runNikCheck(e.target.value)}
+                            externalError={nikError}
+                            hint={nikChecking ? "Memeriksa NIK..." : undefined}
+                        />
                         <InputField label="Nomor Kartu Keluarga (NoKK)" doubleRequired digitsOnly exactLength={16} name="nokk" value={formData.nokk} onChange={(e) => handleChangeInput(e, setFormData)} />
                         <InputField label="Nama Lengkap" required hint="Sesuai Akte Lahir Anak" name="nama" value={formData.nama} onChange={(e) => handleChangeInput(e, setFormData)} />
                         <InputField label="Tempat Lahir" required name="tempatLahir" value={formData.tempatLahir} onChange={(e) => handleChangeInput(e, setFormData)} />
@@ -1478,7 +1533,9 @@ function FormStep2({
                             !isExactDigits(formData.nik,  16) ||
                             !isExactDigits(formData.nokk, 16) ||
                             !signatureData ||
-                            !formData.namaAyah
+                            !formData.namaAyah ||
+                            !!nikError ||
+                            nikChecking
                         }
                         className="group flex-1 bg-gradient-to-r from-[#1976d2] to-[#0d47a1] hover:from-[#1565c0] hover:to-[#0d47a1] text-white font-semibold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 active:scale-[0.99] disabled:bg-gray-300 disabled:bg-none disabled:shadow-none disabled:cursor-not-allowed"
                     >
@@ -1546,10 +1603,12 @@ function InputField({
     name,
     value,
     onChange,
+    onBlur,
     max,
     digitsOnly,
     exactLength,
     readOnly,
+    externalError,
 }: {
     label: string;
     required?: boolean;
@@ -1559,18 +1618,21 @@ function InputField({
     name?: string;
     value?: string;
     onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+    onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
     max?: string;
     digitsOnly?: boolean;
     exactLength?: number;
     readOnly?: boolean;
+    externalError?: string;
 }) {
     const isPhone = type === "tel";
     const isEmail = type === "email";
 
-    const phoneInvalid  = isPhone && !!value && !isValidPhone(value);
-    const emailInvalid  = isEmail && !!value && !isValidEmail(value);
-    const lengthInvalid = !!exactLength && !!value && value.length !== exactLength;
-    const hasError      = phoneInvalid || emailInvalid || lengthInvalid;
+    const phoneInvalid    = isPhone && !!value && !isValidPhone(value);
+    const emailInvalid    = isEmail && !!value && !isValidEmail(value);
+    const lengthInvalid   = !!exactLength && !!value && value.length !== exactLength;
+    const hasExternal     = !!externalError;
+    const hasError        = phoneInvalid || emailInvalid || lengthInvalid || hasExternal;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (isPhone) {
@@ -1583,7 +1645,9 @@ function InputField({
         onChange?.(e);
     };
 
-    const errorMessage = phoneInvalid
+    const errorMessage = hasExternal
+        ? externalError!
+        : phoneInvalid
         ? "Format nomor tidak valid. Contoh: 08123456789 atau +628123456789"
         : emailInvalid
         ? "Format email tidak valid. Contoh: nama@gmail.com"
@@ -1604,6 +1668,7 @@ function InputField({
                 name={name}
                 value={value}
                 onChange={handleChange}
+                onBlur={onBlur}
                 max={max}
                 readOnly={readOnly}
                 className={`w-full border rounded-lg px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 transition ${

@@ -10,6 +10,14 @@ export const saveSiswa = createAsyncThunk<any, SiswaPayload>(
     }
 )
 
+export const checkNik = createAsyncThunk<any, { nik: string }>(
+    "siswa/checkNik",
+    async (payload) => {
+        const response = await apiClient.post("/siswa/check-nik", payload)
+        return response.data
+    }
+)
+
 export const getMySiswa = createAsyncThunk<any, string | undefined>(
     "siswa/getMySiswa",
     async (noreg) => {

@@ -26,6 +26,7 @@ export interface SiswaPayload {
     tandaTanganOrtu : string
     jenjang        ?: string
     noSpb          ?: string
+    sTambahan      ?: string
 }
 
 export interface SiswaState {

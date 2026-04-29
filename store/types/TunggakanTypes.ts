@@ -7,6 +7,7 @@ export interface TunggakanData {
     nama          : string;
     asalSekolah  ?: string;
     kelas        ?: string;
+    status       ?: number | string;
     tunggakan     : string;
     keterangan   ?: string;
 }

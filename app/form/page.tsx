@@ -90,6 +90,46 @@ const tkProgramPilihanBySekolah: Record<string, string[]> = {
     ],
 };
 
+const SUMBANGAN_MANUAL_MIN = 5_000_000;
+
+const parseRupiahToNumber = (value: string): number => {
+    if (!value) return 0;
+    const digits = value.toString().replace(/[^\d]/g, "");
+    return digits ? Number(digits) : 0;
+};
+
+const formatThousandID = (value: string): string => {
+    const digits = value.replace(/[^\d]/g, "");
+    if (!digits) return "";
+    return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
+
+const formatRupiahID = (value: number): string =>
+    new Intl.NumberFormat("id-ID", {
+        style                 : "currency",
+        currency              : "IDR",
+        minimumFractionDigits : 0,
+    }).format(value);
+
+const terbilangID = (n: number): string => {
+    if (!Number.isFinite(n) || n < 0) return "";
+    if (n === 0) return "Nol";
+    const satuan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
+    const helper = (x: number): string => {
+        if (x < 12) return satuan[x];
+        if (x < 20) return `${satuan[x - 10]} Belas`;
+        if (x < 100) return `${satuan[Math.floor(x / 10)]} Puluh${x % 10 ? ` ${satuan[x % 10]}` : ""}`;
+        if (x < 200) return `Seratus${x - 100 ? ` ${helper(x - 100)}` : ""}`;
+        if (x < 1000) return `${satuan[Math.floor(x / 100)]} Ratus${x % 100 ? ` ${helper(x % 100)}` : ""}`;
+        if (x < 2000) return `Seribu${x - 1000 ? ` ${helper(x - 1000)}` : ""}`;
+        if (x < 1_000_000) return `${helper(Math.floor(x / 1000))} Ribu${x % 1000 ? ` ${helper(x % 1000)}` : ""}`;
+        if (x < 1_000_000_000) return `${helper(Math.floor(x / 1_000_000))} Juta${x % 1_000_000 ? ` ${helper(x % 1_000_000)}` : ""}`;
+        if (x < 1_000_000_000_000) return `${helper(Math.floor(x / 1_000_000_000))} Miliar${x % 1_000_000_000 ? ` ${helper(x % 1_000_000_000)}` : ""}`;
+        return `${helper(Math.floor(x / 1_000_000_000_000))} Triliun${x % 1_000_000_000_000 ? ` ${helper(x % 1_000_000_000_000)}` : ""}`;
+    };
+    return `${helper(Math.floor(n))} Rupiah`;
+};
+
 const sumbanganOptionsDefault = [
     "Rp. 0",
     "Rp. 100.000",
@@ -350,19 +390,53 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
                     return;
                 }
 
-                const adaTunggakan = result.data.tunggakan &&
-                                     result.data.tunggakan !== "0" &&
-                                     result.data.tunggakan.toLowerCase() !== "lunas";
+                const rawTunggakan = (result.data.tunggakan ?? "").toString().trim();
+                const nominalAngka = Number(rawTunggakan.replace(/[^\d]/g, "")) || 0;
+                const nominalRupiah = new Intl.NumberFormat("id-ID", {
+                    style                 : "currency",
+                    currency              : "IDR",
+                    minimumFractionDigits : 0,
+                }).format(nominalAngka);
 
-                if (adaTunggakan) {
+                const statusValue   = result.data.status;
+                const statusBlocked = statusValue !== undefined &&
+                                      statusValue !== null &&
+                                      String(statusValue).trim() === "0";
+                const adaTunggakanNominal = rawTunggakan !== "" &&
+                                            rawTunggakan !== "0" &&
+                                            rawTunggakan.toLowerCase() !== "lunas" &&
+                                            nominalAngka > 0;
+
+                if (statusBlocked || adaTunggakanNominal) {
+                    const namaSiswa = result.data.nama || "-";
+                    const noSpbData = result.data.nospb || noSpb.trim();
+                    const waAdmin   = "6281224122456";
+
                     await Swal.fire({
                         icon               : "warning",
                         title              : "Ups, Kamu Masih Memiliki Tunggakan!",
-                        text               : "Silahkan hubungi admin untuk lebih lanjut",
+                        html               : `
+                            <div style="text-align:left;font-size:14px;line-height:1.6">
+                                <p style="margin:0 0 10px">Pendaftaran tidak dapat dilanjutkan karena terdapat tunggakan pembayaran dari jenjang sebelumnya.</p>
+                                <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px;margin-bottom:10px">
+                                    <div><b>Nama Siswa</b> : ${namaSiswa}</div>
+                                    <div><b>Nomor SPB</b> : ${noSpbData}</div>
+                                    <div><b>Nominal Tunggakan</b> : ${nominalRupiah}</div>
+                                </div>
+                                <p style="margin:0 0 6px">Silakan hubungi admin sekolah untuk melunasi tunggakan terlebih dahulu:</p>
+                                <p style="margin:0">
+                                    <a href="https://wa.me/${waAdmin}" target="_blank" rel="noopener noreferrer" style="color:#dc2626;font-weight:600;text-decoration:underline">
+                                        WhatsApp Admin: +${waAdmin}
+                                    </a>
+                                </p>
+                            </div>
+                        `,
                         confirmButtonText  : "Tutup",
                         confirmButtonColor : "#dc2626",
                     });
                     dispatch(resetTunggakan());
+                    setCurrentStep(1);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
                     return;
                 }
 
@@ -834,6 +908,16 @@ function FormStep2({
             }
         }
 
+        if (isSumbanganManual && sumbanganManualValue > 0 && sumbanganManualValue <= SUMBANGAN_MANUAL_MIN) {
+            Swal.fire({
+                icon               : "warning",
+                title              : "Nominal Sumbangan Tidak Valid",
+                html               : `Input manual hanya untuk nominal <b>di atas ${formatRupiahID(SUMBANGAN_MANUAL_MIN)}</b>.<br/>Untuk nominal ${formatRupiahID(SUMBANGAN_MANUAL_MIN)} atau di bawahnya, mohon pilih dari daftar.`,
+                confirmButtonColor : "#dc2626",
+            });
+            return;
+        }
+
         if (!signatureData) {
             Swal.fire({
                 icon               : "warning",
@@ -881,6 +965,7 @@ function FormStep2({
             program2,
             jenjang,
             noSpb,
+            sTambahan: String(sumbanganFinalValue),
         }));
     };
 
@@ -892,9 +977,15 @@ function FormStep2({
     };
 
     const sekolahAsalPreview  = formData.sekolahAsalNama || sekolahAsalSelect;
-    const sumbanganPreviewVal = sumbanganLainnya
-        ? `${sumbangan}${sumbangan !== "Lainnya" ? " + " : ""}${sumbanganLainnya}`
-        : sumbangan;
+
+    const isSumbanganManual    = sumbangan === "Lainnya";
+    const sumbanganManualValue = parseRupiahToNumber(sumbanganLainnya);
+    const sumbanganSelectValue = parseRupiahToNumber(sumbangan);
+    const sumbanganFinalValue  = isSumbanganManual ? sumbanganManualValue : sumbanganSelectValue;
+    const sumbanganTerbilang   = sumbanganFinalValue > 0 ? terbilangID(sumbanganFinalValue) : "";
+    const sumbanganPreviewVal  = sumbanganFinalValue > 0
+        ? formatRupiahID(sumbanganFinalValue)
+        : "Rp 0";
 
     if (showPreview) {
         return (
@@ -1302,22 +1393,44 @@ function FormStep2({
                                     <option key={opt}>{opt}</option>
                                 ))}
                             </select>
+                            {!isSumbanganManual && sumbanganFinalValue > 0 && (
+                                <p className="mt-2 text-xs text-gray-600 italic">
+                                    Terbilang: <span className="font-medium text-gray-800 not-italic">{sumbanganTerbilang}</span>
+                                </p>
+                            )}
                         </div>
                         <div>
-                            <div className={`border rounded-xl p-4 transition ${sumbangan === "Lainnya" ? "bg-blue-50/40 border-blue-100" : "bg-gray-100/60 border-gray-200"}`}>
+                            <div className={`border rounded-xl p-4 transition ${isSumbanganManual ? "bg-blue-50/40 border-blue-100" : "bg-gray-100/60 border-gray-200"}`}>
                                 <p className="text-xs italic text-gray-600 mb-2">
                                     Tuliskan jumlah sumbangan Jika Tidak ada di Pilihan (Untuk Sumbangan sukarela diatas Rp. 5.000.000)
                                 </p>
-                                <input
-                                    type="text"
-                                    value={sumbanganLainnya}
-                                    onChange={(e) => setSumbanganLainnya(e.target.value)}
-                                    placeholder="Rp"
-                                    disabled={sumbangan !== "Lainnya"}
-                                    className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-[#1976d2] transition disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
-                                />
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-gray-500 pointer-events-none">Rp</span>
+                                    <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        value={sumbanganLainnya}
+                                        onChange={(e) => setSumbanganLainnya(formatThousandID(e.target.value))}
+                                        placeholder="6.000.000"
+                                        disabled={!isSumbanganManual}
+                                        className="w-full border border-gray-200 rounded-lg pl-10 pr-4 py-3 text-sm text-gray-700 bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-[#1976d2] transition disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
+                                    />
+                                </div>
+                                {isSumbanganManual && sumbanganManualValue > 0 && (
+                                    <p className="mt-2 text-xs text-gray-600 italic">
+                                        Terbilang: <span className="font-medium text-gray-800 not-italic">{terbilangID(sumbanganManualValue)}</span>
+                                    </p>
+                                )}
+                                {isSumbanganManual && sumbanganManualValue > 0 && sumbanganManualValue <= SUMBANGAN_MANUAL_MIN && (
+                                    <p className="mt-2 text-xs text-red-600">
+                                        Input manual hanya untuk nominal di atas {formatRupiahID(SUMBANGAN_MANUAL_MIN)}. Untuk nominal {formatRupiahID(SUMBANGAN_MANUAL_MIN)} atau di bawahnya, mohon pilih dari daftar.
+                                    </p>
+                                )}
                             </div>
                         </div>
+                        <p className="text-xs text-gray-600 italic">
+                            Sumbangan bersifat sukarela dan tidak mempengaruhi hasil seleksi.
+                        </p>
                     </div>
                 </section>
 

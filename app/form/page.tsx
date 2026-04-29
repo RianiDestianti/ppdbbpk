@@ -697,6 +697,12 @@ function FormStep2({
     }, [authProfile?.email]);
 
     useEffect(() => {
+        if (loginEmail && !formData.email) {
+            setFormData((prev) => ({ ...prev, email: loginEmail }));
+        }
+    }, [loginEmail, formData.email]);
+
+    useEffect(() => {
         dispatch(getSignature());
     }, [dispatch]);
 
@@ -793,7 +799,7 @@ function FormStep2({
             }
         }
 
-        if (loginEmail && !isEmailValid(loginEmail)) {
+        if (formData.email && !isEmailValid(formData.email)) {
             Swal.fire({
                 icon               : "error",
                 title              : "Email Tidak Valid",
@@ -857,7 +863,7 @@ function FormStep2({
         dispatch(saveSiswa({
             ...formData,
             tandaTanganOrtu: signatureUrl,
-            email: loginEmail,
+            email: formData.email || loginEmail,
             jenisKelamin,
             sekolahAsal,
             programAsal,
@@ -944,7 +950,7 @@ function FormStep2({
                         <PreviewField label="Tanggal Lahir" value={formatTanggalLahirId(formData.tanggalLahir)} />
                         <PreviewField label="Jenis Kelamin" value={jenisKelamin} />
                         <PreviewField label="No HP (WhatsApp)" value={formData.noHp} />
-                        <PreviewField label="Email" value={loginEmail} />
+                        <PreviewField label="Email" value={formData.email || loginEmail} />
                         <PreviewField label="Sekolah Asal" value={sekolahAsalPreview} />
                         <PreviewField label="Kota Sekolah Asal" value={formData.kotaSekolahAsal} />
                         <div className="md:col-span-2">
@@ -1153,7 +1159,7 @@ function FormStep2({
                         </div>
 
                         <InputField label="No HP (WhatsApp) Untuk Informasi Akademik" required type="tel" name="noHp" value={formData.noHp} onChange={(e) => handleChangeInput(e, setFormData)} />
-                        <InputField label="Email (Akun Login)" type="email" doubleRequired name="email" value={loginEmail} readOnly hint="Email diambil dari akun login. Notifikasi pendaftaran akan dikirim ke email ini." />
+                        <InputField label="Email" type="email" doubleRequired name="email" value={formData.email} onChange={(e) => handleChangeInput(e, setFormData)} hint="Notifikasi pendaftaran akan dikirim ke email ini." />
 
                         <div className="md:col-span-1">
                             <Label required>Alamat Rumah</Label>
@@ -1346,7 +1352,7 @@ function FormStep2({
                             !isPhoneRequiredValid(formData.noHpAyah) ||
                             !isPhoneRequiredValid(formData.noHpIbu) ||
                             !isPhoneOptionalValid(formData.noHpWali) ||
-                            !isEmailValid(loginEmail) ||
+                            !isEmailValid(formData.email) ||
                             !isExactDigits(formData.nisn, 10) ||
                             !isExactDigits(formData.nik,  16) ||
                             !isExactDigits(formData.nokk, 16) ||

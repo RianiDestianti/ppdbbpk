@@ -60,7 +60,7 @@ const maxTanggalLahirFor = (jenjang: Jenjang): string => {
 const formatTanggalId = (d: Date) =>
     d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
 
-const steps = [1, 2, 3];
+const steps = [1, 2];
 const tkProgramPilihan2Options = [
     "- Pilih -",
     "TODDLER",
@@ -279,6 +279,7 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
     const { loading: tunggakanLoading }             = useAppSelector((state) => state.tunggakan);
 
     const [currentStep, setCurrentStep]             = useState(1);
+    const [isPreviewOpen, setIsPreviewOpen]         = useState(false);
     const [asalSekolah, setAsalSekolah]             = useState("- Pilih -");
     const [programAsal, setProgramAsal]             = useState("Reguler");
     const [pilihan1,    setPilihan1]                = useState("- Pilih -");
@@ -462,13 +463,11 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
     };
 
     const goToPreview = () => {
-        setCurrentStep(3);
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        setIsPreviewOpen(true);
     };
 
     const backFromPreview = () => {
-        setCurrentStep(2);
-        window.scrollTo({ top: 0, behavior: "smooth" });
+        setIsPreviewOpen(false);
     };
 
     return (
@@ -506,7 +505,7 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
                         {steps.map((step, idx) => {
                             const isActive = step === currentStep;
                             const isDone   = step < currentStep;
-                            const stepLabel = step === 1 ? "Pilihan Sekolah" : step === 2 ? "Data Pendaftar" : "Konfirmasi";
+                            const stepLabel = step === 1 ? "Pilihan Sekolah" : "Data Pendaftar";
                             return (
                                 <div key={step} className="flex items-center">
                                     <div className="flex flex-col items-center">
@@ -688,7 +687,7 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
                             tanggalLahirAwal={tanggalLahirAwal}
                             sekolahAsalStep2Options={config.sekolahAsalStep2Options}
                             sumbanganOptions={config.sumbanganOptions}
-                            showPreview={currentStep === 3}
+                            showPreview={isPreviewOpen}
                             onBack={goBack}
                             onEnterPreview={goToPreview}
                             onExitPreview={backFromPreview}
@@ -1027,182 +1026,6 @@ function FormStep2({
         ? formatRupiahID(sumbanganFinalValue)
         : "Rp 0";
 
-    if (showPreview) {
-        return (
-            <>
-                <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-amber-500 to-amber-600 text-white p-6 mb-6 shadow-lg shadow-amber-500/20">
-                    <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/10" />
-                    <div className="absolute -bottom-8 -left-6 w-28 h-28 rounded-full bg-white/5" />
-                    <div className="relative flex items-start gap-3">
-                        <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/20 ring-1 ring-white/30 flex-shrink-0">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" strokeLinecap="round" strokeLinejoin="round" />
-                                <circle cx="12" cy="12" r="3" />
-                            </svg>
-                        </span>
-                        <div>
-                            <h2 className="font-semibold text-base sm:text-lg mb-1">Preview Data Pendaftaran</h2>
-                            <p className="text-sm text-amber-50/95 leading-relaxed">
-                                Mohon periksa kembali data di bawah ini. Jika sudah benar, klik <b>Kirim Pendaftaran</b>. Jika ada yang perlu diubah, klik <b>Kembali</b>.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
-                <section className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-7 shadow-sm mb-6">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-6 pb-4 border-b border-gray-100 flex items-center gap-3">
-                        <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-amber-50 text-amber-600">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                        </span>
-                        Pilihan Sekolah
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <PreviewField label="Asal Sekolah" value={asalSekolah} />
-                        <PreviewField label="Program Asal" value={programAsal} />
-                        {isDariBpk && <PreviewField label="Nomor SPB" value={noSpb} />}
-                        <PreviewField label="Pilihan 1" value={pilihan1} />
-                        <PreviewField label="Program Pilihan 1" value={program1} />
-                        <PreviewField label="Pilihan 2" value={pilihan2} />
-                        <PreviewField label="Program Pilihan 2" value={program2} />
-                    </div>
-                </section>
-
-                <section className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-7 shadow-sm mb-6">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-6 pb-4 border-b border-gray-100 flex items-center gap-3">
-                        <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-blue-50 text-[#1976d2]">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
-                                <circle cx="8.5" cy="7" r="4" />
-                                <path d="M20 8v6M23 11h-6" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                        </span>
-                        Biodata Siswa
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <PreviewField label="NISN" value={formData.nisn} />
-                        <PreviewField label="NIK" value={formData.nik} />
-                        <PreviewField label="Nomor Kartu Keluarga" value={formData.nokk} />
-                        <PreviewField label="Nama Lengkap" value={formData.nama} />
-                        <PreviewField label="Tempat Lahir" value={formData.tempatLahir} />
-                        <PreviewField label="Tanggal Lahir" value={formatTanggalLahirId(formData.tanggalLahir)} />
-                        <PreviewField label="Jenis Kelamin" value={jenisKelamin} />
-                        <PreviewField label="No HP (WhatsApp)" value={formData.noHp} />
-                        <PreviewField label="Email" value={formData.email || loginEmail} />
-                        <PreviewField label="Sekolah Asal" value={sekolahAsalPreview} />
-                        <PreviewField label="Kota Sekolah Asal" value={formData.kotaSekolahAsal} />
-                        <div className="md:col-span-2">
-                            <PreviewField label="Alamat Rumah" value={formData.alamat} multiline />
-                        </div>
-                    </div>
-                </section>
-
-                <section className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-7 shadow-sm mb-6">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-6 pb-4 border-b border-gray-100 flex items-center gap-3">
-                        <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-purple-50 text-purple-600">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" strokeLinecap="round" strokeLinejoin="round" />
-                                <circle cx="9" cy="7" r="4" />
-                            </svg>
-                        </span>
-                        Biodata Keluarga
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <PreviewField label="Nama Ayah" value={formData.namaAyah} />
-                        <PreviewField label="No. HP. Ayah" value={formData.noHpAyah} />
-                        <PreviewField label="Nama Ibu" value={formData.namaIbu} />
-                        <PreviewField label="No. HP. Ibu" value={formData.noHpIbu} />
-                        <PreviewField label="Nama Wali" value={formData.namaWali} />
-                        <PreviewField label="No. HP. Wali" value={formData.noHpWali} />
-                    </div>
-                </section>
-
-                <section className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-7 shadow-sm mb-6">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-6 pb-4 border-b border-gray-100 flex items-center gap-3">
-                        <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-rose-50 text-rose-600">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <path d="M12 19l7-7 3 3-7 7-3-3z" strokeLinecap="round" strokeLinejoin="round" />
-                                <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" strokeLinecap="round" strokeLinejoin="round" />
-                                <path d="M2 2l7.586 7.586" strokeLinecap="round" strokeLinejoin="round" />
-                                <circle cx="11" cy="11" r="2" />
-                            </svg>
-                        </span>
-                        Tanda Tangan Orang Tua / Wali
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <PreviewField label="Nama Penanda Tangan" value={formData.namaAyah} />
-                        <div>
-                            <div className="block text-sm font-medium text-gray-600 mb-2">Tanda Tangan</div>
-                            {signatureData ? (
-                                <div className="w-full border border-gray-200 rounded-lg p-3 bg-gray-50 flex items-center justify-center">
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img src={signatureData} alt="Tanda Tangan" className="max-h-32 object-contain" />
-                                </div>
-                            ) : (
-                                <div className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-800 bg-gray-50">-</div>
-                            )}
-                        </div>
-                    </div>
-                </section>
-
-                <section className="bg-white rounded-2xl border border-gray-100 p-6 sm:p-7 shadow-sm mb-6">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-6 pb-4 border-b border-gray-100 flex items-center gap-3">
-                        <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                <rect x="2" y="5" width="20" height="14" rx="2" />
-                                <path d="M2 10h20" />
-                            </svg>
-                        </span>
-                        Data Administratif
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <PreviewField label="Uang Sumbangan Sukarela" value={sumbanganPreviewVal} />
-                    </div>
-                </section>
-
-                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-gray-700 mb-6">
-                    <p className="flex items-start gap-2">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-amber-600 flex-shrink-0 mt-0.5">
-                            <circle cx="12" cy="12" r="10" />
-                            <path d="M12 16v-4M12 8h.01" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                        <span>
-                            Pastikan seluruh data di atas sudah benar. Setelah dikirim, data tidak dapat diubah melalui form ini.
-                        </span>
-                    </p>
-                </div>
-
-                <div className="flex flex-col sm:flex-row gap-3">
-                    <button
-                        type="button"
-                        onClick={onExitPreview}
-                        disabled={loading || signatureSaving}
-                        className="px-6 py-3.5 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-50 transition"
-                    >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                        Kembali
-                    </button>
-                    <button
-                        type="button"
-                        onClick={handleConfirmSubmit}
-                        disabled={loading || signatureSaving}
-                        className="group flex-1 bg-gradient-to-r from-[#1976d2] to-[#0d47a1] hover:from-[#1565c0] hover:to-[#0d47a1] text-white font-semibold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 active:scale-[0.99] disabled:bg-gray-300 disabled:bg-none disabled:shadow-none disabled:cursor-not-allowed"
-                    >
-                        {loading || signatureSaving ? "Mengirim..." : "Kirim Pendaftaran"}
-                        {!(loading || signatureSaving) && (
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="group-hover:translate-x-1 transition-transform">
-                                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                        )}
-                    </button>
-                </div>
-            </>
-        );
-    }
-
     return (
         <>
             <div className="bg-white rounded-2xl border border-gray-100 p-5 mb-5 shadow-sm">
@@ -1539,7 +1362,7 @@ function FormStep2({
                         }
                         className="group flex-1 bg-gradient-to-r from-[#1976d2] to-[#0d47a1] hover:from-[#1565c0] hover:to-[#0d47a1] text-white font-semibold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 active:scale-[0.99] disabled:bg-gray-300 disabled:bg-none disabled:shadow-none disabled:cursor-not-allowed"
                     >
-                        {loading ? "Memproses..." : "Lanjut ke Preview"}
+                        {loading ? "Memproses..." : "Lanjut"}
                         {!loading && (
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:translate-x-1 transition-transform">
                                 <path d="M5 12h14M13 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
@@ -1548,7 +1371,282 @@ function FormStep2({
                     </button>
                 </div>
             </form>
+
+            {showPreview && (
+                <PreviewModal
+                    isDariBpk={isDariBpk}
+                    asalSekolah={asalSekolah}
+                    programAsal={programAsal}
+                    pilihan1={pilihan1}
+                    program1={program1}
+                    pilihan2={pilihan2}
+                    program2={program2}
+                    noSpb={noSpb}
+                    formData={formData}
+                    jenisKelamin={jenisKelamin}
+                    sekolahAsalPreview={sekolahAsalPreview}
+                    loginEmail={loginEmail}
+                    signatureData={signatureData}
+                    sumbanganPreviewVal={sumbanganPreviewVal}
+                    formatTanggalLahirId={formatTanggalLahirId}
+                    submitting={loading || signatureSaving}
+                    onClose={onExitPreview}
+                    onConfirm={handleConfirmSubmit}
+                />
+            )}
         </>
+    );
+}
+
+function PreviewModal({
+    isDariBpk,
+    asalSekolah,
+    programAsal,
+    pilihan1,
+    program1,
+    pilihan2,
+    program2,
+    noSpb,
+    formData,
+    jenisKelamin,
+    sekolahAsalPreview,
+    loginEmail,
+    signatureData,
+    sumbanganPreviewVal,
+    formatTanggalLahirId,
+    submitting,
+    onClose,
+    onConfirm,
+}: {
+    isDariBpk: boolean;
+    asalSekolah: string;
+    programAsal: string;
+    pilihan1: string;
+    program1: string;
+    pilihan2: string;
+    program2: string;
+    noSpb: string;
+    formData: SiswaFormData;
+    jenisKelamin: string;
+    sekolahAsalPreview: string;
+    loginEmail: string;
+    signatureData: string;
+    sumbanganPreviewVal: string;
+    formatTanggalLahirId: (d: string) => string;
+    submitting: boolean;
+    onClose: () => void;
+    onConfirm: () => void;
+}) {
+    useEffect(() => {
+        const original = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape" && !submitting) onClose();
+        };
+        window.addEventListener("keydown", onKey);
+        return () => {
+            document.body.style.overflow = original;
+            window.removeEventListener("keydown", onKey);
+        };
+    }, [onClose, submitting]);
+
+    return (
+        <div
+            className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm overflow-y-auto"
+            role="dialog"
+            aria-modal="true"
+            onClick={() => { if (!submitting) onClose(); }}
+        >
+            <div
+                className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl my-4 sm:my-8 flex flex-col max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)]"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className="relative overflow-hidden rounded-t-2xl bg-gradient-to-br from-amber-500 to-amber-600 text-white px-6 py-5">
+                    <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/10" />
+                    <div className="absolute -bottom-8 -left-6 w-28 h-28 rounded-full bg-white/5" />
+                    <div className="relative flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-3">
+                            <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/20 ring-1 ring-white/30 flex-shrink-0">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" strokeLinecap="round" strokeLinejoin="round" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                            </span>
+                            <div>
+                                <h2 className="font-semibold text-base sm:text-lg">Preview Data Pendaftaran</h2>
+                                <p className="text-xs sm:text-sm text-amber-50/95 leading-relaxed mt-0.5">
+                                    Periksa kembali data sebelum dikirim ke sistem.
+                                </p>
+                            </div>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            disabled={submitting}
+                            aria-label="Tutup preview"
+                            className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-white/15 hover:bg-white/25 ring-1 ring-white/30 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div className="overflow-y-auto px-5 sm:px-7 py-6 space-y-6 flex-1 bg-slate-50">
+                    <section className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 shadow-sm">
+                        <h3 className="text-base font-semibold text-gray-800 mb-5 pb-3 border-b border-gray-100 flex items-center gap-3">
+                            <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-amber-50 text-amber-600">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            </span>
+                            Pilihan Sekolah
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <PreviewField label="Asal Sekolah" value={asalSekolah} />
+                            <PreviewField label="Program Asal" value={programAsal} />
+                            {isDariBpk && <PreviewField label="Nomor SPB" value={noSpb} />}
+                            <PreviewField label="Pilihan 1" value={pilihan1} />
+                            <PreviewField label="Program Pilihan 1" value={program1} />
+                            <PreviewField label="Pilihan 2" value={pilihan2} />
+                            <PreviewField label="Program Pilihan 2" value={program2} />
+                        </div>
+                    </section>
+
+                    <section className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 shadow-sm">
+                        <h3 className="text-base font-semibold text-gray-800 mb-5 pb-3 border-b border-gray-100 flex items-center gap-3">
+                            <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-blue-50 text-[#1976d2]">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" strokeLinecap="round" strokeLinejoin="round" />
+                                    <circle cx="8.5" cy="7" r="4" />
+                                    <path d="M20 8v6M23 11h-6" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            </span>
+                            Biodata Siswa
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <PreviewField label="NISN" value={formData.nisn} />
+                            <PreviewField label="NIK" value={formData.nik} />
+                            <PreviewField label="Nomor Kartu Keluarga" value={formData.nokk} />
+                            <PreviewField label="Nama Lengkap" value={formData.nama} />
+                            <PreviewField label="Tempat Lahir" value={formData.tempatLahir} />
+                            <PreviewField label="Tanggal Lahir" value={formatTanggalLahirId(formData.tanggalLahir)} />
+                            <PreviewField label="Jenis Kelamin" value={jenisKelamin} />
+                            <PreviewField label="No HP (WhatsApp)" value={formData.noHp} />
+                            <PreviewField label="Email" value={formData.email || loginEmail} />
+                            <PreviewField label="Sekolah Asal" value={sekolahAsalPreview} />
+                            <PreviewField label="Kota Sekolah Asal" value={formData.kotaSekolahAsal} />
+                            <div className="md:col-span-2">
+                                <PreviewField label="Alamat Rumah" value={formData.alamat} multiline />
+                            </div>
+                        </div>
+                    </section>
+
+                    <section className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 shadow-sm">
+                        <h3 className="text-base font-semibold text-gray-800 mb-5 pb-3 border-b border-gray-100 flex items-center gap-3">
+                            <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-purple-50 text-purple-600">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" strokeLinecap="round" strokeLinejoin="round" />
+                                    <circle cx="9" cy="7" r="4" />
+                                </svg>
+                            </span>
+                            Biodata Keluarga
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <PreviewField label="Nama Ayah" value={formData.namaAyah} />
+                            <PreviewField label="No. HP. Ayah" value={formData.noHpAyah} />
+                            <PreviewField label="Nama Ibu" value={formData.namaIbu} />
+                            <PreviewField label="No. HP. Ibu" value={formData.noHpIbu} />
+                            <PreviewField label="Nama Wali" value={formData.namaWali} />
+                            <PreviewField label="No. HP. Wali" value={formData.noHpWali} />
+                        </div>
+                    </section>
+
+                    <section className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 shadow-sm">
+                        <h3 className="text-base font-semibold text-gray-800 mb-5 pb-3 border-b border-gray-100 flex items-center gap-3">
+                            <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-rose-50 text-rose-600">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M12 19l7-7 3 3-7 7-3-3z" strokeLinecap="round" strokeLinejoin="round" />
+                                    <path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z" strokeLinecap="round" strokeLinejoin="round" />
+                                    <path d="M2 2l7.586 7.586" strokeLinecap="round" strokeLinejoin="round" />
+                                    <circle cx="11" cy="11" r="2" />
+                                </svg>
+                            </span>
+                            Tanda Tangan Orang Tua / Wali
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <PreviewField label="Nama Penanda Tangan" value={formData.namaAyah} />
+                            <div>
+                                <div className="block text-sm font-medium text-gray-600 mb-2">Tanda Tangan</div>
+                                {signatureData ? (
+                                    <div className="w-full border border-gray-200 rounded-lg p-3 bg-gray-50 flex items-center justify-center">
+                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                        <img src={signatureData} alt="Tanda Tangan" className="max-h-32 object-contain" />
+                                    </div>
+                                ) : (
+                                    <div className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-800 bg-gray-50">-</div>
+                                )}
+                            </div>
+                        </div>
+                    </section>
+
+                    <section className="bg-white rounded-2xl border border-gray-100 p-5 sm:p-6 shadow-sm">
+                        <h3 className="text-base font-semibold text-gray-800 mb-5 pb-3 border-b border-gray-100 flex items-center gap-3">
+                            <span className="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <rect x="2" y="5" width="20" height="14" rx="2" />
+                                    <path d="M2 10h20" />
+                                </svg>
+                            </span>
+                            Data Administratif
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <PreviewField label="Uang Sumbangan Sukarela" value={sumbanganPreviewVal} />
+                        </div>
+                    </section>
+
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-gray-700">
+                        <p className="flex items-start gap-2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-amber-600 flex-shrink-0 mt-0.5">
+                                <circle cx="12" cy="12" r="10" />
+                                <path d="M12 16v-4M12 8h.01" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                            <span>
+                                Pastikan seluruh data di atas sudah benar. Setelah dikirim, data tidak dapat diubah melalui form ini.
+                            </span>
+                        </p>
+                    </div>
+                </div>
+
+                <div className="px-5 sm:px-7 py-4 border-t border-gray-100 bg-white rounded-b-2xl flex flex-col sm:flex-row gap-3">
+                    <button
+                        type="button"
+                        onClick={onClose}
+                        disabled={submitting}
+                        className="px-6 py-3 rounded-xl border border-gray-200 hover:bg-gray-50 text-gray-700 font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-50 transition"
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                            <path d="M19 12H5M12 19l-7-7 7-7" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        Kembali ke Form
+                    </button>
+                    <button
+                        type="button"
+                        onClick={onConfirm}
+                        disabled={submitting}
+                        className="group flex-1 bg-gradient-to-r from-[#1976d2] to-[#0d47a1] hover:from-[#1565c0] hover:to-[#0d47a1] text-white font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 active:scale-[0.99] disabled:bg-gray-300 disabled:bg-none disabled:shadow-none disabled:cursor-not-allowed"
+                    >
+                        {submitting ? "Mengirim..." : "Konfirmasi & Submit"}
+                        {!submitting && (
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="group-hover:translate-x-1 transition-transform">
+                                <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                        )}
+                    </button>
+                </div>
+            </div>
+        </div>
     );
 }
 

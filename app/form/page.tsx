@@ -176,7 +176,7 @@ const jenjangConfig: Record<Jenjang, JenjangConfig> = {
             "Luar BPK",
         ],
         programAsalOptions:    ["Reguler", "bilingual"],
-        pilihanSekolahOptions: ["- Pilih -", "SDK 1 BPK PENABUR", "SDK 2 BPK PENABUR", "SDK 3 BPK PENABUR", "Luar BPK"],
+        pilihanSekolahOptions: ["- Pilih -", "SDK 1 BPK PENABUR", "SDK 2 BPK PENABUR", "SDK 3 BPK PENABUR"],
         programPilihanOptions:   ["- Pilih -", "Classical", "Reguler"],
         sekolahAsalStep2Options: ["- Pilih -", "TKK BPK PENABUR", "Luar BPK"],
         sumbanganOptions:        sumbanganOptionsDefault,
@@ -191,7 +191,7 @@ const jenjangConfig: Record<Jenjang, JenjangConfig> = {
         ],
         asalSekolahOptions:    ["- Pilih -", "SDK BPK PENABUR", "Luar BPK"],
         programAsalOptions:    ["Reguler"],
-        pilihanSekolahOptions: ["- Pilih -", "SMPK 1 BPK PENABUR", "SMPK 2 BPK PENABUR", "SMPK 3 BPK PENABUR", "Luar BPK"],
+        pilihanSekolahOptions: ["- Pilih -", "SMPK 1 BPK PENABUR", "SMPK 2 BPK PENABUR", "SMPK 3 BPK PENABUR"],
         programPilihanOptions:   ["- Pilih -", "Reguler", "Bilingual"],
         sekolahAsalStep2Options: ["- Pilih -", "SDK BPK PENABUR", "Luar BPK"],
         sumbanganOptions:        sumbanganOptionsDefault,
@@ -207,7 +207,7 @@ const jenjangConfig: Record<Jenjang, JenjangConfig> = {
         ],
         asalSekolahOptions:    ["- Pilih -", "SMPK BPK PENABUR", "Luar BPK"],
         programAsalOptions:    ["Reguler"],
-        pilihanSekolahOptions: ["- Pilih -", "SMAK 1 BPK PENABUR", "SMAK 2 BPK PENABUR", "SMAK 3 BPK PENABUR", "Luar BPK"],
+        pilihanSekolahOptions: ["- Pilih -", "SMAK 1 BPK PENABUR", "SMAK 2 BPK PENABUR", "SMAK 3 BPK PENABUR"],
         programPilihanOptions:   ["- Pilih -", "Reguler", "IPA", "Bilingual", "LSP", "DCP"],
         sekolahAsalStep2Options: ["- Pilih -", "SMPK BPK PENABUR", "Luar BPK"],
         sumbanganOptions:        sumbanganOptionsDefault,
@@ -264,6 +264,9 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
     const pilihan1Options = jenjang === "tk"
         ? config.pilihanSekolahOptions.filter((opt) => opt !== "Luar BPK")
         : config.pilihanSekolahOptions;
+    const pilihan2Options = config.pilihanSekolahOptions.filter(
+        (opt) => opt === "- Pilih -" || opt !== pilihan1
+    );
     const isSelected      = (v: string) => v !== "- Pilih -" && v !== "-" && v.trim() !== "";
     const isPilihanValid  = (pilihan: string, options: string[]) => isSelected(pilihan) && options.includes(pilihan);
     const isProgramValid  = (program: string, options: string[]) => isSelected(program) && options.includes(program);
@@ -273,12 +276,17 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
     );
     const isStep1Valid  = isSelected(asalSekolah) && isSelected(programAsal) &&
                           isPilihanValid(pilihan1, pilihan1Options) && isProgramValid(program1, program1Options) &&
-                          isPilihanValid(pilihan2, config.pilihanSekolahOptions) && isProgramValid(program2, program2Options) &&
+                          isPilihanValid(pilihan2, pilihan2Options) && pilihan2 !== pilihan1 &&
+                          isProgramValid(program2, program2Options) &&
                           isUsiaStep1Valid;
 
     const handlePilihan1Change = (value: string) => {
         setPilihan1(value);
         setProgram1("- Pilih -");
+        if (pilihan2 === value) {
+            setPilihan2("- Pilih -");
+            setProgram2("- Pilih -");
+        }
     };
 
     const handlePilihan2Change = (value: string) => {
@@ -565,7 +573,7 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
                                             ))}
                                         </SelectField>
                                         <SelectField label="Pilihan 2" required value={pilihan2} onChange={handlePilihan2Change}>
-                                            {config.pilihanSekolahOptions.map((opt) => (
+                                            {pilihan2Options.map((opt) => (
                                                 <option key={opt}>{opt}</option>
                                             ))}
                                         </SelectField>

@@ -942,7 +942,7 @@ function FormStep2({
                         Biodata Siswa
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <PreviewField label="NISN" value={formData.nisn} />
+                        {jenjang !== "tk" && <PreviewField label="NISN" value={formData.nisn} />}
                         <PreviewField label="NIK" value={formData.nik} />
                         <PreviewField label="Nomor Kartu Keluarga" value={formData.nokk} />
                         <PreviewField label="Nama Lengkap" value={formData.nama} />
@@ -1117,7 +1117,9 @@ function FormStep2({
                         Biodata Siswa
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <InputField label="Nomor Induk Siswa Nasional (NISN)" doubleRequired digitsOnly exactLength={10} name="nisn" value={formData.nisn} onChange={(e) => handleChangeInput(e, setFormData)} />
+                        {jenjang !== "tk" && (
+                            <InputField label="Nomor Induk Siswa Nasional (NISN)" doubleRequired digitsOnly exactLength={10} name="nisn" value={formData.nisn} onChange={(e) => handleChangeInput(e, setFormData)} />
+                        )}
                         <InputField label="Nomor Induk Kependudukan (NIK)" doubleRequired digitsOnly exactLength={16} name="nik" value={formData.nik} onChange={(e) => handleChangeInput(e, setFormData)} />
                         <InputField label="Nomor Kartu Keluarga (NoKK)" doubleRequired digitsOnly exactLength={16} name="nokk" value={formData.nokk} onChange={(e) => handleChangeInput(e, setFormData)} />
                         <InputField label="Nama Lengkap" required hint="Sesuai Akte Lahir Anak" name="nama" value={formData.nama} onChange={(e) => handleChangeInput(e, setFormData)} />
@@ -1353,7 +1355,7 @@ function FormStep2({
                             !isPhoneRequiredValid(formData.noHpIbu) ||
                             !isPhoneOptionalValid(formData.noHpWali) ||
                             !isEmailValid(formData.email) ||
-                            !isExactDigits(formData.nisn, 10) ||
+                            (jenjang !== "tk" && !isExactDigits(formData.nisn, 10)) ||
                             !isExactDigits(formData.nik,  16) ||
                             !isExactDigits(formData.nokk, 16) ||
                             !signatureData ||

@@ -37,7 +37,7 @@ export default function DashboardPage() {
         Swal.fire({
             icon               : "info",
             title              : "Belum Tersedia",
-            html               : `Menu <b>${label}</b> hanya dapat diakses jika status pendaftaran Anda <b>Diterima</b>.<br/>Silakan menunggu hasil verifikasi dari panitia.`,
+            html               : `Menu <b>${label}</b> hanya dapat diakses jika pendaftaran Anda <b>Valid</b>.<br/>Silakan menunggu proses validasi dari panitia.`,
             confirmButtonColor : "#1976d2",
         });
     };
@@ -156,7 +156,7 @@ function SiswaCard({
     total         : number;
     onLockedClick : (label: string) => void;
 }) {
-    const isDiterima = Number(siswa.status ?? 0) === 1;
+    const isValid = Number(siswa.status ?? 0) === 1;
     const noreg      = siswa.noreg ?? "";
     const qs         = noreg ? `?noreg=${encodeURIComponent(noreg)}` : "";
     const jenjang    = resolveJenjang(siswa);
@@ -222,7 +222,7 @@ function SiswaCard({
                             </svg>
                         }
                         label="Update Data Pendaftar"
-                        disabled={!isDiterima}
+                        disabled={!isValid}
                         onLockedClick={onLockedClick}
                     />
                     <div className="hidden sm:block" />
@@ -236,7 +236,7 @@ function SiswaCard({
                             </svg>
                         }
                         label="Print Formulir"
-                        disabled={!isDiterima}
+                        disabled={!isValid}
                         onLockedClick={onLockedClick}
                     />
                 </div>
@@ -258,8 +258,8 @@ function StatusBadge({ status }: { status: number }) {
     if (status !== 1 && status !== 2) return null;
 
     const cfg = status === 1
-        ? { label: "Diterima", cls: "bg-green-50 text-green-700 border-green-200" }
-        : { label: "Ditolak",  cls: "bg-red-50 text-red-700 border-red-200"      };
+        ? { label: "Pendaftaran Valid", cls: "bg-green-50 text-green-700 border-green-200" }
+        : { label: "Ditolak",           cls: "bg-red-50 text-red-700 border-red-200"      };
 
     return (
         <span className={`inline-flex items-center gap-1 ${cfg.cls} border px-2 py-0.5 rounded font-medium`}>
@@ -290,7 +290,7 @@ function MenuItem({
                 onClick={() => onLockedClick?.(label)}
                 className="flex items-center gap-3 rounded-md px-3 py-2 w-full text-left cursor-not-allowed opacity-60 hover:bg-gray-50 transition"
                 aria-disabled="true"
-                title="Hanya tersedia jika status pendaftaran Diterima"
+                title="Hanya tersedia jika Pendaftaran Valid"
             >
                 <span className={`w-9 h-9 rounded-full ${iconBg} flex items-center justify-center shadow-sm relative`}>
                     {icon}
@@ -303,7 +303,7 @@ function MenuItem({
                 </span>
                 <span className="flex flex-col">
                     <span className="text-gray-400 font-semibold">{label}</span>
-                    <span className="text-xs text-gray-400">Tersedia setelah status Diterima</span>
+                    <span className="text-xs text-gray-400">Tersedia setelah Pendaftaran Valid</span>
                 </span>
             </button>
         );

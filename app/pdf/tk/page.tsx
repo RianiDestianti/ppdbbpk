@@ -5,7 +5,6 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
 import { getMySiswa } from "@/store/controllers/siswaController";
-import { getSignature } from "@/store/controllers/authController";
 import { SiswaDetail } from "@/store/types/SiswaTypes";
 
 const BULAN_ID = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
@@ -40,7 +39,6 @@ function PdfTkContent() {
     const dispatch     = useAppDispatch();
 
     const { detail, list } = useAppSelector((state) => state.siswa);
-    const signature        = useAppSelector((state) => state.auth.signature);
 
     useEffect(() => {
         const token = localStorage.getItem("auth-key");
@@ -49,7 +47,6 @@ function PdfTkContent() {
             return;
         }
         dispatch(getMySiswa(noregParam || undefined));
-        dispatch(getSignature());
     }, [dispatch, router, noregParam]);
 
     const siswa: SiswaDetail = useMemo(() => {
@@ -74,6 +71,25 @@ function PdfTkContent() {
     const signerAlamat    = signer === "ayah" ? (siswa.alamat_ayah ?? "")    : (siswa.alamat_ibu ?? "");
     const signerNoHp      = signer === "ayah" ? (siswa.no_hp2 ?? "")         : (siswa.no_hp3 ?? "");
     const signerPekerjaan = signer === "ayah" ? (siswa.pekerjaan_ayah ?? "") : (siswa.pekerjaan_ibu ?? "");
+
+    const buildFileName = (): string => {
+        const safeNama  = (siswa.nama ?? "").trim().replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_-]/g, "");
+        const safeNoreg = (siswa.noreg ?? "").trim().replace(/\s+/g, "_").replace(/[^a-zA-Z0-9_-]/g, "");
+        return `${safeNoreg}_${safeNama}_FormulirPPDB`;
+    };
+
+    const handleCetak = () => window.print();
+
+    const handleUnduh = () => {
+        const original = document.title;
+        const restore = () => {
+            document.title = original;
+            window.removeEventListener("afterprint", restore);
+        };
+        window.addEventListener("afterprint", restore);
+        document.title = buildFileName();
+        window.print();
+    };
 
     return (
         <main className="bg-gray-100 min-h-screen py-6 print:bg-white print:py-0">
@@ -198,21 +214,14 @@ function PdfTkContent() {
                                 </ol>
 
                                 <div className="mt-6 grid grid-cols-2 gap-4">
-                                    <div>
-                                        <div className="text-sm">{tanggalCetak}</div>
-                                        <div className="text-sm">Orang Tua Calon Siswa</div>
-                                        <div className="mt-2 h-24 w-56 flex items-end">
-                                            {signature ? (
-                                                <img
-                                                    src={signature}
-                                                    alt="Tanda Tangan"
-                                                    className="max-h-24 object-contain mix-blend-multiply"
-                                                    crossOrigin="anonymous"
-                                                />
-                                            ) : null}
+                                    <div className="flex justify-center">
+                                        <div className="text-sm text-center w-56">
+                                            <div>{tanggalCetak}</div>
+                                            <div>{signer === "ayah" ? "Ayah Calon Siswa" : "Ibu Calon Siswa"}</div>
+                                            <div className="mt-2 h-28" />
+                                            <div className="border-t border-black" />
+                                            <div className="mt-1 font-semibold">{signerNama}</div>
                                         </div>
-                                        <div className="border-t border-black w-56" />
-                                        <div className="text-sm mt-1 font-semibold">{siswa.nama_ayah || siswa.nama_ibu || siswa.nama_wali || ""}</div>
                                     </div>
                                     <div className="flex flex-col items-center">
                                         <img
@@ -305,12 +314,12 @@ function PdfTkContent() {
                         <p className="mt-5">* Mohon ditandatangani di atas meterai Rp 10.000 (Meterai yang terbaru)</p>
 
                         <div className="mt-10 flex justify-end">
-                            <div className="text-sm text-center">
+                            <div className="text-sm text-center w-56">
                                 <div>{tanggalCetak}</div>
                                 <div>{signer === "ayah" ? "Ayah Calon Siswa" : "Ibu Calon Siswa"}</div>
-                                <div className="mt-2 h-28 w-56" />
-                                <div className="border-t border-black w-56" />
-                                <div className="text-sm mt-1 font-semibold">{signerNama}</div>
+                                <div className="mt-2 h-28" />
+                                <div className="border-t border-black" />
+                                <div className="mt-1 font-semibold">{signerNama}</div>
                             </div>
                         </div>
                     </div>
@@ -337,14 +346,26 @@ function PdfTkContent() {
                 </div>
                 <button
                     type="button"
-                    onClick={() => window.print()}
+                    onClick={handleCetak}
+                    className="flex items-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-800 font-semibold text-sm px-5 py-3 rounded-full shadow-md transition"
+                >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                        <path d="M6 9V3h12v6" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2" strokeLinecap="round" strokeLinejoin="round" />
+                        <rect x="6" y="14" width="12" height="7" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    Cetak
+                </button>
+                <button
+                    type="button"
+                    onClick={handleUnduh}
                     className="flex items-center gap-2 bg-[#1976d2] hover:bg-[#1565c0] text-white font-semibold text-sm px-5 py-3 rounded-full shadow-lg shadow-blue-500/30 transition"
                 >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
                         <path d="M12 4v12m0 0l-4-4m4 4l4-4" strokeLinecap="round" strokeLinejoin="round" />
                         <path d="M4 20h16" strokeLinecap="round" />
                     </svg>
-                    Download PDF
+                    Unduh PDF
                 </button>
             </div>
 

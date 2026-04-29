@@ -3,8 +3,11 @@
 import { Suspense, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
-import { handleGoogleLogin } from "@/store/controllers/authController";
-import { handleCleanResponse } from "@/store/slices/authSlice";
+import {
+    handleGoogleLogin,
+    selectGoogleChild,
+} from "@/store/controllers/authController";
+import { handleCleanResponse, handleClearGoogleSelection } from "@/store/slices/authSlice";
 import Swal from "sweetalert2";
 
 function GoogleCallback() {
@@ -13,6 +16,8 @@ function GoogleCallback() {
     const dispatch        = useAppDispatch();
     const stateLogin      = useAppSelector((state) => state.auth);
     const requestedRef    = useRef(false);
+    const autoSelectedRef = useRef(false);
+    const errorShownRef   = useRef(false);
 
     useEffect(() => {
         const code  = searchParams.get("code");
@@ -45,10 +50,42 @@ function GoogleCallback() {
     }, [dispatch, router, searchParams]);
 
     useEffect(() => {
+        if (
+            stateLogin.requiresSelection
+            && stateLogin.googleSession
+            && stateLogin.googleChildren.length > 0
+            && !autoSelectedRef.current
+        ) {
+            autoSelectedRef.current = true;
+            const firstChild = stateLogin.googleChildren[0]!;
+            dispatch(selectGoogleChild({
+                google_session : stateLogin.googleSession,
+                noreg          : firstChild.noreg,
+            }));
+        }
+    }, [stateLogin.requiresSelection, stateLogin.googleSession, stateLogin.googleChildren, dispatch]);
+
+    useEffect(() => {
         if (stateLogin.responseLogin) {
-            localStorage.setItem("auth-key",      stateLogin.responseLogin.key);
-            localStorage.setItem("auth-username", stateLogin.responseLogin.username);
-            localStorage.setItem("auth-nama",     stateLogin.responseLogin.nama);
+            const { key, username, nama } = stateLogin.responseLogin;
+
+            if (!key || typeof key !== "string") {
+                console.error("[auth/google] Login response missing 'key' field:", stateLogin.responseLogin);
+                Swal.fire({
+                    icon              : "error",
+                    title             : "Login Gagal",
+                    text              : "Token tidak diterima dari server. Silakan coba lagi.",
+                    confirmButtonColor: "#dc2626",
+                }).then(() => {
+                    dispatch(handleCleanResponse());
+                    router.replace("/sign-in");
+                });
+                return;
+            }
+
+            localStorage.setItem("auth-key",      key);
+            localStorage.setItem("auth-username", username ?? "");
+            localStorage.setItem("auth-nama",     nama ?? "");
 
             const redirectTarget = sessionStorage.getItem("auth-redirect") || "/dashboard";
             sessionStorage.removeItem("auth-redirect");
@@ -56,7 +93,7 @@ function GoogleCallback() {
             Swal.fire({
                 icon              : "success",
                 title             : "Login Berhasil",
-                text              : `Selamat datang, ${stateLogin.responseLogin.nama}`,
+                text              : `Selamat datang, ${nama ?? username ?? ""}`,
                 confirmButtonColor: "#dc2626",
                 timer             : 1500,
                 showConfirmButton : false,
@@ -65,10 +102,11 @@ function GoogleCallback() {
                 window.location.href = redirectTarget;
             });
         }
-    }, [stateLogin.responseLogin, dispatch]);
+    }, [stateLogin.responseLogin, dispatch, router]);
 
     useEffect(() => {
-        if (stateLogin.error) {
+        if (stateLogin.error && !errorShownRef.current) {
+            errorShownRef.current = true;
             Swal.fire({
                 icon              : "error",
                 title             : "Login Google Gagal",
@@ -76,6 +114,7 @@ function GoogleCallback() {
                 confirmButtonColor: "#dc2626",
             }).then(() => {
                 dispatch(handleCleanResponse());
+                dispatch(handleClearGoogleSelection());
                 router.replace("/sign-in");
             });
         }

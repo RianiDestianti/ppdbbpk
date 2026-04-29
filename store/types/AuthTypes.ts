@@ -4,6 +4,27 @@ export interface ResponseLoginType {
     nama        : string;
 }
 
+export interface GoogleChild {
+    noreg : string;
+    nama  : string;
+}
+
+export interface GoogleSelectionData {
+    requires_selection : true;
+    google_session     : string;
+    children           : GoogleChild[];
+}
+
+export interface SelectGoogleChildPayload {
+    google_session : string;
+    noreg          : string;
+}
+
+export interface AddGoogleChildPayload {
+    google_session : string;
+    nama           : string;
+}
+
 export interface DataAuthType {
     noreg       : string;
     nama        : string;

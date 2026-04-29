@@ -1,25 +1,38 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { getProfile, getSignature, handleGoogleLogin, saveSignature } from '../controllers/authController';
-import { DataAuthType, ResponseLoginType } from '../types/AuthTypes';
+import {
+    addGoogleChild,
+    getProfile,
+    getSignature,
+    handleGoogleLogin,
+    saveSignature,
+    selectGoogleChild,
+} from '../controllers/authController';
+import { DataAuthType, GoogleChild, ResponseLoginType } from '../types/AuthTypes';
 
 interface AuthState {
-    loading         : boolean;
-    responseLogin   : ResponseLoginType | null;
-    error           : string | null;
-    errorCode       : number | null;
-    profile         : DataAuthType | null;
-    signature       : string | null;
-    signatureSaving : boolean;
+    loading           : boolean;
+    responseLogin     : ResponseLoginType | null;
+    error             : string | null;
+    errorCode         : number | null;
+    profile           : DataAuthType | null;
+    signature         : string | null;
+    signatureSaving   : boolean;
+    googleSession     : string | null;
+    googleChildren    : GoogleChild[];
+    requiresSelection : boolean;
 }
 
 const initialState: AuthState = {
-    loading         : false,
-    responseLogin   : null,
-    error           : null,
-    errorCode       : null,
-    profile         : null,
-    signature       : null,
-    signatureSaving : false,
+    loading           : false,
+    responseLogin     : null,
+    error             : null,
+    errorCode         : null,
+    profile           : null,
+    signature         : null,
+    signatureSaving   : false,
+    googleSession     : null,
+    googleChildren    : [],
+    requiresSelection : false,
 };
 
 const authSlice = createSlice({
@@ -30,27 +43,91 @@ const authSlice = createSlice({
             state.responseLogin = null;
             state.error         = null;
         },
+        handleClearGoogleSelection(state) {
+            state.googleSession     = null;
+            state.googleChildren    = [];
+            state.requiresSelection = false;
+        },
     },
     extraReducers: builder => {
         builder
             .addCase(handleGoogleLogin.pending, (state) => {
-                state.loading = true;
-                state.error   = null;
+                state.loading           = true;
+                state.error             = null;
+                state.requiresSelection = false;
+                state.googleSession     = null;
+                state.googleChildren    = [];
             })
             .addCase(handleGoogleLogin.fulfilled, (state, action) => {
                 state.loading  = false;
                 const response = action.payload;
 
                 if (response.status === 200) {
-                    state.responseLogin = response.data;
-                    state.error         = null;
+                    if (response.data?.requires_selection) {
+                        state.requiresSelection = true;
+                        state.googleSession     = response.data.google_session;
+                        state.googleChildren    = response.data.children ?? [];
+                        state.responseLogin     = null;
+                    } else {
+                        state.responseLogin     = response.data;
+                        state.requiresSelection = false;
+                        state.googleSession     = null;
+                        state.googleChildren    = [];
+                    }
+                    state.error = null;
                 } else {
-                    state.error         = response.message;
+                    state.error = response.message;
                 }
             })
             .addCase(handleGoogleLogin.rejected, (state) => {
                 state.loading = false;
                 state.error   = 'Gagal login dengan Google';
+            })
+
+            .addCase(selectGoogleChild.pending, (state) => {
+                state.loading = true;
+                state.error   = null;
+            })
+            .addCase(selectGoogleChild.fulfilled, (state, action) => {
+                state.loading  = false;
+                const response = action.payload;
+
+                if (response.status === 200) {
+                    state.responseLogin     = response.data;
+                    state.requiresSelection = false;
+                    state.googleSession     = null;
+                    state.googleChildren    = [];
+                    state.error             = null;
+                } else {
+                    state.error = response.message;
+                }
+            })
+            .addCase(selectGoogleChild.rejected, (state) => {
+                state.loading = false;
+                state.error   = 'Gagal memilih anak';
+            })
+
+            .addCase(addGoogleChild.pending, (state) => {
+                state.loading = true;
+                state.error   = null;
+            })
+            .addCase(addGoogleChild.fulfilled, (state, action) => {
+                state.loading  = false;
+                const response = action.payload;
+
+                if (response.status === 200) {
+                    state.responseLogin     = response.data;
+                    state.requiresSelection = false;
+                    state.googleSession     = null;
+                    state.googleChildren    = [];
+                    state.error             = null;
+                } else {
+                    state.error = response.message;
+                }
+            })
+            .addCase(addGoogleChild.rejected, (state) => {
+                state.loading = false;
+                state.error   = 'Gagal menambahkan anak baru';
             })
 
             .addCase(getProfile.fulfilled, (state, action) => {
@@ -80,5 +157,5 @@ const authSlice = createSlice({
     },
 });
 
-export const { handleCleanResponse } = authSlice.actions;
+export const { handleCleanResponse, handleClearGoogleSelection } = authSlice.actions;
 export default authSlice.reducer;

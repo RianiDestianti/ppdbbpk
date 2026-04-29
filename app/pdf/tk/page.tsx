@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { Suspense, useEffect, useMemo } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
 import { getMySiswa } from "@/store/controllers/siswaController";
@@ -61,12 +61,19 @@ function PdfTkContent() {
         return detail ?? {};
     }, [detail, list, noregParam]);
 
+    const [signer, setSigner] = useState<"ayah" | "ibu">("ayah");
+
     const tanggalCetak = formatTanggalCetak();
     const pilihan1     = joinPilihan(siswa.sekolah_tujuan, siswa.prog1);
     const pilihan2     = joinPilihan(siswa.sekolah_tujuan2, siswa.prog2);
     const noreg        = siswa.noreg ?? "-";
     const sekolahTujuan = siswa.sekolah_tujuan ?? "-";
     const noVa         = siswa.no_va ?? "-";
+
+    const signerNama      = signer === "ayah" ? (siswa.nama_ayah ?? "")      : (siswa.nama_ibu ?? "");
+    const signerAlamat    = signer === "ayah" ? (siswa.alamat_ayah ?? "")    : (siswa.alamat_ibu ?? "");
+    const signerNoHp      = signer === "ayah" ? (siswa.no_hp2 ?? "")         : (siswa.no_hp3 ?? "");
+    const signerPekerjaan = signer === "ayah" ? (siswa.pekerjaan_ayah ?? "") : (siswa.pekerjaan_ibu ?? "");
 
     return (
         <main className="bg-gray-100 min-h-screen py-6 print:bg-white print:py-0">
@@ -228,10 +235,10 @@ function PdfTkContent() {
 
                     <div className="mt-6 text-sm text-gray-900 space-y-2">
                         <p>Yang bertanda tangan dibawah ini :</p>
-                        <FieldLine label="N a m a"             value={siswa.nama_ayah || siswa.nama_ibu || siswa.nama_wali || ""} />
-                        <FieldLine label="Alamat"              value={siswa.alamat_ayah || siswa.alamat_ibu || siswa.alamat_wali || siswa.alamat || ""} />
-                        <FieldLine label="No. Telepon / No. HP" value={siswa.no_hp2 || siswa.no_hp3 || siswa.no_hp1 || ""} />
-                        <FieldLine label="Pekerjaan"           value={siswa.pekerjaan_ayah || siswa.pekerjaan_ibu || siswa.pekerjaan_wali || ""} />
+                        <FieldLine label="N a m a"             value={signerNama} />
+                        <FieldLine label="Alamat"              value={signerAlamat} />
+                        <FieldLine label="No. Telepon / No. HP" value={signerNoHp} />
+                        <FieldLine label="Pekerjaan"           value={signerPekerjaan} />
 
                         <p className="mt-3">
                             Selaku Orangtua / Wali dari calon Siswa BPK PENABUR yang bernama : <span className="font-bold">{siswa.nama ?? "-"}</span>
@@ -298,38 +305,48 @@ function PdfTkContent() {
                         <p className="mt-5">* Mohon ditandatangani di atas meterai Rp 10.000 (Meterai yang terbaru)</p>
 
                         <div className="mt-10 flex justify-end">
-                            <div className="text-sm">
+                            <div className="text-sm text-center">
                                 <div>{tanggalCetak}</div>
-                                <div>Orang Tua Calon Siswa</div>
-                                <div className="mt-2 h-24 w-56 flex items-end">
-                                    {signature ? (
-                                        <img
-                                            src={signature}
-                                            alt="Tanda Tangan"
-                                            className="max-h-24 object-contain mix-blend-multiply"
-                                            crossOrigin="anonymous"
-                                        />
-                                    ) : null}
-                                </div>
+                                <div>{signer === "ayah" ? "Ayah Calon Siswa" : "Ibu Calon Siswa"}</div>
+                                <div className="mt-2 h-28 w-56" />
                                 <div className="border-t border-black w-56" />
-                                <div className="text-sm mt-1 font-semibold">{siswa.nama_ayah || siswa.nama_ibu || siswa.nama_wali || ""}</div>
+                                <div className="text-sm mt-1 font-semibold">{signerNama}</div>
                             </div>
                         </div>
                     </div>
                 </section>
             </div>
 
-            <button
-                type="button"
-                onClick={() => window.print()}
-                className="fixed bottom-6 right-6 z-50 print:hidden flex items-center gap-2 bg-[#1976d2] hover:bg-[#1565c0] text-white font-semibold text-sm px-5 py-3 rounded-full shadow-lg shadow-blue-500/30 transition"
-            >
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                    <path d="M12 4v12m0 0l-4-4m4 4l4-4" strokeLinecap="round" strokeLinejoin="round" />
-                    <path d="M4 20h16" strokeLinecap="round" />
-                </svg>
-                Download PDF
-            </button>
+            <div className="fixed bottom-6 right-6 z-50 print:hidden flex items-center gap-3">
+                <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-full shadow-md px-4 py-2 text-sm">
+                    <span className="text-gray-600 font-medium">Penanda tangan:</span>
+                    <button
+                        type="button"
+                        onClick={() => setSigner("ayah")}
+                        className={`px-3 py-1 rounded-full font-semibold transition ${signer === "ayah" ? "bg-[#1976d2] text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+                    >
+                        Ayah
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setSigner("ibu")}
+                        className={`px-3 py-1 rounded-full font-semibold transition ${signer === "ibu" ? "bg-[#1976d2] text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+                    >
+                        Ibu
+                    </button>
+                </div>
+                <button
+                    type="button"
+                    onClick={() => window.print()}
+                    className="flex items-center gap-2 bg-[#1976d2] hover:bg-[#1565c0] text-white font-semibold text-sm px-5 py-3 rounded-full shadow-lg shadow-blue-500/30 transition"
+                >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                        <path d="M12 4v12m0 0l-4-4m4 4l4-4" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M4 20h16" strokeLinecap="round" />
+                    </svg>
+                    Download PDF
+                </button>
+            </div>
 
             <style jsx global>{`
                 @page { size: A4; margin: 0; }

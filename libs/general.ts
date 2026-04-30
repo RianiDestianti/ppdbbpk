@@ -13,3 +13,9 @@ export const handleChangeInput = <T extends Record<string, any>>(
         [name]: value
     }));
 };
+
+export const formatRupiah = (value?: string | number | null): string => {
+    const n = typeof value === "number" ? value : Number(String(value ?? "").replace(/[^\d]/g, ""));
+    if (!Number.isFinite(n) || n <= 0) return "0";
+    return new Intl.NumberFormat("id-ID").format(n);
+};

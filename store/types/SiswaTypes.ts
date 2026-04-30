@@ -125,6 +125,7 @@ export interface SiswaDetail {
     tgl_daftar           ?: string
     tgl_verifikasi       ?: string
     reko                 ?: string
+    s_tambahan           ?: string
 }
 
 export type UpdateSiswaPayload = Partial<SiswaDetail>;

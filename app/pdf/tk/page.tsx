@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
 import { getMySiswa } from "@/store/controllers/siswaController";
 import { SiswaDetail } from "@/store/types/SiswaTypes";
+import { formatRupiah } from "@/libs/general";
 
 const BULAN_ID = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
 
@@ -66,6 +67,7 @@ function PdfTkContent() {
     const noreg        = siswa.noreg ?? "-";
     const sekolahTujuan = siswa.sekolah_tujuan ?? "-";
     const noVa         = siswa.no_va ?? "-";
+    const sumbanganSukarela = formatRupiah(siswa.s_tambahan);
 
     const signerNama      = signer === "ayah" ? (siswa.nama_ayah ?? "")      : (siswa.nama_ibu ?? "");
     const signerAlamat    = signer === "ayah" ? (siswa.alamat_ayah ?? "")    : (siswa.alamat_ibu ?? "");
@@ -187,7 +189,7 @@ function PdfTkContent() {
                                 </p>
                                 <ol className="space-y-1.5 pl-1">
                                     <li>1. Dana Sumbangan Sarana Pendidikan : Rp _________________(diisi sesuai petunjuk Operator SPMB)</li>
-                                    <li>2. Dana Sumbangan Sukarela : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Rp _________________(diisi Oleh Orang tua siswa)</li>
+                                    <li>2. Dana Sumbangan Sukarela : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Rp <span className="font-semibold">{sumbanganSukarela}</span></li>
                                     <li>3. Dana Sekolah bulan Juli 2026 : &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Rp ____________(diisi sesuai petunjuk Operator SPMB)</li>
                                 </ol>
 

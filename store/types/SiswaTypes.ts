@@ -122,6 +122,9 @@ export interface SiswaDetail {
     prog1                ?: string
     prog2                ?: string
     no_va                ?: string
+    tgl_daftar           ?: string
+    tgl_verifikasi       ?: string
+    reko                 ?: string
 }
 
 export type UpdateSiswaPayload = Partial<SiswaDetail>;

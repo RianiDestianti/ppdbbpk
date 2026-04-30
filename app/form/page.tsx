@@ -1379,20 +1379,18 @@ function PreviewModal({
                 className="relative bg-white rounded-2xl shadow-2xl w-full max-w-4xl my-4 sm:my-8 flex flex-col max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-4rem)]"
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="relative overflow-hidden rounded-t-2xl bg-gradient-to-br from-amber-500 to-amber-600 text-white px-6 py-5">
-                    <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/10" />
-                    <div className="absolute -bottom-8 -left-6 w-28 h-28 rounded-full bg-white/5" />
-                    <div className="relative flex items-start justify-between gap-3">
+                <div className="rounded-t-2xl bg-white px-6 py-5 border-b border-gray-100">
+                    <div className="flex items-start justify-between gap-3">
                         <div className="flex items-start gap-3">
-                            <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/20 ring-1 ring-white/30 flex-shrink-0">
+                            <span className="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-blue-50 text-[#1976d2] flex-shrink-0">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                     <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" strokeLinecap="round" strokeLinejoin="round" />
                                     <circle cx="12" cy="12" r="3" />
                                 </svg>
                             </span>
                             <div>
-                                <h2 className="font-semibold text-base sm:text-lg">Preview Data Pendaftaran</h2>
-                                <p className="text-xs sm:text-sm text-amber-50/95 leading-relaxed mt-0.5">
+                                <h2 className="font-semibold text-base sm:text-lg text-gray-900">Preview Data Pendaftaran</h2>
+                                <p className="text-xs sm:text-sm text-gray-500 leading-relaxed mt-0.5">
                                     Periksa kembali data sebelum dikirim ke sistem.
                                 </p>
                             </div>
@@ -1402,7 +1400,7 @@ function PreviewModal({
                             onClick={onClose}
                             disabled={submitting}
                             aria-label="Tutup preview"
-                            className="inline-flex items-center justify-center w-9 h-9 rounded-lg bg-white/15 hover:bg-white/25 ring-1 ring-white/30 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="inline-flex items-center justify-center w-9 h-9 rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                                 <path d="M18 6L6 18M6 6l12 12" strokeLinecap="round" strokeLinejoin="round" />

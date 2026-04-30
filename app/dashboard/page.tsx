@@ -16,8 +16,11 @@ export default function DashboardPage() {
     const router                  = useRouter();
     const dispatch                = useAppDispatch();
     const { list: siswaList, loading } = useAppSelector((state) => state.siswa);
-    const [username, setUsername] = useState("");
-    const [nama,     setNama]     = useState("");
+    const authProfile             = useAppSelector((state) => state.auth.profile);
+    const [cachedEmail]           = useState(() =>
+        typeof window !== "undefined" ? localStorage.getItem("auth-email") ?? "" : ""
+    );
+    const email                   = authProfile?.email || cachedEmail;
 
     useEffect(() => {
         const token = localStorage.getItem("auth-key");
@@ -26,12 +29,15 @@ export default function DashboardPage() {
             return;
         }
 
-        setUsername(localStorage.getItem("auth-username") ?? "");
-        setNama(localStorage.getItem("auth-nama") ?? "");
-
         dispatch(getProfile());
         dispatch(getMySiswaList());
     }, [dispatch, router]);
+
+    useEffect(() => {
+        if (authProfile?.email) {
+            localStorage.setItem("auth-email", authProfile.email);
+        }
+    }, [authProfile?.email]);
 
     const handleLockedMenu = (label: string) => {
         Swal.fire({
@@ -75,17 +81,13 @@ export default function DashboardPage() {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 px-4 sm:px-6 py-5">
                             <div className="text-sm text-gray-700 space-y-2">
                                 <div className="flex">
-                                    <span className="w-28 text-gray-600">Username</span>
-                                    <span className="text-gray-800">: {username || "-"}</span>
-                                </div>
-                                <div className="flex">
-                                    <span className="w-28 text-gray-600">Author</span>
-                                    <span className="text-gray-800">: {nama || "-"}</span>
+                                    <span className="w-36 text-gray-600">Author</span>
+                                    <span className="text-gray-800">: {email || "-"}</span>
                                 </div>
                                 {siswaList.length > 0 && (
                                     <div className="flex">
-                                        <span className="w-28 text-gray-600">Total Daftar</span>
-                                        <span className="text-gray-800">: {siswaList.length} pendaftaran</span>
+                                        <span className="w-36 text-gray-600">Jumlah pendaftaran</span>
+                                        <span className="text-gray-800">: {siswaList.length}</span>
                                     </div>
                                 )}
                             </div>

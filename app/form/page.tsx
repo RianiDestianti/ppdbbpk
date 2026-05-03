@@ -13,6 +13,7 @@ import { resetTunggakan } from "@/store/slices/tunggakanSlice";
 import { initialFormSiswa, SiswaFormData } from "@/store/types/SiswaTypes";
 import { Jenjang, JenjangConfig } from "@/store/types/JenjangTypes";
 import { handleChangeInput } from "@/libs/general";
+import api from "@/services/api";
 import Swal from "sweetalert2";
 
 const TAHUN_AJARAN_MULAI = new Date("2026-07-01");
@@ -302,10 +303,11 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
 
     const program1Options = getProgramPilihanOptions(pilihan1);
     const program2Options = jenjang === "tk" ? tkProgramPilihan2Options : getProgramPilihanOptions(pilihan2);
-    const pilihan1Options = jenjang === "tk"
+    const basePilihanOptions = jenjang === "tk"
         ? config.pilihanSekolahOptions.filter((opt) => opt !== "Luar BPK")
         : config.pilihanSekolahOptions;
-    const pilihan2Options = config.pilihanSekolahOptions.filter(
+    const pilihan1Options = basePilihanOptions;
+    const pilihan2Options = basePilihanOptions.filter(
         (opt) => opt === "- Pilih -" || opt !== pilihan1
     );
     const isSelected      = (v: string) => v !== "- Pilih -" && v !== "-" && v.trim() !== "";
@@ -758,6 +760,7 @@ function FormStep2({
     });
     const [jenisKelamin, setJenisKelamin]           = useState("");
     const [sekolahAsalSelect, setSekolahAsalSelect] = useState("- Pilih -");
+    const [asalSklList, setAsalSklList]             = useState<Array<{ id: number; nama: string }>>([]);
     const [sumbangan, setSumbangan]                 = useState("Rp. 0");
     const [sumbanganLainnya, setSumbanganLainnya]   = useState("");
     const [nikError, setNikError]                   = useState<string>("");
@@ -806,6 +809,36 @@ function FormStep2({
             setFormData((prev) => ({ ...prev, email: loginEmail }));
         }
     }, [loginEmail, formData.email]);
+
+    useEffect(() => {
+        if (isDariBpk) {
+            setAsalSklList([]);
+            return;
+        }
+        const jenjangAsal: Record<Jenjang, string> = {
+            tk  : "",      // belum ada jenjang sebelumnya
+            sd  : "tk",
+            smp : "sd",
+            sma : "smp",
+        };
+        const sourceJenjang = jenjangAsal[jenjang];
+        if (!sourceJenjang) {
+            setAsalSklList([]);
+            return;
+        }
+        let cancelled = false;
+        (async () => {
+            try {
+                const res = await api.get(`/asal-sekolah?jenjang=${encodeURIComponent(sourceJenjang)}`);
+                if (!cancelled && res.data?.status === 200) {
+                    setAsalSklList(res.data.data ?? []);
+                }
+            } catch {
+                if (!cancelled) setAsalSklList([]);
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [isDariBpk, jenjang]);
 
     useEffect(() => {
         if (response?.status === 200) {
@@ -947,8 +980,14 @@ function FormStep2({
         onEnterPreview();
     };
 
+    const sekolahAsalOptions = isDariBpk
+        ? sekolahAsalStep2Options
+        : ["- Pilih -", ...asalSklList.map((s) => s.nama), "Lainnya"];
+
     const handleConfirmSubmit = async () => {
-        const sekolahAsal = formData.sekolahAsalNama || sekolahAsalSelect;
+        const sekolahAsal = sekolahAsalSelect === "Lainnya"
+            ? formData.sekolahAsalNama
+            : sekolahAsalSelect;
 
         dispatch(saveSiswa({
             ...formData,
@@ -974,7 +1013,9 @@ function FormStep2({
         return formatTanggalId(date);
     };
 
-    const sekolahAsalPreview  = formData.sekolahAsalNama || sekolahAsalSelect;
+    const sekolahAsalPreview  = sekolahAsalSelect === "Lainnya"
+        ? formData.sekolahAsalNama
+        : sekolahAsalSelect;
 
     const isSumbanganManual    = sumbangan === "Lainnya";
     const sumbanganManualValue = parseRupiahToNumber(sumbanganLainnya);
@@ -1115,25 +1156,34 @@ function FormStep2({
                                 <Label required>Sekolah Asal</Label>
                                 <select
                                     value={sekolahAsalSelect}
-                                    onChange={(e) => setSekolahAsalSelect(e.target.value)}
+                                    onChange={(e) => {
+                                        setSekolahAsalSelect(e.target.value);
+                                        if (e.target.value !== "Lainnya") {
+                                            setFormData((prev) => ({ ...prev, sekolahAsalNama: "" }));
+                                        }
+                                    }}
                                     className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-700 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-[#1976d2] transition appearance-none bg-no-repeat bg-[right_1rem_center] bg-[length:1rem] pr-10"
                                     style={{ backgroundImage: "url(\"data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='M6 9l6 6 6-6'/%3e%3c/svg%3e\")" }}
                                 >
-                                    {sekolahAsalStep2Options.map((opt) => (
-                                        <option key={opt}>{opt}</option>
+                                    {sekolahAsalOptions.map((opt) => (
+                                        <option key={opt} value={opt}>{opt}</option>
                                     ))}
                                 </select>
-                                <input
-                                    type="text"
-                                    name="sekolahAsalNama"
-                                    value={formData.sekolahAsalNama}
-                                    onChange={(e) => handleChangeInput(e, setFormData)}
-                                    placeholder="Nama sekolah lainnya (jika tidak ada di pilihan)"
-                                    className="w-full mt-2 border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-700 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-[#1976d2] transition"
-                                />
-                                <p className="text-xs italic text-gray-500 mt-1.5">
-                                    Nama Sekolah Asal Jika Tidak ada di Pilihan
-                                </p>
+                                {sekolahAsalSelect === "Lainnya" && (
+                                    <>
+                                        <input
+                                            type="text"
+                                            name="sekolahAsalNama"
+                                            value={formData.sekolahAsalNama}
+                                            onChange={(e) => handleChangeInput(e, setFormData)}
+                                            placeholder="Tulis nama sekolah asal"
+                                            className="w-full mt-2 border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-700 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-[#1976d2] transition"
+                                        />
+                                        <p className="text-xs italic text-gray-500 mt-1.5">
+                                            Tulis nama sekolah asal jika tidak ada di daftar.
+                                        </p>
+                                    </>
+                                )}
                             </div>
                             <InputField label="Kota Sekolah Asal" required name="kotaSekolahAsal" value={formData.kotaSekolahAsal} onChange={(e) => handleChangeInput(e, setFormData)} />
                         </div>

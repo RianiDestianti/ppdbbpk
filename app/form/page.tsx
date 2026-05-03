@@ -887,6 +887,60 @@ function FormStep2({
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
+        const lettersOnlyRegex = /^[A-Za-zÀ-ſ\s.'\-]+$/;
+        const lettersChecks: Array<{ label: string; value: string; required: boolean; min: number }> = [
+            { label: "Nama Lengkap",      value: formData.nama,            required: true,  min: 2 },
+            { label: "Tempat Lahir",      value: formData.tempatLahir,     required: true,  min: 2 },
+            { label: "Kota Sekolah Asal", value: formData.kotaSekolahAsal, required: true,  min: 2 },
+            { label: "Nama Ayah",         value: formData.namaAyah,        required: true,  min: 2 },
+            { label: "Nama Ibu",          value: formData.namaIbu,         required: true,  min: 2 },
+            { label: "Nama Wali",         value: formData.namaWali,        required: false, min: 2 },
+        ];
+
+        for (const field of lettersChecks) {
+            const trimmed = (field.value ?? "").trim();
+            if (!trimmed) {
+                if (field.required) {
+                    Swal.fire({
+                        icon               : "error",
+                        title              : `${field.label} Wajib Diisi`,
+                        text               : `Mohon isi ${field.label}.`,
+                        confirmButtonColor : "#dc2626",
+                    });
+                    return;
+                }
+                continue;
+            }
+            if (!lettersOnlyRegex.test(trimmed)) {
+                Swal.fire({
+                    icon               : "error",
+                    title              : `${field.label} Tidak Valid`,
+                    text               : `${field.label} hanya boleh berisi huruf, spasi, titik, apostrof, atau tanda hubung.`,
+                    confirmButtonColor : "#dc2626",
+                });
+                return;
+            }
+            if (trimmed.length < field.min) {
+                Swal.fire({
+                    icon               : "error",
+                    title              : `${field.label} Terlalu Pendek`,
+                    text               : `${field.label} minimal ${field.min} karakter.`,
+                    confirmButtonColor : "#dc2626",
+                });
+                return;
+            }
+        }
+
+        if ((formData.alamat ?? "").trim().length < 5) {
+            Swal.fire({
+                icon               : "error",
+                title              : "Alamat Tidak Valid",
+                text               : "Alamat Rumah minimal 5 karakter.",
+                confirmButtonColor : "#dc2626",
+            });
+            return;
+        }
+
         const phoneChecks: Array<{ label: string; value: string; required: boolean }> = [
             { label: "No HP (WhatsApp)", value: formData.noHp,      required: true  },
             { label: "No. HP. Ayah",     value: formData.noHpAyah,  required: true  },
@@ -1099,8 +1153,8 @@ function FormStep2({
                             hint={nikChecking ? "Memeriksa NIK..." : undefined}
                         />
                         <InputField label="Nomor Kartu Keluarga (NoKK)" doubleRequired digitsOnly exactLength={16} name="nokk" value={formData.nokk} onChange={(e) => handleChangeInput(e, setFormData)} />
-                        <InputField label="Nama Lengkap" required hint="Sesuai Akte Lahir Anak" name="nama" value={formData.nama} onChange={(e) => handleChangeInput(e, setFormData)} />
-                        <InputField label="Tempat Lahir" required name="tempatLahir" value={formData.tempatLahir} onChange={(e) => handleChangeInput(e, setFormData)} />
+                        <InputField label="Nama Lengkap" required hint="Sesuai Akte Lahir Anak" name="nama" value={formData.nama} onChange={(e) => handleChangeInput(e, setFormData)} lettersOnly minLength={2} maxLength={100} />
+                        <InputField label="Tempat Lahir" required name="tempatLahir" value={formData.tempatLahir} onChange={(e) => handleChangeInput(e, setFormData)} lettersOnly minLength={2} maxLength={50} />
                         <InputField label="Tanggal Lahir" required type="date" name="tanggalLahir" value={formData.tanggalLahir} max={maxTanggalLahir} hint={`Minimum usia ${minUsiaJenjang} tahun pada ${formatTanggalId(TAHUN_AJARAN_MULAI)}`} onChange={(e) => handleChangeInput(e, setFormData)} />
 
                         <div>
@@ -1147,8 +1201,10 @@ function FormStep2({
                                 value={formData.alamat}
                                 onChange={(e) => handleChangeInput(e, setFormData)}
                                 rows={5}
+                                maxLength={300}
                                 className="w-full border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-700 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-[#1976d2] transition resize-none"
                             />
+                            <p className="text-xs text-gray-400 mt-1">{formData.alamat.length}/300 karakter</p>
                         </div>
 
                         <div className="space-y-5">
@@ -1175,8 +1231,15 @@ function FormStep2({
                                             type="text"
                                             name="sekolahAsalNama"
                                             value={formData.sekolahAsalNama}
-                                            onChange={(e) => handleChangeInput(e, setFormData)}
+                                            onChange={(e) => {
+                                                const cleaned = e.target.value
+                                                    .replace(/[^A-Za-z0-9À-ſ\s.'\-]/g, "")
+                                                    .replace(/\s{2,}/g, " ")
+                                                    .slice(0, 100);
+                                                setFormData((prev) => ({ ...prev, sekolahAsalNama: cleaned }));
+                                            }}
                                             placeholder="Tulis nama sekolah asal"
+                                            maxLength={100}
                                             className="w-full mt-2 border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-700 bg-gray-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-[#1976d2] transition"
                                         />
                                         <p className="text-xs italic text-gray-500 mt-1.5">
@@ -1185,7 +1248,7 @@ function FormStep2({
                                     </>
                                 )}
                             </div>
-                            <InputField label="Kota Sekolah Asal" required name="kotaSekolahAsal" value={formData.kotaSekolahAsal} onChange={(e) => handleChangeInput(e, setFormData)} />
+                            <InputField label="Kota Sekolah Asal" required name="kotaSekolahAsal" value={formData.kotaSekolahAsal} onChange={(e) => handleChangeInput(e, setFormData)} lettersOnly minLength={2} maxLength={50} />
                         </div>
                     </div>
                 </section>
@@ -1201,11 +1264,11 @@ function FormStep2({
                         Biodata Keluarga
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <InputField label="Nama Ayah" required hint="Sesuai Akte Lahir Anak" name="namaAyah" value={formData.namaAyah} onChange={(e) => handleChangeInput(e, setFormData)} />
-                        <InputField label="Nama Ibu" required hint="Sesuai Akte Lahir Anak" name="namaIbu" value={formData.namaIbu} onChange={(e) => handleChangeInput(e, setFormData)} />
+                        <InputField label="Nama Ayah" required hint="Sesuai Akte Lahir Anak" name="namaAyah" value={formData.namaAyah} onChange={(e) => handleChangeInput(e, setFormData)} lettersOnly minLength={2} maxLength={100} />
+                        <InputField label="Nama Ibu" required hint="Sesuai Akte Lahir Anak" name="namaIbu" value={formData.namaIbu} onChange={(e) => handleChangeInput(e, setFormData)} lettersOnly minLength={2} maxLength={100} />
                         <InputField label="No. HP. Ayah" required type="tel" name="noHpAyah" value={formData.noHpAyah} onChange={(e) => handleChangeInput(e, setFormData)} />
                         <InputField label="No. HP. Ibu" required type="tel" name="noHpIbu" value={formData.noHpIbu} onChange={(e) => handleChangeInput(e, setFormData)} />
-                        <InputField label="Nama Wali" name="namaWali" value={formData.namaWali} onChange={(e) => handleChangeInput(e, setFormData)} />
+                        <InputField label="Nama Wali" name="namaWali" value={formData.namaWali} onChange={(e) => handleChangeInput(e, setFormData)} lettersOnly minLength={2} maxLength={100} />
                         <InputField label="No. HP. Wali" type="tel" name="noHpWali" value={formData.noHpWali} onChange={(e) => handleChangeInput(e, setFormData)} />
                     </div>
                 </section>
@@ -1642,6 +1705,9 @@ function InputField({
     onBlur,
     max,
     digitsOnly,
+    lettersOnly,
+    minLength,
+    maxLength,
     exactLength,
     readOnly,
     externalError,
@@ -1657,6 +1723,9 @@ function InputField({
     onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void;
     max?: string;
     digitsOnly?: boolean;
+    lettersOnly?: boolean;
+    minLength?: number;
+    maxLength?: number;
     exactLength?: number;
     readOnly?: boolean;
     externalError?: string;
@@ -1667,8 +1736,9 @@ function InputField({
     const phoneInvalid    = isPhone && !!value && !isValidPhone(value);
     const emailInvalid    = isEmail && !!value && !isValidEmail(value);
     const lengthInvalid   = !!exactLength && !!value && value.length !== exactLength;
+    const minLenInvalid   = !!minLength && !!value && value.trim().length > 0 && value.trim().length < minLength;
     const hasExternal     = !!externalError;
-    const hasError        = phoneInvalid || emailInvalid || lengthInvalid || hasExternal;
+    const hasError        = phoneInvalid || emailInvalid || lengthInvalid || minLenInvalid || hasExternal;
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (isPhone) {
@@ -1677,6 +1747,13 @@ function InputField({
             let digits = e.target.value.replace(/\D/g, "");
             if (exactLength) digits = digits.slice(0, exactLength);
             e.target.value = digits;
+        } else if (lettersOnly) {
+            let letters = e.target.value.replace(/[^A-Za-zÀ-ſ\s.'\-]/g, "");
+            letters     = letters.replace(/\s{2,}/g, " ");
+            if (maxLength) letters = letters.slice(0, maxLength);
+            e.target.value = letters;
+        } else if (maxLength) {
+            e.target.value = e.target.value.slice(0, maxLength);
         }
         onChange?.(e);
     };
@@ -1689,6 +1766,8 @@ function InputField({
         ? "Format email tidak valid. Contoh: nama@gmail.com"
         : lengthInvalid
         ? `Harus ${exactLength} digit angka (saat ini ${value?.length ?? 0})`
+        : minLenInvalid
+        ? `Minimal ${minLength} karakter`
         : "";
 
     return (
@@ -1700,7 +1779,7 @@ function InputField({
             <input
                 type={isEmail ? "email" : digitsOnly ? "text" : type}
                 inputMode={isPhone || digitsOnly ? "numeric" : undefined}
-                maxLength={isPhone ? 15 : exactLength}
+                maxLength={isPhone ? 15 : (exactLength ?? maxLength)}
                 name={name}
                 value={value}
                 onChange={handleChange}

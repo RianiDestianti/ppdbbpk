@@ -401,7 +401,7 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
                     minimumFractionDigits : 0,
                 }).format(nominalAngka);
 
-                const statusValue   = result.data.status;
+                const statusValue   = result.data.stat;
                 const statusBlocked = statusValue !== undefined &&
                                       statusValue !== null &&
                                       String(statusValue).trim() === "0";

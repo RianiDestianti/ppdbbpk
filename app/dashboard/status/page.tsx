@@ -131,12 +131,12 @@ function StatusPendaftaranContent() {
                         </div>
 
                         <div className="px-4 sm:px-6 pb-5">
-                            <p className="text-sm font-semibold text-gray-700 mb-2">Rekomendasi</p>
-                            <div className="text-sm text-gray-700 space-y-1">
-                                <LegendItem code="A"   label="Diterima Pilihan 1" />
-                                <LegendItem code="B"   label="Diterima Pilihan 2" />
-                                <LegendItem code="C"   label="Ditempatkan" />
-                                <LegendItem code="Tes" label="Mengikuti Tes Seleksi" />
+                            <p className="text-sm font-semibold text-gray-700 mb-2">Keterangan Rekomendasi</p>
+                            <div className="text-sm space-y-1.5">
+                                <LegendItem swatch="bg-green-500" label="Diterima Pilihan 1"    description="Calon siswa diterima di sekolah pilihan pertama" />
+                                <LegendItem swatch="bg-blue-500"  label="Diterima Pilihan 2"    description="Calon siswa diterima di sekolah pilihan kedua" />
+                                <LegendItem swatch="bg-amber-500" label="Ditempatkan"           description="Calon siswa ditempatkan di luar pilihan yang diajukan" />
+                                <LegendItem swatch="bg-red-500"   label="Mengikuti Tes Seleksi" description="Calon siswa harus mengikuti tes seleksi terlebih dahulu" />
                             </div>
                         </div>
                     </section>
@@ -146,6 +146,19 @@ function StatusPendaftaranContent() {
             <Footer />
         </>
     );
+}
+
+function formatTanggalRow(value?: string | null): string {
+    if (!value) return "-";
+    const trimmed = String(value).trim();
+    if (!trimmed) return "-";
+    const d = new Date(trimmed);
+    if (isNaN(d.getTime())) return trimmed;
+    return d.toLocaleDateString("id-ID", {
+        day   : "2-digit",
+        month : "long",
+        year  : "numeric",
+    });
 }
 
 function StatusRow({ siswa }: { siswa: SiswaDetail }) {
@@ -158,14 +171,12 @@ function StatusRow({ siswa }: { siswa: SiswaDetail }) {
 
     return (
         <tr className="text-gray-700">
-            <td className="border border-gray-200 px-3 py-3 align-top">{siswa.noreg || "-"}</td>
+            <td className="border border-gray-200 px-3 py-3 align-top whitespace-nowrap">{siswa.noreg || "-"}</td>
             <td className="border border-gray-200 px-3 py-3 align-top">{siswa.nama || "-"}</td>
             <td className="border border-gray-200 px-3 py-3 align-top">{pilihan1 || "-"}</td>
             <td className="border border-gray-200 px-3 py-3 align-top">{pilihan2 || "-"}</td>
-            <td className="border border-gray-200 px-3 py-3 align-top whitespace-nowrap">{siswa.tgl_daftar || "-"}</td>
-            <td className="border border-gray-200 px-3 py-3 align-top whitespace-nowrap">
-                {isValid ? (siswa.tgl_verifikasi || "-") : "-"}
-            </td>
+            <td className="border border-gray-200 px-3 py-3 align-top whitespace-nowrap">{formatTanggalRow(siswa.tgl_daftar)}</td>
+            <td className="border border-gray-200 px-3 py-3 align-top whitespace-nowrap">{formatTanggalRow(siswa.tgl_verifikasi)}</td>
             <td className="border border-gray-200 px-3 py-3 align-top">
                 <RekomendasiBadge value={siswa.reko ?? ""} valid={isValid} />
             </td>
@@ -178,25 +189,27 @@ function RekomendasiBadge({ value, valid }: { value: string; valid: boolean }) {
 
     const code = value.trim().toUpperCase();
     const cfg =
-        code === "A"   ? { cls: "bg-green-50 text-green-700 border-green-200", label: "A"   } :
-        code === "B"   ? { cls: "bg-blue-50 text-blue-700 border-blue-200",    label: "B"   } :
-        code === "C"   ? { cls: "bg-amber-50 text-amber-700 border-amber-200", label: "C"   } :
-        code === "TES" ? { cls: "bg-red-50 text-red-700 border-red-200",       label: "Tes" } :
-                         { cls: "bg-gray-50 text-gray-700 border-gray-200",    label: value };
+        code === "A"   ? { cls: "bg-green-50 text-green-700 border-green-200", label: "Diterima Pilihan 1"    } :
+        code === "B"   ? { cls: "bg-blue-50 text-blue-700 border-blue-200",    label: "Diterima Pilihan 2"    } :
+        code === "C"   ? { cls: "bg-amber-50 text-amber-700 border-amber-200", label: "Ditempatkan"           } :
+        code === "TES" ? { cls: "bg-red-50 text-red-700 border-red-200",       label: "Mengikuti Tes Seleksi" } :
+                         { cls: "bg-gray-50 text-gray-700 border-gray-200",    label: value                   };
 
     return (
-        <span className={`inline-flex items-center justify-center min-w-[2.25rem] ${cfg.cls} border px-2 py-0.5 rounded font-semibold text-xs`}>
+        <span className={`inline-flex items-center ${cfg.cls} border px-2.5 py-1 rounded-full font-semibold text-xs whitespace-nowrap`}>
             {cfg.label}
         </span>
     );
 }
 
-function LegendItem({ code, label }: { code: string; label: string }) {
+function LegendItem({ swatch, label, description }: { swatch: string; label: string; description: string }) {
     return (
         <div className="flex items-start gap-3">
-            <span className="inline-block min-w-[2.25rem] text-gray-700 font-semibold">{code}</span>
-            <span className="text-gray-500">=</span>
-            <span className="text-gray-700">{label}</span>
+            <span className={`inline-block w-3 h-3 rounded-full mt-1.5 ${swatch}`} />
+            <div>
+                <span className="text-gray-800 font-semibold">{label}</span>
+                <span className="text-gray-500"> — {description}</span>
+            </div>
         </div>
     );
 }

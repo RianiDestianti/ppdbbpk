@@ -228,7 +228,7 @@ function SiswaCard({
                         label="Status Pendaftaran"
                     />
                     <MenuItem
-                        href={`/konfirmasi${qs}`}
+                        href={`/dashboard/konfirmasi${qs}`}
                         iconBg="bg-amber-500"
                         icon={
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">

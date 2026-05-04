@@ -17,7 +17,6 @@ export default function Footer() {
                         <ul className="space-y-2 text-sm">
                             <li><Link href="/faq" className="hover:text-white">{t.footer.faq[lang]}</Link></li>
                             <li><Link href="/information" className="hover:text-white">{t.footer.informasi[lang]}</Link></li>
-                            <li><Link href="/konfirmasi" className="hover:text-white">{t.footer.konfirmasi[lang]}</Link></li>
                             <li><Link href="/status" className="hover:text-white">{t.footer.status[lang]}</Link></li>
                         </ul>
                     </div>

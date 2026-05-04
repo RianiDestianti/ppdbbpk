@@ -98,10 +98,6 @@ export default function Navbar() {
                         <Link href="/information" className="text-gray-700 hover:text-[#1976d2]">
                             {t.nav.info[lang]}
                         </Link>
-                        <Link href="/konfirmasi" className="text-gray-700 hover:text-[#1976d2]">
-                            {t.footer.konfirmasi[lang]}
-                        </Link>
-
                         <div
                             className="relative"
                             onMouseEnter={() => setShowFormulir(true)}
@@ -164,10 +160,6 @@ export default function Navbar() {
                             <Link href="/information" onClick={closeMobile} className="rounded-md px-1 py-2.5 text-gray-700 hover:bg-gray-50 hover:text-[#1976d2]">
                                 {t.nav.info[lang]}
                             </Link>
-                            <Link href="/konfirmasi" onClick={closeMobile} className="rounded-md px-1 py-2.5 text-gray-700 hover:bg-gray-50 hover:text-[#1976d2]">
-                                {t.footer.konfirmasi[lang]}
-                            </Link>
-
                             <button
                                 onClick={() => setMobileFormulir((v) => !v)}
                                 className="flex items-center justify-between rounded-md px-1 py-2.5 text-gray-700 hover:bg-gray-50 hover:text-[#1976d2]"

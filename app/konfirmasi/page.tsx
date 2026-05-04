@@ -317,22 +317,6 @@ function KonfirmasiPembayaranContent() {
                                             "Alamat: Jl. Banda No. 19, Bandung",
                                         ]}
                                     />
-
-                                    <div className="overflow-hidden rounded-2xl bg-white p-5 shadow-sm ring-1 ring-gray-100">
-                                        <div className="text-sm font-semibold uppercase tracking-[0.28em] text-gray-400">
-                                            Status
-                                        </div>
-                                        <div className="mt-3 text-lg font-medium text-gray-900">
-                                            {loading
-                                                ? "Memproses konfirmasi..."
-                                                : submitted
-                                                    ? "Konfirmasi berhasil"
-                                                    : "Menunggu pengiriman form"}
-                                        </div>
-                                        <p className="mt-2 text-sm leading-relaxed text-gray-600">
-                                            Halaman ini sudah dipisah ke beberapa section agar alurnya jelas di desktop maupun mobile.
-                                        </p>
-                                    </div>
                                 </div>
                             </aside>
                             </div>

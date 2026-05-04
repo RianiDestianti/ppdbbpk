@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
@@ -12,13 +12,24 @@ import { getMySiswaList } from "@/store/controllers/siswaController";
 import { SiswaDetail } from "@/store/types/SiswaTypes";
 import Swal from "sweetalert2";
 
+const subscribeAuthEmail = (onChange: () => void) => {
+    if (typeof window === "undefined") return () => {};
+    window.addEventListener("storage", onChange);
+    return () => window.removeEventListener("storage", onChange);
+};
+const getAuthEmailSnapshot = () =>
+    typeof window === "undefined" ? "" : (localStorage.getItem("auth-email") ?? "");
+const getAuthEmailServerSnapshot = () => "";
+
 export default function DashboardPage() {
     const router                  = useRouter();
     const dispatch                = useAppDispatch();
     const { list: siswaList, loading } = useAppSelector((state) => state.siswa);
     const authProfile             = useAppSelector((state) => state.auth.profile);
-    const [cachedEmail]           = useState(() =>
-        typeof window !== "undefined" ? localStorage.getItem("auth-email") ?? "" : ""
+    const cachedEmail             = useSyncExternalStore(
+        subscribeAuthEmail,
+        getAuthEmailSnapshot,
+        getAuthEmailServerSnapshot,
     );
     const email                   = authProfile?.email || cachedEmail;
 
@@ -203,6 +214,8 @@ function SiswaCard({
                     <div>Pilihan 2 : {pilihan2 || "-"}</div>
                 </div>
 
+                {!isValid && <PaymentReminder siswa={siswa} />}
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 mt-6">
                     <MenuItem
                         href={`/dashboard/status${qs}`}
@@ -246,6 +259,82 @@ function SiswaCard({
                 <JoinWaButton siswa={siswa} />
             </div>
         </section>
+    );
+}
+
+function PaymentReminder({ siswa }: { siswa: SiswaDetail }) {
+    const noVa     = (siswa.no_va ?? "").toString().trim();
+    const nama     = (siswa.nama ?? "").trim();
+    const noreg    = (siswa.noreg ?? "").trim();
+    const waAdmin  = "6281224122456";
+
+    const handleCopyVa = () => {
+        if (!noVa) return;
+        navigator.clipboard?.writeText(noVa).then(() => {
+            Swal.fire({
+                icon              : "success",
+                title             : "Disalin",
+                text              : `Nomor VA ${noVa} berhasil disalin.`,
+                timer             : 1500,
+                showConfirmButton : false,
+            });
+        }).catch(() => {});
+    };
+
+    return (
+        <div className="mt-5 rounded-xl border border-amber-200 bg-amber-50 p-4 sm:p-5 shadow-sm">
+            <div className="flex items-start gap-3">
+                <span className="inline-flex w-9 h-9 rounded-lg bg-amber-100 text-amber-700 items-center justify-center flex-shrink-0">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                        <path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                </span>
+                <div className="flex-1 min-w-0">
+                    <h3 className="text-sm sm:text-base font-semibold text-amber-900">
+                        Segera Lakukan Pembayaran
+                    </h3>
+                    <p className="mt-1 text-xs sm:text-sm text-amber-800 leading-relaxed">
+                        Pendaftaran <b>{nama || noreg || "Anda"}</b> belum tervalidasi karena pembayaran melalui Virtual Account belum kami terima. Silakan segera melakukan pembayaran agar pendaftaran dapat diproses.
+                    </p>
+
+                    {noVa ? (
+                        <div className="mt-3 rounded-lg border border-amber-200 bg-white px-3 sm:px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                            <div className="min-w-0">
+                                <div className="text-[11px] uppercase tracking-wider text-amber-700 font-semibold">Virtual Account BCA</div>
+                                <div className="text-base sm:text-lg font-bold text-gray-900 break-all">{noVa}</div>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={handleCopyVa}
+                                className="inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs sm:text-sm font-semibold transition shrink-0"
+                            >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" />
+                                    <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" />
+                                </svg>
+                                Salin VA
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="mt-3 rounded-lg border border-amber-200 bg-white px-3 sm:px-4 py-3 text-xs sm:text-sm text-amber-800">
+                            Nomor Virtual Account belum tersedia. Silakan cek email/WhatsApp Anda atau hubungi admin sekolah.
+                        </div>
+                    )}
+
+                    <p className="mt-3 text-xs sm:text-sm text-amber-800">
+                        Sudah bayar tapi status belum berubah?{" "}
+                        <a
+                            href={`https://wa.me/${waAdmin}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-semibold underline text-amber-900 hover:text-amber-950"
+                        >
+                            Hubungi Admin (+{waAdmin})
+                        </a>
+                    </p>
+                </div>
+            </div>
+        </div>
     );
 }
 

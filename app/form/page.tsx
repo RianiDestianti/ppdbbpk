@@ -766,11 +766,38 @@ function FormStep2({
     const [nikError, setNikError]                   = useState<string>("");
     const [nikChecking, setNikChecking]             = useState<boolean>(false);
     const [nikChecked, setNikChecked]               = useState<string>("");
+    const [nikVaInfo, setNikVaInfo]                 = useState<{ noVa: string; nama: string } | null>(null);
+
+    const showVaReminder = useCallback((info: { noVa: string; nama: string }) => {
+        const waAdmin = "6281224122456";
+        Swal.fire({
+            icon  : "warning",
+            title : "Pembayaran Belum Lunas",
+            html  : `
+                <div style="text-align:left;font-size:14px;line-height:1.6">
+                    <p style="margin:0 0 10px">Kamu sudah pernah mendaftar, namun pembayaran melalui Virtual Account belum kami terima. Silakan lakukan pembayaran terlebih dahulu agar pendaftaran dapat dilanjutkan.</p>
+                    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px;margin-bottom:10px">
+                        <div><b>Nama Siswa</b> : ${info.nama || "-"}</div>
+                        <div><b>Virtual Account BCA</b> : <span style="font-weight:700;color:#b45309">${info.noVa}</span></div>
+                    </div>
+                    <p style="margin:0 0 6px">Apabila sudah melakukan pembayaran namun status belum berubah, silakan hubungi admin sekolah:</p>
+                    <p style="margin:0">
+                        <a href="https://wa.me/${waAdmin}" target="_blank" rel="noopener noreferrer" style="color:#dc2626;font-weight:600;text-decoration:underline">
+                            WhatsApp Admin: +${waAdmin}
+                        </a>
+                    </p>
+                </div>
+            `,
+            confirmButtonText  : "Tutup",
+            confirmButtonColor : "#dc2626",
+        });
+    }, []);
 
     const runNikCheck = useCallback(async (nik: string) => {
         if (!/^\d{16}$/.test(nik)) {
             setNikError("");
             setNikChecked("");
+            setNikVaInfo(null);
             return;
         }
         if (nik === nikChecked) return;
@@ -778,17 +805,32 @@ function FormStep2({
         try {
             const result = await dispatch(checkNik({ nik })).unwrap();
             if (result?.status === 409) {
-                setNikError("NIK ini sudah terdaftar dalam periode pendaftaran yang sedang berjalan.");
+                const existing  = result.data ?? {};
+                const statusVal = existing.status;
+                const isPaid    = statusVal !== undefined && statusVal !== null && String(statusVal).trim() === "1";
+                const noVa      = (existing.no_va ?? "").toString().trim();
+
+                if (!isPaid && noVa) {
+                    const info = { noVa, nama: existing.nama || "-" };
+                    setNikVaInfo(info);
+                    setNikError("Pendaftaran sebelumnya belum dibayar. Silakan lunasi VA terlebih dahulu.");
+                    showVaReminder(info);
+                } else {
+                    setNikVaInfo(null);
+                    setNikError("NIK ini sudah terdaftar dalam periode pendaftaran yang sedang berjalan.");
+                }
             } else {
                 setNikError("");
+                setNikVaInfo(null);
             }
             setNikChecked(nik);
         } catch {
             setNikError("");
+            setNikVaInfo(null);
         } finally {
             setNikChecking(false);
         }
-    }, [dispatch, nikChecked]);
+    }, [dispatch, nikChecked, showVaReminder]);
 
     const loginEmail = authProfile?.email || cachedEmail || "";
 
@@ -1012,12 +1054,16 @@ function FormStep2({
         }
 
         if (nikError) {
-            Swal.fire({
-                icon               : "error",
-                title              : "NIK Sudah Terdaftar",
-                text               : "NIK ini sudah terdaftar dalam periode pendaftaran yang sedang berjalan.",
-                confirmButtonColor : "#dc2626",
-            });
+            if (nikVaInfo) {
+                showVaReminder(nikVaInfo);
+            } else {
+                Swal.fire({
+                    icon               : "error",
+                    title              : "NIK Sudah Terdaftar",
+                    text               : "NIK ini sudah terdaftar dalam periode pendaftaran yang sedang berjalan.",
+                    confirmButtonColor : "#dc2626",
+                });
+            }
             return;
         }
 

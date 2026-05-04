@@ -228,6 +228,18 @@ function SiswaCard({
                         label="Status Pendaftaran"
                     />
                     <MenuItem
+                        href={`/konfirmasi${qs}`}
+                        iconBg="bg-amber-500"
+                        icon={
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                                <rect x="3" y="4" width="18" height="16" rx="2" />
+                                <path d="M7 8h10M7 12h6" strokeLinecap="round" />
+                                <path d="M8 18l2-2 2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
+                        }
+                        label="Konfirmasi Pembayaran"
+                    />
+                    <MenuItem
                         href={`/dashboard/update${qs}`}
                         iconBg="bg-[#1976d2]"
                         icon={
@@ -240,7 +252,6 @@ function SiswaCard({
                         disabled={!isValid}
                         onLockedClick={onLockedClick}
                     />
-                    <div className="hidden sm:block" />
                     <MenuItem
                         href={`/pdf/${jenjang}${qs}`}
                         iconBg="bg-slate-600"

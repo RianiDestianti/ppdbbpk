@@ -80,6 +80,9 @@ const ASAL_JENJANG: Record<Jenjang, Jenjang | ""> = {
 const luarBpkLabelFor = (jenjang: Jenjang) =>
     jenjang === "tk" ? LUAR_BPK_TK_LABEL : LUAR_BPK_LABEL;
 
+const isLuarBpk = (value: string) =>
+    value === LUAR_BPK_LABEL || value === LUAR_BPK_TK_LABEL;
+
 const buildPilihanOptions = (sekolahs: SekolahOption[]): string[] => {
     const names = sekolahs.map((s) => s.nama).filter(Boolean);
     return [PILIH_PLACEHOLDER, ...names];
@@ -274,11 +277,15 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
     const isSelected      = (v: string) => v !== PILIH_PLACEHOLDER && v !== "-" && v.trim() !== "";
     const isPilihanValid  = (pilihan: string, options: string[]) => isSelected(pilihan) && options.includes(pilihan);
     const isProgramValid  = (program: string, options: string[]) => isSelected(program) && options.includes(program);
+    const isAsalSekolahValid  = isLuarBpk(asalSekolah) || isSelected(asalSekolah);
+    const isProgramAsalValid  = isLuarBpk(asalSekolah)
+        ? programAsal === "-"
+        : isProgramValid(programAsal, programAsalOptions);
     const minUsiaStep1        = MIN_USIA_BY_JENJANG[jenjang];
     const isUsiaStep1Valid    = !isTargetTk || (
         tanggalLahirAwal !== "" && hitungUsiaTahun(tanggalLahirAwal, TAHUN_AJARAN_MULAI) >= minUsiaStep1
     );
-    const isStep1Valid  = isSelected(asalSekolah) && isSelected(programAsal) &&
+    const isStep1Valid  = isAsalSekolahValid && isProgramAsalValid &&
                           isPilihanValid(pilihan1, pilihan1Options) && isProgramValid(program1, program1Options) &&
                           isPilihanValid(pilihan2, pilihan2Options) && pilihan2 !== pilihan1 &&
                           isProgramValid(program2, program2Options) &&
@@ -286,7 +293,7 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
 
     const handleAsalSekolahChange = (value: string) => {
         setAsalSekolah(value);
-        setProgramAsal(PILIH_PLACEHOLDER);
+        setProgramAsal(isLuarBpk(value) ? "-" : PILIH_PLACEHOLDER);
     };
 
     const handlePilihan1Change = (value: string) => {

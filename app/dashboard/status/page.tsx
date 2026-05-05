@@ -69,7 +69,7 @@ function StatusPendaftaranContent() {
                             onClick={() => router.push("/dashboard")}
                             className="text-sm text-[#1976d2] hover:underline self-start sm:self-auto"
                         >
-                            ← Kembali ke Dashboard
+                            Kembali ke Dashboard
                         </button>
                     </div>
 
@@ -86,14 +86,33 @@ function StatusPendaftaranContent() {
                         </span>
                     </div>
 
-                    <section className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <section className="bg-white rounded-xl border border-gray-200 shadow-sm">
                         <div className="border-b border-gray-100 px-4 sm:px-6 py-4">
                             <h2 className="text-base sm:text-lg font-semibold text-gray-800">
                                 Informasi Penerimaan SPMB akan diumumkan pada {TGL_PENGUMUMAN}
                             </h2>
                         </div>
 
-                        <div className="px-4 sm:px-6 py-5 overflow-x-auto">
+                        <div className="px-4 sm:px-6 py-5">
+                            <div className="md:hidden space-y-3">
+                                {loading && rows.length === 0 && (
+                                    <div className="rounded-lg border border-gray-200 px-3 py-4 text-sm text-gray-500 text-center">
+                                        Memuat data status pendaftaran...
+                                    </div>
+                                )}
+
+                                {!loading && rows.length === 0 && (
+                                    <div className="rounded-lg border border-gray-200 px-3 py-4 text-sm text-gray-500 text-center">
+                                        Belum ada data pendaftaran.
+                                    </div>
+                                )}
+
+                                {rows.map((siswa, idx) => (
+                                    <StatusCard key={siswa.noreg ?? idx} siswa={siswa} />
+                                ))}
+                            </div>
+
+                            <div className="hidden md:block overflow-x-auto">
                             <table className="w-full text-sm border border-gray-200 min-w-[900px]">
                                 <thead className="bg-gray-50 text-gray-700">
                                     <tr>
@@ -128,6 +147,7 @@ function StatusPendaftaranContent() {
                                     ))}
                                 </tbody>
                             </table>
+                            </div>
                         </div>
 
                         <div className="px-4 sm:px-6 pb-5">
@@ -184,6 +204,36 @@ function StatusRow({ siswa }: { siswa: SiswaDetail }) {
     );
 }
 
+function StatusCard({ siswa }: { siswa: SiswaDetail }) {
+    const isValid = Number(siswa.status ?? 0) === 1;
+    const pilihan1 = siswa.pilihan1 ?? [siswa.sekolah_tujuan, siswa.prog1].filter(Boolean).join(" - ");
+    const pilihan2 = siswa.pilihan2 ?? [siswa.sekolah_tujuan2, siswa.prog2].filter(Boolean).join(" - ");
+
+    return (
+        <article className="rounded-lg border border-gray-200 p-3 space-y-2.5 text-sm">
+            <MobileField label="No Formulir" value={siswa.noreg || "-"} />
+            <MobileField label="Nama" value={siswa.nama || "-"} />
+            <MobileField label="Sekolah Pilihan 1" value={pilihan1 || "-"} />
+            <MobileField label="Sekolah Pilihan 2" value={pilihan2 || "-"} />
+            <MobileField label="Tgl. Daftar" value={formatTanggalRow(siswa.tgl_daftar)} />
+            <MobileField label="Tgl. Verifikasi" value={formatTanggalRow(siswa.tgl_verifikasi)} />
+            <div className="pt-1">
+                <p className="text-xs text-gray-500 mb-1">Rekomendasi</p>
+                <RekomendasiBadge value={siswa.reko ?? ""} valid={isValid} />
+            </div>
+        </article>
+    );
+}
+
+function MobileField({ label, value }: { label: string; value: string }) {
+    return (
+        <div>
+            <p className="text-xs text-gray-500">{label}</p>
+            <p className="text-gray-800 break-words">{value}</p>
+        </div>
+    );
+}
+
 function RekomendasiBadge({ value, valid }: { value: string; valid: boolean }) {
     if (!valid || !value) return <span className="text-gray-400">-</span>;
 
@@ -208,7 +258,7 @@ function LegendItem({ swatch, label, description }: { swatch: string; label: str
             <span className={`inline-block w-3 h-3 rounded-full mt-1.5 ${swatch}`} />
             <div>
                 <span className="text-gray-800 font-semibold">{label}</span>
-                <span className="text-gray-500"> — {description}</span>
+                <span className="text-gray-500"> - {description}</span>
             </div>
         </div>
     );

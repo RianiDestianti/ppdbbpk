@@ -1325,7 +1325,7 @@ function FormStep2({
 
                         <div>
                             <Label required>Jenis Kelamin</Label>
-                            <div className="grid grid-cols-2 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 {["Laki-laki", "Perempuan"].map((opt) => {
                                     const active = jenisKelamin === opt;
                                     return (

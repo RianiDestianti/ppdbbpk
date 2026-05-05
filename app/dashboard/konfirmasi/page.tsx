@@ -168,10 +168,10 @@ function KonfirmasiPembayaranContent() {
                                     </svg>
                                 </div>
                                 <div>
-                                    <h1 className="text-[28px] font-light tracking-tight text-gray-900 sm:text-[34px]">
+                                    <h1 className="text-2xl font-light tracking-tight text-gray-900 sm:text-[34px]">
                                         Konfirmasi Pembayaran Formulir
                                     </h1>
-                                    <p className="mt-2 text-[12px] uppercase tracking-[0.42em] text-gray-400 sm:text-[13px]">
+                                    <p className="mt-2 text-[11px] uppercase tracking-[0.22em] text-gray-400 sm:text-[13px] sm:tracking-[0.32em]">
                                         Apabila Anda telah melakukan pembayaran, silakan isi form berikut untuk proses validasi.
                                     </p>
                                 </div>
@@ -180,7 +180,7 @@ function KonfirmasiPembayaranContent() {
                         </div>
 
                             <div className="grid gap-0 lg:grid-cols-[minmax(0,1.55fr)_minmax(300px,0.85fr)]">
-                            <form onSubmit={handleSubmit} className="space-y-8 px-6 py-8 sm:px-10 sm:py-10">
+                            <form onSubmit={handleSubmit} className="space-y-8 px-5 py-7 sm:px-10 sm:py-10">
                                 <FormSection title="Data Pembayaran" subtitle="Pastikan data sesuai dengan bukti transfer yang Anda miliki.">
                                     <div className="grid gap-5">
                                         <Field label="No. Registrasi" required>
@@ -301,8 +301,8 @@ function KonfirmasiPembayaranContent() {
                                 </div>
                             </form>
 
-                            <aside className="border-t border-gray-100 bg-[#f7fbff] px-6 py-8 sm:px-10 lg:border-l lg:border-t-0">
-                                <div className="sticky top-6 space-y-6">
+                            <aside className="border-t border-gray-100 bg-[#f7fbff] px-5 py-7 sm:px-10 lg:border-l lg:border-t-0">
+                                <div className="sticky top-4 sm:top-6 space-y-6">
                                     <InfoCard
                                         title="Panduan Singkat"
                                         accent="bg-[#1976d2]"

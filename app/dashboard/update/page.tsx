@@ -160,7 +160,7 @@ function UpdatePendaftarContent() {
                             onClick={() => router.push("/dashboard")}
                             className="text-sm text-[#1976d2] hover:underline self-start sm:self-auto"
                         >
-                            ← Kembali ke Dashboard
+                            Kembali ke Dashboard
                         </button>
                     </div>
 
@@ -176,7 +176,7 @@ function UpdatePendaftarContent() {
 
                                 <div>
                                     <Label>Jenis Kelamin</Label>
-                                    <div className="flex gap-6 mt-2">
+                                    <div className="flex flex-wrap gap-4 mt-2">
                                         {["Laki-laki", "Perempuan"].map((opt) => (
                                             <label key={opt} className="flex items-center gap-2 text-sm text-gray-700">
                                                 <input
@@ -255,8 +255,10 @@ function UpdatePendaftarContent() {
                         </Section>
 
                         <Section title="Jumlah Anak Yang Menjadi Tanggungan">
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-sm border border-gray-200">
+                            <div className="space-y-2">
+                                <p className="text-xs text-gray-500 md:hidden">Geser tabel ke samping untuk melihat semua kolom.</p>
+                                <div className="overflow-x-auto">
+                                <table className="min-w-[720px] w-full text-sm border border-gray-200">
                                     <thead className="bg-gray-50 text-gray-700">
                                         <tr>
                                             <th className="border border-gray-200 px-3 py-2 text-left w-12">No</th>
@@ -306,6 +308,7 @@ function UpdatePendaftarContent() {
                                         ))}
                                     </tbody>
                                 </table>
+                                </div>
                             </div>
                         </Section>
 
@@ -314,14 +317,14 @@ function UpdatePendaftarContent() {
                                 type="button"
                                 onClick={() => router.push("/dashboard")}
                                 disabled={loading}
-                                className="px-6 py-3 rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium text-sm disabled:opacity-50 order-2 sm:order-1"
+                                className="w-full sm:w-auto px-6 py-3 rounded-md border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium text-sm disabled:opacity-50 order-2 sm:order-1"
                             >
                                 Batal
                             </button>
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="px-8 py-3 rounded-md bg-[#1976d2] hover:bg-[#1565c0] text-white font-medium text-sm disabled:opacity-50 order-1 sm:order-2"
+                                className="w-full sm:w-auto px-8 py-3 rounded-md bg-[#1976d2] hover:bg-[#1565c0] text-white font-medium text-sm disabled:opacity-50 order-1 sm:order-2"
                             >
                                 {loading ? "Menyimpan..." : "Simpan Perubahan"}
                             </button>

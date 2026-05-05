@@ -91,13 +91,13 @@ export default function DashboardPage() {
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 px-4 sm:px-6 py-5">
                             <div className="text-sm text-gray-700 space-y-2">
-                                <div className="flex">
-                                    <span className="w-36 text-gray-600">Author</span>
+                                <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2">
+                                    <span className="sm:min-w-36 text-gray-600">Author</span>
                                     <span className="text-gray-800">: {email || "-"}</span>
                                 </div>
                                 {siswaList.length > 0 && (
-                                    <div className="flex">
-                                        <span className="w-36 text-gray-600">Jumlah pendaftaran</span>
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-0.5 sm:gap-2">
+                                        <span className="sm:min-w-36 text-gray-600">Jumlah pendaftaran</span>
                                         <span className="text-gray-800">: {siswaList.length}</span>
                                     </div>
                                 )}
@@ -105,7 +105,7 @@ export default function DashboardPage() {
                             <div className="space-y-2 md:text-left">
                                 <button
                                     onClick={handleSignOut}
-                                    className="block text-[#1976d2] hover:underline font-medium"
+                                    className="block w-fit text-[#1976d2] hover:underline font-medium"
                                 >
                                     Sign out
                                 </button>
@@ -136,7 +136,7 @@ export default function DashboardPage() {
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm px-6 py-10 text-center">
                             <p className="text-sm text-gray-600">Belum ada pendaftaran pada akun ini.</p>
                             <Link href="/" className="inline-block mt-3 text-[#1976d2] font-semibold hover:underline text-sm">
-                                Mulai Pendaftaran Baru →
+                                Mulai Pendaftaran Baru
                             </Link>
                         </div>
                     )}
@@ -277,7 +277,6 @@ function PaymentReminder({ siswa }: { siswa: SiswaDetail }) {
     const noVa     = (siswa.no_va ?? "").toString().trim();
     const nama     = (siswa.nama ?? "").trim();
     const noreg    = (siswa.noreg ?? "").trim();
-    const waAdmin  = "6281224122456";
 
     const handleCopyVa = () => {
         if (!noVa) return;
@@ -332,17 +331,6 @@ function PaymentReminder({ siswa }: { siswa: SiswaDetail }) {
                         </div>
                     )}
 
-                    <p className="mt-3 text-xs sm:text-sm text-amber-800">
-                        Sudah bayar tapi status belum berubah?{" "}
-                        <a
-                            href={`https://wa.me/${waAdmin}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="font-semibold underline text-amber-900 hover:text-amber-950"
-                        >
-                            Hubungi Admin (+{waAdmin})
-                        </a>
-                    </p>
                 </div>
             </div>
         </div>
@@ -383,7 +371,7 @@ function JoinWaButton({ siswa }: { siswa: SiswaDetail }) {
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347" />
                 </svg>
-                <span>Gabung Grup WhatsApp{sekolahLabel ? ` — ${sekolahLabel}` : ""}</span>
+                <span className="text-center">Gabung Grup WhatsApp{sekolahLabel ? ` - ${sekolahLabel}` : ""}</span>
             </button>
         </div>
     );
@@ -461,7 +449,7 @@ function MenuItem({
             <span className={`w-9 h-9 rounded-full ${iconBg} flex items-center justify-center shadow-sm`}>
                 {icon}
             </span>
-            <span className="text-[#1976d2] font-semibold hover:underline">{label}</span>
+            <span className="text-[#1976d2] font-semibold hover:underline break-words">{label}</span>
         </Link>
     );
 }

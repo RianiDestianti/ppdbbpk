@@ -1010,6 +1010,29 @@ function FormStep2({
             return;
         }
 
+        if (!sekolahAsalSelect || sekolahAsalSelect === "- Pilih -") {
+            Swal.fire({
+                icon               : "error",
+                title              : "Sekolah Asal Wajib Dipilih",
+                text               : "Mohon pilih Sekolah Asal pada daftar.",
+                confirmButtonColor : "#dc2626",
+            });
+            return;
+        }
+
+        if (sekolahAsalSelect === "Lainnya") {
+            const namaTrimmed = (formData.sekolahAsalNama ?? "").trim();
+            if (namaTrimmed.length < 2) {
+                Swal.fire({
+                    icon               : "error",
+                    title              : "Nama Sekolah Asal Wajib Diisi",
+                    text               : "Mohon tulis nama sekolah asal minimal 2 karakter pada kolom 'Tulis nama sekolah asal'.",
+                    confirmButtonColor : "#dc2626",
+                });
+                return;
+            }
+        }
+
         const phoneChecks: Array<{ label: string; value: string; required: boolean }> = [
             { label: "No HP (WhatsApp)", value: formData.noHp,      required: true  },
             { label: "No. HP. Ayah",     value: formData.noHpAyah,  required: true  },
@@ -1112,9 +1135,12 @@ function FormStep2({
         : ["- Pilih -", ...asalSklList.map((s) => s.nama), "Lainnya"];
 
     const handleConfirmSubmit = async () => {
-        const sekolahAsal = sekolahAsalSelect === "Lainnya"
+        const sekolahAsalRaw = sekolahAsalSelect === "Lainnya"
             ? formData.sekolahAsalNama
             : sekolahAsalSelect;
+        const sekolahAsal = (sekolahAsalRaw ?? "").trim() === "- Pilih -"
+            ? ""
+            : (sekolahAsalRaw ?? "").trim();
 
         dispatch(saveSiswa({
             ...formData,

@@ -3,6 +3,7 @@ import siswaSlice from "./slices/siswaSlice"
 import authSlice from "./slices/authSlice"
 import tunggakanSlice from "./slices/tunggakanSlice"
 import konfirmasiSlice from "./slices/konfirmasiSlice"
+import sekolahSlice from "./slices/sekolahSlice"
 
 export const store = configureStore({
     reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
         auth      : authSlice,
         tunggakan : tunggakanSlice,
         konfirmasi: konfirmasiSlice,
+        sekolah   : sekolahSlice,
     }
 })
 

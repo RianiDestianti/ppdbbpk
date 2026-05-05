@@ -8,10 +8,12 @@ import { useAppDispatch, useAppSelector } from "@/hooks/useStore";
 import { saveSiswa, checkNik } from "@/store/controllers/siswaController";
 import { checkTunggakan } from "@/store/controllers/tunggakanController";
 import { getProfile } from "@/store/controllers/authController";
+import { getSekolahByJenjang } from "@/store/controllers/sekolahController";
 import { resetResponse } from "@/store/slices/siswaSlice";
 import { resetTunggakan } from "@/store/slices/tunggakanSlice";
 import { initialFormSiswa, SiswaFormData } from "@/store/types/SiswaTypes";
 import { Jenjang, JenjangConfig } from "@/store/types/JenjangTypes";
+import { SekolahOption } from "@/store/types/SekolahTypes";
 import { handleChangeInput } from "@/libs/general";
 import api from "@/services/api";
 import Swal from "sweetalert2";
@@ -62,33 +64,40 @@ const formatTanggalId = (d: Date) =>
     d.toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" });
 
 const steps = [1, 2];
-const tkProgramPilihan2Options = [
-    "- Pilih -",
-    "TODDLER",
-    "Kelompok Bermain",
-    "TK-A",
-    "TK-B",
-    "Luar BPK",
-];
-const tkProgramPilihanBySekolah: Record<string, string[]> = {
-    "TKK BPK PENABUR Singgasana": [
-        "- Pilih -",
-        "Enriched Bilingual Programme (EBP)",
-        "Early Childhood Programme (ECP)",
-    ],
-    "TKK BPK PENABUR KBP": [
-        "- Pilih -",
-        "Kelompok Bermain",
-        "TK-A",
-        "TK-B",
-    ],
-    "TKK BPK PENABUR Banda": [
-        "- Pilih -",
-        "Early Years Programme",
-        "Kelompok Bermain",
-        "TK-A",
-        "TK-B",
-    ],
+
+const PILIH_PLACEHOLDER  = "- Pilih -";
+const LUAR_BPK_LABEL     = "Luar BPK";
+const LUAR_BPK_TK_LABEL  = "Luar BPK / Belum Sekolah";
+const PROGRAM_DEFAULT_LUAR = ["-"];
+
+const ASAL_JENJANG: Record<Jenjang, Jenjang | ""> = {
+    tk  : "tk",
+    sd  : "tk",
+    smp : "sd",
+    sma : "smp",
+};
+
+const luarBpkLabelFor = (jenjang: Jenjang) =>
+    jenjang === "tk" ? LUAR_BPK_TK_LABEL : LUAR_BPK_LABEL;
+
+const buildPilihanOptions = (sekolahs: SekolahOption[]): string[] => {
+    const names = sekolahs.map((s) => s.nama).filter(Boolean);
+    return [PILIH_PLACEHOLDER, ...names];
+};
+
+const buildAsalOptions = (jenjang: Jenjang, sekolahs: SekolahOption[]): string[] => {
+    const names = sekolahs.map((s) => s.nama).filter(Boolean);
+    return [PILIH_PLACEHOLDER, ...names, luarBpkLabelFor(jenjang)];
+};
+
+const programsForSekolah = (
+    namaSekolah: string,
+    sekolahs: SekolahOption[],
+    fallback: string[] = PROGRAM_DEFAULT_LUAR,
+): string[] => {
+    const found = sekolahs.find((s) => s.nama === namaSekolah);
+    const list  = found?.programs ?? [];
+    return list.length > 0 ? [PILIH_PLACEHOLDER, ...list] : [PILIH_PLACEHOLDER, ...fallback];
 };
 
 const SUMBANGAN_MANUAL_MIN = 5_000_000;
@@ -162,38 +171,6 @@ const jenjangConfig: Record<Jenjang, JenjangConfig> = {
             "Pendaftaran hanya boleh dilakukan 1 kali untuk 1 orang siswa.",
             "Durasi waktu pendaftaran adalah 10 menit, mohon mempersiapkan data no. SPB (untuk siswa BPK), NIK, Nama sesuai Akte Lahir, No. HP, Tempat/Tanggal Lahir, Alamat, Sekolah Asal, Nama Ayah Ibu dan Email sebelum melakukan pendaftaran",
         ],
-        asalSekolahOptions: [
-            "- Pilih -",
-            "Luar BPK / Belum Sekolah",
-            "TKK BPK PENABUR 246",
-            "TKK BPK PENABUR 638",
-            "TK BPK PENABUR Holis",
-            "TKK BPK PENABUR Paskal",
-            "TKK BPK PENABUR Guntur",
-            "TKK BPK PENABUR Singgasana",
-            "TKK BPK PENABUR KBP",
-            "TKK BPK PENABUR Banda",
-        ],
-        programAsalOptions: ["Reguler", "Bilingual", "-"],
-        pilihanSekolahOptions: [
-            "- Pilih -",
-            "TKK BPK PENABUR 246",
-            "TKK BPK PENABUR 638",
-            "TK BPK PENABUR Holis",
-            "TKK BPK PENABUR Paskal",
-            "TKK BPK PENABUR Guntur",
-            "TKK BPK PENABUR Singgasana",
-            "TKK BPK PENABUR KBP",
-            "TKK BPK PENABUR Banda",
-            "Luar BPK",
-        ],
-        programPilihanOptions: [
-            "- Pilih -",
-            "TODDLER",
-            "Kelompok Bermain",
-            "TK-A",
-            "TK-B",
-        ],
         sekolahAsalStep2Options: ["- Pilih -", "Lainnya"],
         sumbanganOptions:        sumbanganOptionsDefault,
     },
@@ -204,21 +181,6 @@ const jenjangConfig: Record<Jenjang, JenjangConfig> = {
             "Pendaftaran hanya boleh dilakukan 1 kali untuk 1 orang siswa.",
             "Durasi waktu pendaftaran adalah 10 menit, mohon mempersiapkan data No. SPB (untuk siswa BPK), NISN, NIK, Nama sesuai Akte Lahir, No HP, Tempat/Tanggal Lahir, Alamat, Sekolah Asal, Nama Ayah Ibu dan Email sebelum melakukan pendaftaran",
         ],
-        asalSekolahOptions: [
-            "- Pilih -",
-            "TKK BPK PENABUR 246",
-            "TKK BPK PENABUR 638",
-            "TK BPK PENABUR Holis",
-            "TKK BPK PENABUR Paskal",
-            "TKK BPK PENABUR Guntur",
-            "TKK BPK PENABUR Singgasana",
-            "TKK BPK PENABUR KBP",
-            "TKK BPK PENABUR Banda",
-            "Luar BPK",
-        ],
-        programAsalOptions:    ["Reguler", "bilingual"],
-        pilihanSekolahOptions: ["- Pilih -", "SDK 1 BPK PENABUR", "SDK 2 BPK PENABUR", "SDK 3 BPK PENABUR"],
-        programPilihanOptions:   ["- Pilih -", "Classical", "Reguler"],
         sekolahAsalStep2Options: ["- Pilih -", "TKK BPK PENABUR", "Luar BPK"],
         sumbanganOptions:        sumbanganOptionsDefault,
     },
@@ -230,10 +192,6 @@ const jenjangConfig: Record<Jenjang, JenjangConfig> = {
             "Pilihan program studi tertentu (Bilingual) akan ditentukan oleh hasil Psikotes/Tes Masuk Khusus",
             "Durasi waktu pendaftaran adalah 10 menit, mohon mempersiapkan data SPB(untuk siswa BPK), NISN, NIK, Nama sesuai Akte Lahir, No. HP, Tempat/Tanggal Lahir, Alamat, Sekolah Asal, Nama Ayah Ibu dan Email sebelum melakukan pendaftaran",
         ],
-        asalSekolahOptions:    ["- Pilih -", "SDK BPK PENABUR", "Luar BPK"],
-        programAsalOptions:    ["Reguler"],
-        pilihanSekolahOptions: ["- Pilih -", "SMPK 1 BPK PENABUR", "SMPK 2 BPK PENABUR", "SMPK 3 BPK PENABUR"],
-        programPilihanOptions:   ["- Pilih -", "Reguler", "Bilingual"],
         sekolahAsalStep2Options: ["- Pilih -", "SDK BPK PENABUR", "Luar BPK"],
         sumbanganOptions:        sumbanganOptionsDefault,
     },
@@ -246,10 +204,6 @@ const jenjangConfig: Record<Jenjang, JenjangConfig> = {
             "Pilihan program studi tertentu (IPA/Bilingual/LSP) akan ditentukan oleh hasil Psikotes/Tes Masuk Khusus",
             "Durasi waktu pendaftaran adalah 10 menit, mohon mempersiapkan data SPB(untuk siswa BPK), NISN, NIK, Nama sesuai Akte Lahir, No. HP, Tempat/Tanggal Lahir, Alamat, Sekolah Asal, Nama Ayah Ibu dan Email sebelum melakukan pendaftaran",
         ],
-        asalSekolahOptions:    ["- Pilih -", "SMPK BPK PENABUR", "Luar BPK"],
-        programAsalOptions:    ["Reguler"],
-        pilihanSekolahOptions: ["- Pilih -", "SMAK 1 BPK PENABUR", "SMAK 2 BPK PENABUR", "SMAK 3 BPK PENABUR"],
-        programPilihanOptions:   ["- Pilih -", "Reguler", "IPA", "Bilingual", "LSP", "DCP"],
         sekolahAsalStep2Options: ["- Pilih -", "SMPK BPK PENABUR", "Luar BPK"],
         sumbanganOptions:        sumbanganOptionsDefault,
     },
@@ -281,36 +235,43 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
 
     const [currentStep, setCurrentStep]             = useState(1);
     const [isPreviewOpen, setIsPreviewOpen]         = useState(false);
-    const [asalSekolah, setAsalSekolah]             = useState("- Pilih -");
-    const [programAsal, setProgramAsal]             = useState("Reguler");
-    const [pilihan1,    setPilihan1]                = useState("- Pilih -");
-    const [program1,    setProgram1]                = useState("- Pilih -");
-    const [pilihan2,    setPilihan2]                = useState("- Pilih -");
-    const [program2,    setProgram2]                = useState("- Pilih -");
+    const [asalSekolah, setAsalSekolah]             = useState(PILIH_PLACEHOLDER);
+    const [programAsal, setProgramAsal]             = useState(PILIH_PLACEHOLDER);
+    const [pilihan1,    setPilihan1]                = useState(PILIH_PLACEHOLDER);
+    const [program1,    setProgram1]                = useState(PILIH_PLACEHOLDER);
+    const [pilihan2,    setPilihan2]                = useState(PILIH_PLACEHOLDER);
+    const [program2,    setProgram2]                = useState(PILIH_PLACEHOLDER);
     const [noSpb,       setNoSpb]                   = useState("");
     const [tanggalLahirAwal, setTanggalLahirAwal]   = useState("");
+
+    const sekolahByJenjang     = useAppSelector((state) => state.sekolah.byJenjang);
+    const sekolahLoading       = useAppSelector((state) => state.sekolah.loading);
+    const asalJenjang          = ASAL_JENJANG[jenjang];
+    const pilihanSekolahData: SekolahOption[] = sekolahByJenjang[jenjang] ?? [];
+    const asalSekolahData:    SekolahOption[] = asalJenjang ? (sekolahByJenjang[asalJenjang] ?? []) : [];
 
     const isDariBpk  = asalSekolah.includes("BPK PENABUR");
     const isTargetTk = jenjang === "tk";
 
-    const getProgramPilihanOptions = (pilihanSekolah: string) => {
-        if (jenjang === "tk") {
-            return tkProgramPilihanBySekolah[pilihanSekolah] ?? config.programPilihanOptions;
+    useEffect(() => {
+        dispatch(getSekolahByJenjang({ jenjang }));
+        if (asalJenjang && asalJenjang !== jenjang) {
+            dispatch(getSekolahByJenjang({ jenjang: asalJenjang }));
         }
+    }, [dispatch, jenjang, asalJenjang]);
 
-        return config.programPilihanOptions;
-    };
+    const asalSekolahOptions = buildAsalOptions(jenjang, asalSekolahData);
+    const programAsalOptions = programsForSekolah(asalSekolah, asalSekolahData);
 
-    const program1Options = getProgramPilihanOptions(pilihan1);
-    const program2Options = jenjang === "tk" ? tkProgramPilihan2Options : getProgramPilihanOptions(pilihan2);
-    const basePilihanOptions = jenjang === "tk"
-        ? config.pilihanSekolahOptions.filter((opt) => opt !== "Luar BPK")
-        : config.pilihanSekolahOptions;
+    const basePilihanOptions = buildPilihanOptions(pilihanSekolahData);
     const pilihan1Options = basePilihanOptions;
     const pilihan2Options = basePilihanOptions.filter(
-        (opt) => opt === "- Pilih -" || opt !== pilihan1
+        (opt) => opt === PILIH_PLACEHOLDER || opt !== pilihan1
     );
-    const isSelected      = (v: string) => v !== "- Pilih -" && v !== "-" && v.trim() !== "";
+    const program1Options = programsForSekolah(pilihan1, pilihanSekolahData);
+    const program2Options = programsForSekolah(pilihan2, pilihanSekolahData);
+
+    const isSelected      = (v: string) => v !== PILIH_PLACEHOLDER && v !== "-" && v.trim() !== "";
     const isPilihanValid  = (pilihan: string, options: string[]) => isSelected(pilihan) && options.includes(pilihan);
     const isProgramValid  = (program: string, options: string[]) => isSelected(program) && options.includes(program);
     const minUsiaStep1        = MIN_USIA_BY_JENJANG[jenjang];
@@ -323,18 +284,23 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
                           isProgramValid(program2, program2Options) &&
                           isUsiaStep1Valid;
 
+    const handleAsalSekolahChange = (value: string) => {
+        setAsalSekolah(value);
+        setProgramAsal(PILIH_PLACEHOLDER);
+    };
+
     const handlePilihan1Change = (value: string) => {
         setPilihan1(value);
-        setProgram1("- Pilih -");
+        setProgram1(PILIH_PLACEHOLDER);
         if (pilihan2 === value) {
-            setPilihan2("- Pilih -");
-            setProgram2("- Pilih -");
+            setPilihan2(PILIH_PLACEHOLDER);
+            setProgram2(PILIH_PLACEHOLDER);
         }
     };
 
     const handlePilihan2Change = (value: string) => {
         setPilihan2(value);
-        setProgram2("- Pilih -");
+        setProgram2(PILIH_PLACEHOLDER);
     };
 
     const goNext = async (e: React.FormEvent) => {
@@ -579,13 +545,13 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
                                         Asal Sekolah
                                     </h2>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <SelectField label="Asal Sekolah" required value={asalSekolah} onChange={setAsalSekolah}>
-                                            {config.asalSekolahOptions.map((opt) => (
+                                        <SelectField label="Asal Sekolah" required value={asalSekolah} onChange={handleAsalSekolahChange}>
+                                            {asalSekolahOptions.map((opt) => (
                                                 <option key={opt}>{opt}</option>
                                             ))}
                                         </SelectField>
                                         <SelectField label="Program" required value={programAsal} onChange={setProgramAsal}>
-                                            {config.programAsalOptions.map((opt) => (
+                                            {programAsalOptions.map((opt) => (
                                                 <option key={opt}>{opt}</option>
                                             ))}
                                         </SelectField>
@@ -662,11 +628,15 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
 
                                 <button
                                     type="submit"
-                                    disabled={!isStep1Valid || tunggakanLoading}
+                                    disabled={!isStep1Valid || tunggakanLoading || sekolahLoading}
                                     className="group w-full bg-gradient-to-r from-[#1976d2] to-[#0d47a1] hover:from-[#1565c0] hover:to-[#0d47a1] text-white font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 active:scale-[0.99] disabled:bg-gray-300 disabled:bg-none disabled:shadow-none disabled:cursor-not-allowed"
                                 >
-                                    {tunggakanLoading ? "Memeriksa Tunggakan..." : "Berikutnya"}
-                                    {!tunggakanLoading && (
+                                    {tunggakanLoading
+                                        ? "Memeriksa Tunggakan..."
+                                        : sekolahLoading
+                                        ? "Memuat data sekolah..."
+                                        : "Berikutnya"}
+                                    {!tunggakanLoading && !sekolahLoading && (
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="group-hover:translate-x-1 transition-transform">
                                             <path d="M5 12h14M13 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>

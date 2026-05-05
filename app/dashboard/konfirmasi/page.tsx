@@ -92,8 +92,13 @@ function KonfirmasiPembayaranContent() {
     }, [initialForm]);
 
     useEffect(() => {
-        if (response?.status === 200) {
+        if (!response) return;
+        if (response.status === 200) {
             setSubmitted(true);
+            setFormError("");
+        } else {
+            setSubmitted(false);
+            setFormError(response.message ?? "Gagal mengirim konfirmasi pembayaran");
         }
     }, [response]);
 

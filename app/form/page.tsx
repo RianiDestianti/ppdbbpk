@@ -69,6 +69,12 @@ const PILIH_PLACEHOLDER  = "- Pilih -";
 const LUAR_BPK_LABEL     = "Luar BPK";
 const LUAR_BPK_TK_LABEL  = "Luar BPK / Belum Sekolah";
 const PROGRAM_DEFAULT_LUAR = ["-"];
+const TK_PROGRAM_TIERS = [
+    { rank: 0, aliases: ["TODDLER", "TOODLER"] },
+    { rank: 1, aliases: ["KELOMPOK BERMAIN", "KELAS BERMAIN", "KB"] },
+    { rank: 2, aliases: ["TK-A", "TK A", "TKA"] },
+    { rank: 3, aliases: ["TK-B", "TK B", "TKB"] },
+] as const;
 
 const ASAL_JENJANG: Record<Jenjang, Jenjang | ""> = {
     tk  : "tk",
@@ -93,14 +99,65 @@ const buildAsalOptions = (jenjang: Jenjang, sekolahs: SekolahOption[]): string[]
     return [PILIH_PLACEHOLDER, ...names, luarBpkLabelFor(jenjang)];
 };
 
+const normalizeProgramKey = (value: string): string =>
+    value.trim().replace(/[-_]+/g, " ").replace(/\s+/g, " ").toUpperCase();
+
+const getTkProgramRank = (value: string): number | null => {
+    const key = normalizeProgramKey(value);
+    if (!key) return null;
+    const matched = TK_PROGRAM_TIERS.find((tier) =>
+        tier.aliases.some((alias) => normalizeProgramKey(alias) === key)
+    );
+    return matched ? matched.rank : null;
+};
+
+const sortTkPrograms = (programs: string[]): string[] => {
+    return [...programs].sort((left, right) => {
+        const leftRank  = getTkProgramRank(left);
+        const rightRank = getTkProgramRank(right);
+
+        if (leftRank === null && rightRank === null) {
+            return left.localeCompare(right, "id");
+        }
+        if (leftRank === null) return 1;
+        if (rightRank === null) return -1;
+        return leftRank - rightRank;
+    });
+};
+
+const uniquePrograms = (programs: string[]): string[] => {
+    const seen = new Set<string>();
+    const result: string[] = [];
+
+    for (const program of programs) {
+        const cleaned = program.trim();
+        if (!cleaned) continue;
+
+        const key = normalizeProgramKey(cleaned);
+        if (seen.has(key)) continue;
+        seen.add(key);
+        result.push(cleaned);
+    }
+
+    return result;
+};
+
 const programsForSekolah = (
     namaSekolah: string,
     sekolahs: SekolahOption[],
     fallback: string[] = PROGRAM_DEFAULT_LUAR,
+    minTkRank?: number | null,
 ): string[] => {
     const found = sekolahs.find((s) => s.nama === namaSekolah);
-    const list  = found?.programs ?? [];
-    return list.length > 0 ? [PILIH_PLACEHOLDER, ...list] : [PILIH_PLACEHOLDER, ...fallback];
+    const list  = uniquePrograms(found?.programs ?? []);
+    const filtered = typeof minTkRank === "number"
+        ? list.filter((program) => {
+            const rank = getTkProgramRank(program);
+            return rank === null || rank >= minTkRank;
+        })
+        : list;
+    const ordered = sortTkPrograms(filtered);
+    return ordered.length > 0 ? [PILIH_PLACEHOLDER, ...ordered] : [PILIH_PLACEHOLDER, ...fallback];
 };
 
 const SUMBANGAN_MANUAL_MIN = 5_000_000;
@@ -252,6 +309,7 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
     const asalJenjang          = ASAL_JENJANG[jenjang];
     const pilihanSekolahData: SekolahOption[] = sekolahByJenjang[jenjang] ?? [];
     const asalSekolahData:    SekolahOption[] = asalJenjang ? (sekolahByJenjang[asalJenjang] ?? []) : [];
+    const programAsalRank = getTkProgramRank(programAsal);
 
     const isDariBpk  = asalSekolah.includes("BPK PENABUR");
     const isTargetTk = jenjang === "tk";
@@ -265,14 +323,15 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
 
     const asalSekolahOptions = buildAsalOptions(jenjang, asalSekolahData);
     const programAsalOptions = programsForSekolah(asalSekolah, asalSekolahData);
+    const programPilihanMinRank = programAsalRank === null ? null : programAsalRank + 1;
 
     const basePilihanOptions = buildPilihanOptions(pilihanSekolahData);
     const pilihan1Options = basePilihanOptions;
     const pilihan2Options = basePilihanOptions.filter(
         (opt) => opt === PILIH_PLACEHOLDER || opt !== pilihan1
     );
-    const program1Options = programsForSekolah(pilihan1, pilihanSekolahData);
-    const program2Options = programsForSekolah(pilihan2, pilihanSekolahData);
+    const program1Options = programsForSekolah(pilihan1, pilihanSekolahData, PROGRAM_DEFAULT_LUAR, programPilihanMinRank);
+    const program2Options = programsForSekolah(pilihan2, pilihanSekolahData, PROGRAM_DEFAULT_LUAR, programPilihanMinRank);
 
     const isSelected      = (v: string) => v !== PILIH_PLACEHOLDER && v !== "-" && v.trim() !== "";
     const isPilihanValid  = (pilihan: string, options: string[]) => isSelected(pilihan) && options.includes(pilihan);
@@ -294,6 +353,14 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
     const handleAsalSekolahChange = (value: string) => {
         setAsalSekolah(value);
         setProgramAsal(isLuarBpk(value) ? "-" : PILIH_PLACEHOLDER);
+        setProgram1(PILIH_PLACEHOLDER);
+        setProgram2(PILIH_PLACEHOLDER);
+    };
+
+    const handleProgramAsalChange = (value: string) => {
+        setProgramAsal(value);
+        setProgram1(PILIH_PLACEHOLDER);
+        setProgram2(PILIH_PLACEHOLDER);
     };
 
     const handlePilihan1Change = (value: string) => {
@@ -607,7 +674,7 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
                                                 <option key={opt}>{opt}</option>
                                             ))}
                                         </SelectField>
-                                        <SelectField label="Program" required value={programAsal} onChange={setProgramAsal}>
+                                        <SelectField label="Program" required value={programAsal} onChange={handleProgramAsalChange}>
                                             {programAsalOptions.map((opt) => (
                                                 <option key={opt}>{opt}</option>
                                             ))}

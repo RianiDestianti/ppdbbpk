@@ -368,11 +368,6 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
 
                 const rawTunggakan = (result.data.tunggakan ?? "").toString().trim();
                 const nominalAngka = Number(rawTunggakan.replace(/[^\d]/g, "")) || 0;
-                const nominalRupiah = new Intl.NumberFormat("id-ID", {
-                    style                 : "currency",
-                    currency              : "IDR",
-                    minimumFractionDigits : 0,
-                }).format(nominalAngka);
 
                 const statusValue   = result.data.stat;
                 const statusBlocked = statusValue !== undefined &&
@@ -384,31 +379,86 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
                                             nominalAngka > 0;
 
                 if (statusBlocked || adaTunggakanNominal) {
-                    const namaSiswa = result.data.nama || "-";
-                    const noSpbData = result.data.nospb || noSpb.trim();
-                    const waAdmin   = "6281224122456";
+                    const asalDetail = asalSekolahData.find((s) => s.nama === asalSekolah);
+                    const namaAsal   = asalDetail?.nama  || asalSekolah || "-";
+                    const waDigits   = (asalDetail?.noWa ?? "").replace(/\D/g, "");
+                    const waAsal     = waDigits.startsWith("62")
+                        ? waDigits
+                        : waDigits.startsWith("0")
+                            ? "62" + waDigits.slice(1)
+                            : waDigits
+                                ? "62" + waDigits
+                                : "";
+                    const emailAsal  = asalDetail?.email2 || asalDetail?.email || "";
+                    const telpAsal   = asalDetail?.notlp  || "";
+                    const kasekAsal  = asalDetail?.kasek  || "";
+                    const waDisplay  = waAsal
+                        ? "+" + waAsal.replace(/^(\d{2})(\d{3})(\d{4})(\d+)$/, "$1 $2-$3-$4")
+                        : "";
+                    const waButton   = waAsal
+                        ? `<a href="https://wa.me/${waAsal}" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;gap:10px;background:#25d366;color:#ffffff;padding:11px 14px;border-radius:10px;text-decoration:none;font-weight:600;font-size:13px;box-shadow:0 4px 12px -4px rgba(37,211,102,0.45);transition:transform .15s">
+                                <span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.18)">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#ffffff"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.71.306 1.263.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413"/></svg>
+                                </span>
+                                <span style="display:flex;flex-direction:column;line-height:1.2">
+                                    <span style="font-size:11px;opacity:.85;font-weight:500">WhatsApp Admin</span>
+                                    <span>${waDisplay}</span>
+                                </span>
+                            </a>`
+                        : "";
+                    const emailButton = emailAsal
+                        ? `<a href="mailto:${emailAsal}" style="display:flex;align-items:center;gap:10px;background:#ffffff;color:#1e3a8a;padding:11px 14px;border-radius:10px;text-decoration:none;font-weight:600;font-size:13px;border:1px solid #bfdbfe;transition:background .15s">
+                                <span style="display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:#dbeafe;color:#1d4ed8">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                                </span>
+                                <span style="display:flex;flex-direction:column;line-height:1.2">
+                                    <span style="font-size:11px;opacity:.7;font-weight:500">Email Admin</span>
+                                    <span style="word-break:break-all">${emailAsal}</span>
+                                </span>
+                            </a>`
+                        : "";
+                    const telpRow    = telpAsal
+                        ? `<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#475569"><span style="color:#94a3b8">Telepon</span><span style="font-weight:600;color:#0f172a">${telpAsal}</span></div>`
+                        : "";
+                    const kasekRow   = kasekAsal
+                        ? `<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#475569"><span style="color:#94a3b8">Kepala Sekolah</span><span style="font-weight:600;color:#0f172a">${kasekAsal}</span></div>`
+                        : "";
 
                     await Swal.fire({
-                        icon               : "warning",
-                        title              : "Ups, Kamu Masih Memiliki Tunggakan!",
+                        title              : "Pendaftaran Tidak Dapat Dilanjutkan",
                         html               : `
-                            <div style="text-align:left;font-size:14px;line-height:1.6">
-                                <p style="margin:0 0 10px">Pendaftaran tidak dapat dilanjutkan karena terdapat tunggakan pembayaran dari jenjang sebelumnya.</p>
-                                <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:12px;margin-bottom:10px">
-                                    <div><b>Nama Siswa</b> : ${namaSiswa}</div>
-                                    <div><b>Nomor SPB</b> : ${noSpbData}</div>
-                                    <div><b>Nominal Tunggakan</b> : ${nominalRupiah}</div>
+                            <div style="text-align:left;font-size:14px;line-height:1.6;color:#334155">
+                                <div style="display:flex;justify-content:center;margin:0 0 14px">
+                                    <div style="display:inline-flex;align-items:center;justify-content:center;width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#fef3c7 0%,#fde68a 100%);box-shadow:0 10px 28px -10px rgba(245,158,11,0.55)">
+                                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#b45309" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                                    </div>
                                 </div>
-                                <p style="margin:0 0 6px">Silakan hubungi admin sekolah untuk melunasi tunggakan terlebih dahulu:</p>
-                                <p style="margin:0">
-                                    <a href="https://wa.me/${waAdmin}" target="_blank" rel="noopener noreferrer" style="color:#dc2626;font-weight:600;text-decoration:underline">
-                                        WhatsApp Admin: +${waAdmin}
-                                    </a>
-                                </p>
+                                <p style="margin:0 0 16px;color:#475569;text-align:center">Pendaftaran anda tidak dapat dilanjutkan, tolong menghubungi admin sekolah asal.</p>
+                                <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:14px;padding:14px 16px;box-shadow:0 1px 2px rgba(15,23,42,0.04)">
+                                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                                        <span style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;background:#dbeafe;color:#1d4ed8">
+                                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M3 10h18M5 6l7-3 7 3M4 10v11M20 10v11M8 14v3M12 14v3M16 14v3"/></svg>
+                                        </span>
+                                        <span style="font-weight:700;color:#1e3a8a;font-size:13px;letter-spacing:.02em;text-transform:uppercase">Hubungi Admin Sekolah Asal</span>
+                                    </div>
+                                    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px">
+                                        <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#475569"><span style="color:#94a3b8">Sekolah</span><span style="font-weight:600;color:#0f172a">${namaAsal}</span></div>
+                                        ${kasekRow}
+                                        ${telpRow}
+                                    </div>
+                                    <div style="display:flex;flex-direction:column;gap:8px">
+                                        ${waButton}
+                                        ${emailButton}
+                                    </div>
+                                </div>
                             </div>
                         `,
-                        confirmButtonText  : "Tutup",
-                        confirmButtonColor : "#dc2626",
+                        confirmButtonText  : "Mengerti, Tutup",
+                        confirmButtonColor : "#0f172a",
+                        width              : 520,
+                        padding            : "1.75rem 1.5rem 1.5rem",
+                        background         : "#f8fafc",
+                        customClass        : { popup: "rounded-3xl" },
                     });
                     dispatch(resetTunggakan());
                     setCurrentStep(1);
@@ -420,7 +470,7 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
             } catch {
                 Swal.fire({
                     icon               : "error",
-                    title              : "Gagal Memeriksa Tunggakan",
+                    title              : "Gagal Memverifikasi Data",
                     text               : "Terjadi kesalahan saat menghubungi server. Silakan coba lagi.",
                     confirmButtonColor : "#dc2626",
                 });
@@ -569,7 +619,7 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
                                                     <span className="text-red-500 ml-1">*</span>
                                                 </label>
                                                 <p className="text-xs italic text-gray-500 -mt-1 mb-2">
-                                                    Wajib diisi untuk pendaftar dari BPK PENABUR (untuk pengecekan tunggakan)
+                                                    Wajib diisi untuk pendaftar dari BPK PENABUR (untuk verifikasi data)
                                                 </p>
                                                 <input
                                                     type="text"
@@ -639,7 +689,7 @@ function FormPageContent({ jenjang }: { jenjang: Jenjang }) {
                                     className="group w-full bg-gradient-to-r from-[#1976d2] to-[#0d47a1] hover:from-[#1565c0] hover:to-[#0d47a1] text-white font-semibold py-4 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 active:scale-[0.99] disabled:bg-gray-300 disabled:bg-none disabled:shadow-none disabled:cursor-not-allowed"
                                 >
                                     {tunggakanLoading
-                                        ? "Memeriksa Tunggakan..."
+                                        ? "Memverifikasi data..."
                                         : sekolahLoading
                                         ? "Memuat data sekolah..."
                                         : "Berikutnya"}

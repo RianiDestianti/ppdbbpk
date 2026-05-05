@@ -3,6 +3,12 @@ export interface SekolahOption {
     kode     : string;
     nama     : string;
     jenjang  : string;
+    noWa    ?: string;
+    kasek   ?: string;
+    email   ?: string;
+    email2  ?: string;
+    notlp   ?: string;
+    alamat  ?: string;
     programs : string[];
 }
 
